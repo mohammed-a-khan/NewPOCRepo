@@ -426,3 +426,282 @@ echo 1. Open the project in your IDE
 echo 2. Replace the pom.xml file with the content provided
 echo 3. Implement the code for each component
 echo.
+
+
+
+
+-------------------------------------
+React files generation
+------------------------
+
+@echo off
+echo Creating React files for the Playwright Automation Platform...
+echo.
+
+REM Create webapp directory and files
+mkdir src\main\webapp
+mkdir src\main\webapp\public
+mkdir src\main\webapp\src
+mkdir src\main\webapp\src\components
+mkdir src\main\webapp\src\types
+mkdir src\main\webapp\src\services
+mkdir src\main\webapp\src\hooks
+mkdir src\main\webapp\src\contexts
+mkdir src\main\webapp\src\pages
+mkdir src\main\webapp\src\utils
+mkdir src\main\webapp\src\assets
+mkdir src\main\webapp\src\assets\styles
+mkdir src\main\webapp\src\assets\images
+
+REM Create component directories
+mkdir src\main\webapp\src\components\common
+mkdir src\main\webapp\src\components\project
+mkdir src\main\webapp\src\components\testcase
+mkdir src\main\webapp\src\components\datasource
+mkdir src\main\webapp\src\components\iteration
+mkdir src\main\webapp\src\components\database
+mkdir src\main\webapp\src\components\notification
+
+REM Create package.json with complete content
+echo {> src\main\webapp\package.json
+echo   "name": "playwright-automation-platform-frontend",>> src\main\webapp\package.json
+echo   "version": "1.0.0",>> src\main\webapp\package.json
+echo   "private": true,>> src\main\webapp\package.json
+echo   "dependencies": {>> src\main\webapp\package.json
+echo     "@testing-library/jest-dom": "^5.16.5",>> src\main\webapp\package.json
+echo     "@testing-library/react": "^13.4.0",>> src\main\webapp\package.json
+echo     "@testing-library/user-event": "^13.5.0",>> src\main\webapp\package.json
+echo     "@types/jest": "^27.5.2",>> src\main\webapp\package.json
+echo     "@types/node": "^16.18.11",>> src\main\webapp\package.json
+echo     "@types/react": "^18.0.26",>> src\main\webapp\package.json
+echo     "@types/react-dom": "^18.0.10",>> src\main\webapp\package.json
+echo     "axios": "^1.2.2",>> src\main\webapp\package.json
+echo     "formik": "^2.2.9",>> src\main\webapp\package.json
+echo     "react": "^18.2.0",>> src\main\webapp\package.json
+echo     "react-dom": "^18.2.0",>> src\main\webapp\package.json
+echo     "react-router-dom": "^6.8.1",>> src\main\webapp\package.json
+echo     "react-scripts": "5.0.1",>> src\main\webapp\package.json
+echo     "sockjs-client": "^1.6.1",>> src\main\webapp\package.json
+echo     "stompjs": "^2.3.3",>> src\main\webapp\package.json
+echo     "web-vitals": "^2.1.4",>> src\main\webapp\package.json
+echo     "yup": "^0.32.11">> src\main\webapp\package.json
+echo   },>> src\main\webapp\package.json
+echo   "scripts": {>> src\main\webapp\package.json
+echo     "start": "react-scripts start",>> src\main\webapp\package.json
+echo     "build": "react-scripts build",>> src\main\webapp\package.json
+echo     "test": "react-scripts test",>> src\main\webapp\package.json
+echo     "eject": "react-scripts eject">> src\main\webapp\package.json
+echo   },>> src\main\webapp\package.json
+echo   "eslintConfig": {>> src\main\webapp\package.json
+echo     "extends": [>> src\main\webapp\package.json
+echo       "react-app",>> src\main\webapp\package.json
+echo       "react-app/jest">> src\main\webapp\package.json
+echo     ]>> src\main\webapp\package.json
+echo   },>> src\main\webapp\package.json
+echo   "browserslist": {>> src\main\webapp\package.json
+echo     "production": [>> src\main\webapp\package.json
+echo       ">0.2%%",>> src\main\webapp\package.json
+echo       "not dead",>> src\main\webapp\package.json
+echo       "not op_mini all">> src\main\webapp\package.json
+echo     ],>> src\main\webapp\package.json
+echo     "development": [>> src\main\webapp\package.json
+echo       "last 1 chrome version",>> src\main\webapp\package.json
+echo       "last 1 firefox version",>> src\main\webapp\package.json
+echo       "last 1 safari version">> src\main\webapp\package.json
+echo     ]>> src\main\webapp\package.json
+echo   },>> src\main\webapp\package.json
+echo   "devDependencies": {>> src\main\webapp\package.json
+echo     "@types/sockjs-client": "^1.5.1",>> src\main\webapp\package.json
+echo     "@types/stompjs": "^2.3.5",>> src\main\webapp\package.json
+echo     "typescript": "^4.9.4">> src\main\webapp\package.json
+echo   },>> src\main\webapp\package.json
+echo   "proxy": "http://localhost:8080">> src\main\webapp\package.json
+echo }>> src\main\webapp\package.json
+
+REM Create tsconfig.json
+echo {> src\main\webapp\tsconfig.json
+echo   "compilerOptions": {>> src\main\webapp\tsconfig.json
+echo     "target": "es5",>> src\main\webapp\tsconfig.json
+echo     "lib": [>> src\main\webapp\tsconfig.json
+echo       "dom",>> src\main\webapp\tsconfig.json
+echo       "dom.iterable",>> src\main\webapp\tsconfig.json
+echo       "esnext">> src\main\webapp\tsconfig.json
+echo     ],>> src\main\webapp\tsconfig.json
+echo     "allowJs": true,>> src\main\webapp\tsconfig.json
+echo     "skipLibCheck": true,>> src\main\webapp\tsconfig.json
+echo     "esModuleInterop": true,>> src\main\webapp\tsconfig.json
+echo     "allowSyntheticDefaultImports": true,>> src\main\webapp\tsconfig.json
+echo     "strict": true,>> src\main\webapp\tsconfig.json
+echo     "forceConsistentCasingInFileNames": true,>> src\main\webapp\tsconfig.json
+echo     "noFallthroughCasesInSwitch": true,>> src\main\webapp\tsconfig.json
+echo     "module": "esnext",>> src\main\webapp\tsconfig.json
+echo     "moduleResolution": "node",>> src\main\webapp\tsconfig.json
+echo     "resolveJsonModule": true,>> src\main\webapp\tsconfig.json
+echo     "isolatedModules": true,>> src\main\webapp\tsconfig.json
+echo     "noEmit": true,>> src\main\webapp\tsconfig.json
+echo     "jsx": "react-jsx",>> src\main\webapp\tsconfig.json
+echo     "baseUrl": "src">> src\main\webapp\tsconfig.json
+echo   },>> src\main\webapp\tsconfig.json
+echo   "include": [>> src\main\webapp\tsconfig.json
+echo     "src">> src\main\webapp\tsconfig.json
+echo   ]>> src\main\webapp\tsconfig.json
+echo }>> src\main\webapp\tsconfig.json
+
+REM Create index.html
+echo ^<!DOCTYPE html^>> src\main\webapp\public\index.html
+echo ^<html lang="en"^>>> src\main\webapp\public\index.html
+echo   ^<head^>>> src\main\webapp\public\index.html
+echo     ^<meta charset="utf-8" /^>>> src\main\webapp\public\index.html
+echo     ^<link rel="icon" href="%%PUBLIC_URL%%/favicon.ico" /^>>> src\main\webapp\public\index.html
+echo     ^<meta name="viewport" content="width=device-width, initial-scale=1" /^>>> src\main\webapp\public\index.html
+echo     ^<meta name="theme-color" content="#000000" /^>>> src\main\webapp\public\index.html
+echo     ^<meta>>> src\main\webapp\public\index.html
+echo       name="description">> src\main\webapp\public\index.html
+echo       content="Zero-Code Playwright Test Automation Platform">> src\main\webapp\public\index.html
+echo     /^>>> src\main\webapp\public\index.html
+echo     ^<title^>Playwright Automation Platform^</title^>>> src\main\webapp\public\index.html
+echo   ^</head^>>> src\main\webapp\public\index.html
+echo   ^<body^>>> src\main\webapp\public\index.html
+echo     ^<noscript^>You need to enable JavaScript to run this app.^</noscript^>>> src\main\webapp\public\index.html
+echo     ^<div id="root"^>^</div^>>> src\main\webapp\public\index.html
+echo   ^</body^>>> src\main\webapp\public\index.html
+echo ^</html^>>> src\main\webapp\public\index.html
+
+REM Create React main files with content
+echo // Main entry file > src\main\webapp\src\index.tsx
+echo // App component > src\main\webapp\src\App.tsx
+echo // Web vitals reporting > src\main\webapp\src\reportWebVitals.ts
+echo /* Main CSS styles */ > src\main\webapp\src\assets\styles\main.css
+echo /* App-specific CSS */ > src\main\webapp\src\assets\styles\App.css
+
+REM Create component files with content - common components
+echo // Header component > src\main\webapp\src\components\common\Header.tsx
+echo // Sidebar component > src\main\webapp\src\components\common\Sidebar.tsx
+echo // Footer component > src\main\webapp\src\components\common\Footer.tsx
+echo // Loader component > src\main\webapp\src\components\common\Loader.tsx
+
+REM Create component files with content - project components
+echo // Project list component > src\main\webapp\src\components\project\ProjectList.tsx
+echo // Project form component > src\main\webapp\src\components\project\ProjectForm.tsx
+echo // Project detail component > src\main\webapp\src\components\project\ProjectDetail.tsx
+
+REM Create component files with content - testcase components
+echo // Test case list component > src\main\webapp\src\components\testcase\TestCaseList.tsx
+echo // Test case form component > src\main\webapp\src\components\testcase\TestCaseForm.tsx
+echo // Test case detail component > src\main\webapp\src\components\testcase\TestCaseDetail.tsx
+
+REM Create component files with content - datasource components
+echo // Data source list component > src\main\webapp\src\components\datasource\DataSourceList.tsx
+echo // Data source form component > src\main\webapp\src\components\datasource\DataSourceForm.tsx
+echo // Data mapping component > src\main\webapp\src\components\datasource\DataMapping.tsx
+
+REM Create component files with content - database components
+echo // Database connection list component > src\main\webapp\src\components\database\DatabaseConnectionList.tsx
+echo // Database connection form component > src\main\webapp\src\components\database\DatabaseConnectionForm.tsx
+echo // Database test form component > src\main\webapp\src\components\database\DatabaseTestForm.tsx
+echo // Query builder component > src\main\webapp\src\components\database\QueryBuilder.tsx
+
+REM Create component files with content - notification components
+echo // Notification center component > src\main\webapp\src\components\notification\NotificationCenter.tsx
+echo // Notification settings component > src\main\webapp\src\components\notification\NotificationSettings.tsx
+
+REM Create page files with content
+echo // Dashboard page > src\main\webapp\src\pages\Dashboard.tsx
+echo // Projects page > src\main\webapp\src\pages\Projects.tsx
+echo // Test cases page > src\main\webapp\src\pages\TestCases.tsx
+echo // Data sources page > src\main\webapp\src\pages\DataSources.tsx
+echo // Database tests page > src\main\webapp\src\pages\DatabaseTests.tsx
+echo // Settings page > src\main\webapp\src\pages\Settings.tsx
+
+REM Create type files with content
+echo // Project type definitions > src\main\webapp\src\types\project.ts
+echo // Test case type definitions > src\main\webapp\src\types\testcase.ts
+echo // Data source type definitions > src\main\webapp\src\types\datasource.ts
+echo // Database type definitions > src\main\webapp\src\types\database.ts
+echo // Notification type definitions > src\main\webapp\src\types\notification.ts
+
+REM Create service files with content
+echo // Base API client > src\main\webapp\src\services\api.ts
+echo // Project service > src\main\webapp\src\services\projectService.ts
+echo // Test case service > src\main\webapp\src\services\testCaseService.ts
+echo // Data source service > src\main\webapp\src\services\dataSourceService.ts
+echo // Database service > src\main\webapp\src\services\databaseService.ts
+echo // Notification service > src\main\webapp\src\services\notificationService.ts
+
+REM Create hook files with content
+echo // API hook > src\main\webapp\src\hooks\useApi.ts
+echo // Authentication hook > src\main\webapp\src\hooks\useAuth.ts
+echo // Notification hook > src\main\webapp\src\hooks\useNotification.ts
+
+REM Create context files with content
+echo // Authentication context > src\main\webapp\src\contexts\AuthContext.tsx
+echo // Notification context > src\main\webapp\src\contexts\NotificationContext.tsx
+
+REM Create utility files with content
+echo // Formatter utilities > src\main\webapp\src\utils\formatters.ts
+echo // Validation utilities > src\main\webapp\src\utils\validators.ts
+echo // Storage utilities > src\main\webapp\src\utils\storage.ts
+
+REM Verify files were created
+echo.
+echo Verifying React files were created:
+echo.
+
+set FILES_CREATED=0
+set FILES_MISSING=0
+
+REM Check a few key files
+if exist "src\main\webapp\src\index.tsx" (
+  echo [✓] src\main\webapp\src\index.tsx created
+  set /a FILES_CREATED+=1
+) else (
+  echo [X] src\main\webapp\src\index.tsx MISSING
+  set /a FILES_MISSING+=1
+)
+
+if exist "src\main\webapp\src\App.tsx" (
+  echo [✓] src\main\webapp\src\App.tsx created
+  set /a FILES_CREATED+=1
+) else (
+  echo [X] src\main\webapp\src\App.tsx MISSING
+  set /a FILES_MISSING+=1
+)
+
+if exist "src\main\webapp\src\pages\Dashboard.tsx" (
+  echo [✓] src\main\webapp\src\pages\Dashboard.tsx created
+  set /a FILES_CREATED+=1
+) else (
+  echo [X] src\main\webapp\src\pages\Dashboard.tsx MISSING
+  set /a FILES_MISSING+=1
+)
+
+if exist "src\main\webapp\src\components\project\ProjectList.tsx" (
+  echo [✓] src\main\webapp\src\components\project\ProjectList.tsx created
+  set /a FILES_CREATED+=1
+) else (
+  echo [X] src\main\webapp\src\components\project\ProjectList.tsx MISSING
+  set /a FILES_MISSING+=1
+)
+
+if exist "src\main\webapp\src\services\api.ts" (
+  echo [✓] src\main\webapp\src\services\api.ts created
+  set /a FILES_CREATED+=1
+) else (
+  echo [X] src\main\webapp\src\services\api.ts MISSING
+  set /a FILES_MISSING+=1
+)
+
+echo.
+echo Verification summary:
+echo %FILES_CREATED% files successfully created
+echo %FILES_MISSING% files missing
+
+if %FILES_MISSING% GTR 0 (
+  echo.
+  echo WARNING: Some files are missing. Please check your system settings 
+  echo or try running this script with administrator privileges.
+)
+
+echo.
+echo React files creation completed!
+echo.
