@@ -1,0 +1,1548 @@
+Here are the key frontend configuration files you'll need for your Zero-Code Playwright Test Automation Tool project.
+
+## package.json
+
+```json
+{
+  "name": "playwright-automation-tool-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.11",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "axios": "^1.2.2",
+    "date-fns": "^2.29.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.6.1",
+    "react-scripts": "5.0.1",
+    "sockjs-client": "^1.6.1",
+    "typescript": "^4.9.4",
+    "uuid": "^9.0.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/sockjs-client": "^1.5.1",
+    "@types/uuid": "^9.0.0"
+  },
+  "proxy": "http://localhost:8080"
+}
+```
+
+## tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "src"
+  },
+  "include": [
+    "src"
+  ]
+}
+```
+
+## .env
+
+```
+NODE_ENV=development
+PORT=3000
+REACT_APP_API_URL=http://localhost:8080/api
+REACT_APP_WS_URL=http://localhost:8080/ws
+```
+
+## public/index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Zero-Code Playwright Test Automation Tool"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Playwright Automation Tool</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+## public/manifest.json
+
+```json
+{
+  "short_name": "Playwright Tool",
+  "name": "Zero-Code Playwright Test Automation Tool",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+```
+
+## src/index.css
+
+```css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Common styles */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: #dc3545;
+}
+
+/* Layout elements */
+.page-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.btn-success {
+  color: #fff;
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  color: #fff;
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn-danger {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  color: #fff;
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+```
+
+## src/index.tsx
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
+
+## src/App.tsx
+
+```tsx
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './components/core/HomePage';
+import DashboardPage from './components/core/DashboardPage';
+import SettingsPage from './components/core/SettingsPage';
+import ProjectPage from './components/project/ProjectPage';
+import ReportingDashboard from './components/reporting/ReportingDashboard';
+import Header from './components/core/Header';
+import './App.css';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <div className="app">
+        <Header />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/project/:projectId" element={<ProjectPage />} />
+            <Route path="/reporting" element={<ReportingDashboard />} />
+            <Route path="/reporting/:projectId" element={<ReportingDashboard />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+```
+
+## src/App.css
+
+```css
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 10px;
+  }
+}
+```
+
+## src/reportWebVitals.ts
+
+```typescript
+import { ReportHandler } from 'web-vitals';
+
+const reportWebVitals = (onPerfEntry?: ReportHandler) => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+```
+
+## src/react-app-env.d.ts
+
+```typescript
+/// <reference types="react-scripts" />
+```
+
+## Setting Up the Project
+
+With these files, you should be able to set up the frontend part of your Zero-Code Playwright Test Automation Tool. Here's how to proceed:
+
+1. **Create a Frontend Directory:**
+   ```bash
+   mkdir -p frontend/public frontend/src/components/core frontend/src/components/project frontend/src/components/reporting frontend/src/components/shared/charts frontend/src/components/shared/filters frontend/src/services/api frontend/src/services/websocket
+   ```
+
+2. **Copy Configuration Files:**
+   ```bash
+   # Copy configuration files to the frontend directory
+   cp package.json frontend/
+   cp tsconfig.json frontend/
+   cp .env frontend/
+   
+   # Copy HTML files to public directory
+   cp public/index.html frontend/public/
+   cp public/manifest.json frontend/public/
+   
+   # Create empty favicon and logo files
+   touch frontend/public/favicon.ico
+   touch frontend/public/logo192.png
+   touch frontend/public/logo512.png
+   
+   # Copy React app files
+   cp src/index.css frontend/src/
+   cp src/index.tsx frontend/src/
+   cp src/App.tsx frontend/src/
+   cp src/App.css frontend/src/
+   cp src/reportWebVitals.ts frontend/src/
+   cp src/react-app-env.d.ts frontend/src/
+   ```
+
+3. **Install Dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. **Start Development Server:**
+   ```bash
+   npm start
+   ```
+
+5. **Build for Production:**
+   ```bash
+   npm run build
+   ```
+
+6. **Copy Built Frontend to Spring Boot Static Resources:**
+   ```bash
+   mkdir -p ../src/main/resources/static
+   cp -r build/* ../src/main/resources/static/
+   ```
+
+7. **Build the Full Application:**
+   ```bash
+   cd ..
+   mvn clean package
+   ```
+
+8. **Run the Application:**
+   ```bash
+   java -jar target/playwright-automation-tool-1.0.0.jar
+   ```
+
+These files and instructions should give you a complete structure for setting up both the frontend and backend parts of your Zero-Code Playwright Test Automation Tool with the Advanced Reporting Module. All you need to do is copy the provided files to their respective locations and follow the build steps.
+
+
+# Create a new React + TypeScript project with Vite (minimal dependencies)
+npm create vite@latest playwright-automation-ui -- --template react-ts
+
+# Navigate to the project directory
+cd playwright-automation-ui
+
+# Install only essential dependencies (NO third-party plugins)
+npm install react-router-dom
+npm install axios
+npm install socket.io-client
+
+# NO third-party UI libraries, NO mock data libraries
+
+# Install development dependencies
+npm install --save-dev typescript @types/react @types/node
+
+# Initialize project structure for real time implementation
+mkdir -p src/components/core
+mkdir -p src/components/project
+mkdir -p src/components/recorder
+mkdir -p src/components/execution
+mkdir -p src/components/reporting
+mkdir -p src/services/api
+mkdir -p src/services/filesystem
+mkdir -p src/services/websocket
+mkdir -p src/utils
+
+# Create TypeScript configuration (strict mode)
+echo '{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}' > tsconfig.json
+
+# Install Playwright for browser automation (essential dependency)
+npm install playwright
+
+# Start the development server
+npm run dev
+
+
+
+# Create Spring Boot project structure
+mkdir -p playwright-automation-api/src/main/java/com/automation/api/controllers
+mkdir -p playwright-automation-api/src/main/java/com/automation/api/services
+mkdir -p playwright-automation-api/src/main/java/com/automation/api/models
+mkdir -p playwright-automation-api/src/main/java/com/automation/api/config
+mkdir -p playwright-automation-api/src/main/java/com/automation/api/utils
+mkdir -p playwright-automation-api/src/main/resources
+
+# Create Maven POM file with Java 17 configuration and minimal dependencies
+cat > playwright-automation-api/pom.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.0.5</version>
+        <relativePath/>
+    </parent>
+    
+    <groupId>com.automation</groupId>
+    <artifactId>playwright-automation-api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Playwright Automation API</name>
+    <description>Real-time Test Automation API with Playwright</description>
+    
+    <properties>
+        <java.version>17</java.version>
+        <playwright.version>1.30.0</playwright.version>
+    </properties>
+    
+    <dependencies>
+        <!-- Spring Boot Core -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+        <!-- WebSocket Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        
+        <!-- Playwright for Java -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
+        </dependency>
+        
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOF
+
+# Create application properties file with configuration
+cat > playwright-automation-api/src/main/resources/application.properties << 'EOF'
+# Server configuration
+server.port=8080
+server.servlet.context-path=/api
+
+# Logging
+logging.level.com.automation=DEBUG
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+
+# File storage location
+app.storage.base-path=./automation-storage
+
+# CORS configuration
+app.cors.allowed-origins=http://localhost:5173
+app.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+app.cors.allowed-headers=*
+app.cors.allow-credentials=true
+
+# WebSocket configuration
+app.websocket.endpoint=/ws
+app.websocket.allowed-origins=http://localhost:5173
+EOF
+
+# Create main application class
+cat > playwright-automation-api/src/main/java/com/automation/api/PlaywrightAutomationApiApplication.java << 'EOF'
+package com.automation.api;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@SpringBootApplication
+@EnableAsync
+public class PlaywrightAutomationApiApplication {
+    
+    public static void main(String[] args) {
+        SpringApplication.run(PlaywrightAutomationApiApplication.class, args);
+    }
+}
+EOF
+
+# Create CORS configuration
+cat > playwright-automation-api/src/main/java/com/automation/api/config/CorsConfig.java << 'EOF'
+package com.automation.api.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+
+@Configuration
+public class CorsConfig {
+    
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+    
+    @Value("${app.cors.allowed-methods}")
+    private String allowedMethods;
+    
+    @Value("${app.cors.allowed-headers}")
+    private String allowedHeaders;
+    
+    @Value("${app.cors.allow-credentials}")
+    private boolean allowCredentials;
+    
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(allowCredentials);
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        config.setAllowedMethods(Arrays.asList(allowedMethods.split(",")));
+        config.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        
+        return new CorsFilter(source);
+    }
+}
+EOF
+
+# Create WebSocket configuration
+cat > playwright-automation-api/src/main/java/com/automation/api/config/WebSocketConfig.java << 'EOF'
+package com.automation.api.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    
+    @Value("${app.websocket.endpoint}")
+    private String endpoint;
+    
+    @Value("${app.websocket.allowed-origins}")
+    private String allowedOrigins;
+    
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+    
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint(endpoint)
+                .setAllowedOrigins(allowedOrigins.split(","))
+                .withSockJS();
+    }
+}
+EOF
+
+# Create FileSystemService for file operations
+cat > playwright-automation-api/src/main/java/com/automation/api/services/FileSystemService.java << 'EOF'
+package com.automation.api.services;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class FileSystemService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemService.class);
+    
+    @Value("${app.storage.base-path}")
+    private String basePath;
+    
+    /**
+     * Initialize the storage directory structure
+     */
+    public void initializeStorage() {
+        try {
+            Path baseDir = Paths.get(basePath);
+            if (!Files.exists(baseDir)) {
+                Files.createDirectories(baseDir);
+                logger.info("Created base directory: {}", baseDir);
+                
+                // Create subdirectories
+                Files.createDirectories(baseDir.resolve("projects"));
+                Files.createDirectories(baseDir.resolve("settings"));
+                Files.createDirectories(baseDir.resolve("temp/recording-sessions"));
+                
+                logger.info("Initialized storage directory structure");
+            }
+        } catch (IOException e) {
+            logger.error("Failed to initialize storage directories", e);
+            throw new RuntimeException("Could not initialize storage", e);
+        }
+    }
+    
+    /**
+     * Create a directory
+     */
+    public void createDirectory(String relativePath) throws IOException {
+        Path dirPath = Paths.get(basePath, relativePath);
+        Files.createDirectories(dirPath);
+        logger.debug("Created directory: {}", dirPath);
+    }
+    
+    /**
+     * Write content to a file
+     */
+    public void writeFile(String relativePath, String content) throws IOException {
+        Path filePath = Paths.get(basePath, relativePath);
+        
+        // Ensure parent directories exist
+        Files.createDirectories(filePath.getParent());
+        
+        // Write the file
+        Files.writeString(filePath, content);
+        logger.debug("Wrote file: {}", filePath);
+    }
+    
+    /**
+     * Read content from a file
+     */
+    public String readFile(String relativePath) throws IOException {
+        Path filePath = Paths.get(basePath, relativePath);
+        return Files.readString(filePath);
+    }
+    
+    /**
+     * Check if a file exists
+     */
+    public boolean fileExists(String relativePath) {
+        Path filePath = Paths.get(basePath, relativePath);
+        return Files.exists(filePath) && Files.isRegularFile(filePath);
+    }
+    
+    /**
+     * Check if a directory exists
+     */
+    public boolean directoryExists(String relativePath) {
+        Path dirPath = Paths.get(basePath, relativePath);
+        return Files.exists(dirPath) && Files.isDirectory(dirPath);
+    }
+    
+    /**
+     * List files in a directory
+     */
+    public List<String> listFiles(String relativePath) throws IOException {
+        Path dirPath = Paths.get(basePath, relativePath);
+        return Files.list(dirPath)
+                .filter(Files::isRegularFile)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * List subdirectories in a directory
+     */
+    public List<String> listDirectories(String relativePath) throws IOException {
+        Path dirPath = Paths.get(basePath, relativePath);
+        return Files.list(dirPath)
+                .filter(Files::isDirectory)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Delete a file
+     */
+    public void deleteFile(String relativePath) throws IOException {
+        Path filePath = Paths.get(basePath, relativePath);
+        Files.deleteIfExists(filePath);
+        logger.debug("Deleted file: {}", filePath);
+    }
+    
+    /**
+     * Delete a directory and all its contents
+     */
+    public void deleteDirectory(String relativePath) throws IOException {
+        Path dirPath = Paths.get(basePath, relativePath);
+        if (Files.exists(dirPath)) {
+            Files.walk(dirPath)
+                    .sorted((p1, p2) -> -p1.compareTo(p2)) // Reverse order to delete children first
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            logger.error("Failed to delete: {}", p, e);
+                        }
+                    });
+            logger.debug("Deleted directory: {}", dirPath);
+        }
+    }
+}
+EOF
+
+# Create Project model
+cat > playwright-automation-api/src/main/java/com/automation/api/models/Project.java << 'EOF'
+package com.automation.api.models;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class Project {
+    private String id;
+    private String name;
+    private String description;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private List<String> features;
+    
+    // Constructors
+    public Project() {
+    }
+    
+    public Project(String id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    // Getters and setters
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public List<String> getFeatures() {
+        return features;
+    }
+    
+    public void setFeatures(List<String> features) {
+        this.features = features;
+    }
+}
+EOF
+
+# Create Application startup listener to initialize resources
+cat > playwright-automation-api/src/main/java/com/automation/api/config/ApplicationStartup.java << 'EOF'
+package com.automation.api.config;
+
+import com.automation.api.services.FileSystemService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ApplicationStartup implements ApplicationListener<ApplicationReadyEvent> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationStartup.class);
+    
+    private final FileSystemService fileSystemService;
+    
+    @Autowired
+    public ApplicationStartup(FileSystemService fileSystemService) {
+        this.fileSystemService = fileSystemService;
+    }
+    
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        logger.info("Initializing application resources...");
+        
+        // Initialize file system storage
+        fileSystemService.initializeStorage();
+        
+        logger.info("Application resources initialized successfully");
+    }
+}
+EOF
+
+# Create a simple health check controller
+cat > playwright-automation-api/src/main/java/com/automation/api/controllers/HealthController.java << 'EOF'
+package com.automation.api.controllers;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/health")
+public class HealthController {
+    
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> checkHealth() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
+        
+        return ResponseEntity.ok(response);
+    }
+}
+EOF
+
+
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './components/core/HomePage';
+import DashboardPage from './components/core/DashboardPage';
+import ProjectPage from './components/project/ProjectPage';
+import RecorderPage from './components/recorder/RecorderPage';
+import ExecutionPage from './components/execution/ExecutionPage';
+import ReportingPage from './components/reporting/ReportingPage';
+import SettingsPage from './components/core/SettingsPage';
+import Header from './components/core/Header';
+import './App.css';
+
+function App() {
+  return (
+    <Router>
+      <div className="app-container">
+        <Header />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/projects/:projectId" element={<ProjectPage />} />
+            <Route path="/recorder" element={<RecorderPage />} />
+            <Route path="/execution" element={<ExecutionPage />} />
+            <Route path="/reports" element={<ReportingPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </main>
+        <footer className="app-footer">
+          <p>Playwright Automation Tool &copy; {new Date().getFullYear()}</p>
+        </footer>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+// src/components/core/Header.tsx
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import './Header.css';
+
+const Header = () => {
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+  
+  const isActive = (path: string) => {
+    return location.pathname === path ? 'active' : '';
+  };
+  
+  return (
+    <header className="app-header">
+      <div className="header-logo">
+        <Link to="/">Playwright Automation</Link>
+      </div>
+      
+      <button className="menu-toggle" onClick={toggleMenu}>
+        <span className="menu-icon"></span>
+      </button>
+      
+      <nav className={`header-nav ${isMenuOpen ? 'open' : ''}`}>
+        <ul>
+          <li className={isActive('/dashboard')}>
+            <Link to="/dashboard">Dashboard</Link>
+          </li>
+          <li className={isActive('/recorder')}>
+            <Link to="/recorder">Recorder</Link>
+          </li>
+          <li className={isActive('/execution')}>
+            <Link to="/execution">Execution</Link>
+          </li>
+          <li className={isActive('/reports')}>
+            <Link to="/reports">Reports</Link>
+          </li>
+          <li className={isActive('/settings')}>
+            <Link to="/settings">Settings</Link>
+          </li>
+        </ul>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;
+
+// src/components/core/HomePage.tsx
+import { useNavigate } from 'react-router-dom';
+import './HomePage.css';
+
+const HomePage = () => {
+  const navigate = useNavigate();
+  
+  const navigateTo = (path: string) => {
+    navigate(path);
+  };
+  
+  return (
+    <div className="home-container">
+      <section className="hero-section">
+        <h1>Zero-Code Playwright Automation</h1>
+        <p>Real-time test recording, execution, and reporting with AI capabilities</p>
+        <div className="action-buttons">
+          <button 
+            className="primary-button"
+            onClick={() => navigateTo('/dashboard')}
+          >
+            View Dashboard
+          </button>
+          <button 
+            className="secondary-button"
+            onClick={() => navigateTo('/recorder')}
+          >
+            Start Recording
+          </button>
+        </div>
+      </section>
+      
+      <section className="features-section">
+        <h2>Key Features</h2>
+        <div className="features-grid">
+          <div className="feature-card">
+            <h3>Real-time Test Recording</h3>
+            <p>Record browser interactions and automatically generate test scripts</p>
+          </div>
+          <div className="feature-card">
+            <h3>BDD Format Support</h3>
+            <p>Author tests in Behavior-Driven Development format</p>
+          </div>
+          <div className="feature-card">
+            <h3>Parallel Execution</h3>
+            <p>Run multiple tests simultaneously for faster results</p>
+          </div>
+          <div className="feature-card">
+            <h3>Self-Healing Tests</h3>
+            <p>AI-powered test repair for reliable execution</p>
+          </div>
+          <div className="feature-card">
+            <h3>Real-time Reporting</h3>
+            <p>Live dashboards and detailed test reports</p>
+          </div>
+          <div className="feature-card">
+            <h3>ADO Integration</h3>
+            <p>Seamless connection with Azure DevOps</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default HomePage;
+
+// src/components/core/DashboardPage.tsx
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import './DashboardPage.css';
+
+interface ProjectCard {
+  id: string;
+  name: string;
+  description: string;
+  testCount: number;
+  lastRun: string;
+  passRate: number;
+}
+
+const DashboardPage = () => {
+  const [projects, setProjects] = useState<ProjectCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // In a real implementation, this would fetch from the API
+    // For now, we'll simulate loading projects
+    const loadProjects = async () => {
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // This is where we would normally fetch from the backend
+        // But for initial setup, we'll use empty data
+        setProjects([]);
+        setIsLoading(false);
+      } catch (err) {
+        setError('Failed to load projects');
+        setIsLoading(false);
+      }
+    };
+    
+    loadProjects();
+  }, []);
+  
+  const handleCreateProject = () => {
+    // This will be implemented fully when we build the project creation flow
+    console.log('Create project clicked');
+  };
+  
+  return (
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>Project Dashboard</h1>
+        <button 
+          className="create-project-button"
+          onClick={handleCreateProject}
+        >
+          Create New Project
+        </button>
+      </div>
+      
+      {isLoading ? (
+        <div className="loading-indicator">Loading projects...</div>
+      ) : error ? (
+        <div className="error-message">{error}</div>
+      ) : projects.length === 0 ? (
+        <div className="empty-state">
+          <h2>No Projects Found</h2>
+          <p>Get started by creating your first automation project</p>
+          <button 
+            className="primary-button"
+            onClick={handleCreateProject}
+          >
+            Create Project
+          </button>
+        </div>
+      ) : (
+        <div className="projects-grid">
+          {projects.map(project => (
+            <div key={project.id} className="project-card">
+              <h3>{project.name}</h3>
+              <p>{project.description}</p>
+              <div className="project-stats">
+                <div className="stat">
+                  <span className="stat-value">{project.testCount}</span>
+                  <span className="stat-label">Tests</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-value">{project.passRate}%</span>
+                  <span className="stat-label">Pass Rate</span>
+                </div>
+              </div>
+              <div className="project-footer">
+                <span className="last-run">Last run: {project.lastRun}</span>
+                <Link to={`/projects/${project.id}`} className="view-project-link">
+                  View Project
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DashboardPage;
+
+// src/components/core/SettingsPage.tsx
+import { useState } from 'react';
+import './SettingsPage.css';
+
+interface Settings {
+  browserSettings: {
+    defaultBrowser: string;
+    headless: boolean;
+    slowMotion: number;
+  };
+  executionSettings: {
+    parallelInstances: number;
+    defaultTimeout: number;
+    retryFailedTests: boolean;
+    maxRetries: number;
+  };
+  recordingSettings: {
+    smartSelectors: boolean;
+    includeAssertions: boolean;
+  };
+}
+
+const SettingsPage = () => {
+  const [settings, setSettings] = useState<Settings>({
+    browserSettings: {
+      defaultBrowser: 'chromium',
+      headless: false,
+      slowMotion: 0
+    },
+    executionSettings: {
+      parallelInstances: 1,
+      defaultTimeout: 30000,
+      retryFailedTests: true,
+      maxRetries: 2
+    },
+    recordingSettings: {
+      smartSelectors: true,
+      includeAssertions: true
+    }
+  });
+  
+  const [activeTab, setActiveTab] = useState('browser');
+  
+  const handleBrowserSettingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
+    
+    setSettings({
+      ...settings,
+      browserSettings: {
+        ...settings.browserSettings,
+        [name]: type === 'checkbox' ? checked : 
+               type === 'number' ? parseInt(value) : value
+      }
+    });
+  };
+  
+  const handleExecutionSettingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
+    
+    setSettings({
+      ...settings,
+      executionSettings: {
+        ...settings.executionSettings,
+        [name]: type === 'checkbox' ? checked : 
+               type === 'number' ? parseInt(value) : value
+      }
+    });
+  };
+  
+  const handleRecordingSettingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    
+    setSettings({
+      ...settings,
+      recordingSettings: {
+        ...settings.recordingSettings,
+        [name]: checked
+      }
+    });
+  };
+  
+  const handleSaveSettings = () => {
+    // This will be implemented to save settings to the backend
+    console.log('Settings saved:', settings);
+    // In a real implementation, this would call the API
+  };
+  
+  return (
+    <div className="settings-container">
+      <h1>Settings</h1>
+      
+      <div className="settings-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'browser' ? 'active' : ''}`}
+          onClick={() => setActiveTab('browser')}
+        >
+          Browser
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'execution' ? 'active' : ''}`}
+          onClick={() => setActiveTab('execution')}
+        >
+          Execution
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'recording' ? 'active' : ''}`}
+          onClick={() => setActiveTab('recording')}
+        >
+          Recording
+        </button>
+      </div>
+      
+      <div className="settings-content">
+        {activeTab === 'browser' && (
+          <div className="settings-section">
+            <h2>Browser Settings</h2>
+            
+            <div className="setting-item">
+              <label htmlFor="defaultBrowser">Default Browser</label>
+              <select 
+                id="defaultBrowser"
+                name="defaultBrowser"
+                value={settings.browserSettings.defaultBrowser}
+                onChange={handleBrowserSettingChange}
+              >
+                <option value="chromium">Chromium</option>
+                <option value="firefox">Firefox</option>
+                <option value="webkit">WebKit</option>
+              </select>
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="headless">Headless Mode</label>
+              <input 
+                type="checkbox"
+                id="headless"
+                name="headless"
+                checked={settings.browserSettings.headless}
+                onChange={handleBrowserSettingChange}
+              />
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="slowMotion">Slow Motion (ms)</label>
+              <input 
+                type="number"
+                id="slowMotion"
+                name="slowMotion"
+                min="0"
+                max="1000"
+                value={settings.browserSettings.slowMotion}
+                onChange={handleBrowserSettingChange}
+              />
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'execution' && (
+          <div className="settings-section">
+            <h2>Execution Settings</h2>
+            
+            <div className="setting-item">
+              <label htmlFor="parallelInstances">Parallel Instances</label>
+              <input 
+                type="number"
+                id="parallelInstances"
+                name="parallelInstances"
+                min="1"
+                max="10"
+                value={settings.executionSettings.parallelInstances}
+                onChange={handleExecutionSettingChange}
+              />
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="defaultTimeout">Default Timeout (ms)</label>
+              <input 
+                type="number"
+                id="defaultTimeout"
+                name="defaultTimeout"
+                min="1000"
+                max="60000"
+                step="1000"
+                value={settings.executionSettings.defaultTimeout}
+                onChange={handleExecutionSettingChange}
+              />
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="retryFailedTests">Retry Failed Tests</label>
+              <input 
+                type="checkbox"
+                id="retryFailedTests"
+                name="retryFailedTests"
+                checked={settings.executionSettings.retryFailedTests}
+                onChange={handleExecutionSettingChange}
+              />
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="maxRetries">Max Retries</label>
+              <input 
+                type="number"
+                id="maxRetries"
+                name="maxRetries"
+                min="1"
+                max="5"
+                value={settings.executionSettings.maxRetries}
+                onChange={handleExecutionSettingChange}
+                disabled={!settings.executionSettings.retryFailedTests}
+              />
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'recording' && (
+          <div className="settings-section">
+            <h2>Recording Settings</h2>
+            
+            <div className="setting-item">
+              <label htmlFor="smartSelectors">Smart Selectors</label>
+              <input 
+                type="checkbox"
+                id="smartSelectors"
+                name="smartSelectors"
+                checked={settings.recordingSettings.smartSelectors}
+                onChange={handleRecordingSettingChange}
+              />
+              <div className="setting-description">
+                Use multiple selector strategies for resilient tests
+              </div>
+            </div>
+            
+            <div className="setting-item">
+              <label htmlFor="includeAssertions">Include Assertions</label>
+              <input 
+                type="checkbox"
+                id="includeAssertions"
+                name="includeAssertions"
+                checked={settings.recordingSettings.includeAssertions}
+                onChange={handleRecordingSettingChange}
+              />
+              <div className="setting-description">
+                Automatically generate assertions during recording
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="settings-actions">
+          <button 
+            className="primary-button"
+            onClick={handleSaveSettings}
+          >
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsPage;
+
