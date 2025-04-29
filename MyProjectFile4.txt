@@ -1,0 +1,3970 @@
+import React from 'react';
+
+interface TestRunnerProps {
+  isRunning: boolean;
+  onRun: () => void;
+  onStop: () => void;
+  disabled?: boolean;
+}
+
+const TestRunner: React.FC<TestRunnerProps> = ({ isRunning, onRun, onStop, disabled = false }) => {
+  return (
+    <div className="mt-4 border-t pt-4">
+      <h3 className="text-lg font-medium mb-3">Test Execution</h3>
+      
+      <div className="flex space-x-3">
+        {!isRunning ? (
+          <button
+            onClick={onRun}
+            disabled={disabled}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Run Test
+          </button>
+        ) : (
+          <button
+            onClick={onStop}
+            disabled={disabled}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+            </svg>
+            Stop Test
+          </button>
+        )}
+        
+        <button
+          onClick={() => window.location.reload()}
+          disabled={isRunning || disabled}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+      
+      {isRunning && (
+        <div className="mt-4 flex items-center justify-center text-blue-600">
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Test is running...
+        </div>
+      )}
+      
+      <div className="mt-4 text-xs text-gray-500">
+        <p className="mb-1"><strong>Note:</strong> Tests run in headless mode by default.</p>
+        <p>Test execution will record both screenshots and a video of the entire test run.</p>
+      </div>
+    </div>
+  );
+};
+
+export default TestRunner;
+
+
+import React, { useState, useEffect } from 'react';
+
+interface EnvironmentConfigProps {
+  environments: string[];
+  selectedEnvironment: string;
+  onEnvironmentChange: (environment: string) => void;
+  variables: Record<string, string>;
+  onVariableChange: (name: string, value: string) => void;
+}
+
+interface Variable {
+  name: string;
+  value: string;
+  isPassword: boolean;
+}
+
+const EnvironmentConfig: React.FC<EnvironmentConfigProps> = ({
+  environments,
+  selectedEnvironment,
+  onEnvironmentChange,
+  variables,
+  onVariableChange
+}) => {
+  const [detectedVariables, setDetectedVariables] = useState<Variable[]>([]);
+  const [showAddVariable, setShowAddVariable] = useState<boolean>(false);
+  const [newVarName, setNewVarName] = useState<string>('');
+  const [newVarValue, setNewVarValue] = useState<string>('');
+  const [isNewVarPassword, setIsNewVarPassword] = useState<boolean>(false);
+  
+  // Extract variables from the current test steps (in a real app, this would be done by parsing the test case)
+  useEffect(() => {
+    // This is a mock implementation - in a real app, you would extract variables from the test case
+    const defaultVariables: Variable[] = [
+      { name: 'username', value: variables['username'] || '', isPassword: false },
+      { name: 'password', value: variables['password'] || '', isPassword: true },
+      { name: 'baseUrl', value: variables['baseUrl'] || '', isPassword: false }
+    ];
+    
+    // Filter out variables that don't exist in the test case
+    const filteredVars = defaultVariables.filter(v => {
+      // In a real app, check if the variable is used in the test case
+      return true;
+    });
+    
+    setDetectedVariables(filteredVars);
+  }, [variables]);
+  
+  const handleAddVariable = () => {
+    if (!newVarName || newVarName.trim() === '') {
+      return;
+    }
+    
+    // Add to detected variables
+    setDetectedVariables([
+      ...detectedVariables,
+      { name: newVarName, value: newVarValue, isPassword: isNewVarPassword }
+    ]);
+    
+    // Update the variables in the parent component
+    onVariableChange(newVarName, newVarValue);
+    
+    // Reset form
+    setNewVarName('');
+    setNewVarValue('');
+    setIsNewVarPassword(false);
+    setShowAddVariable(false);
+  };
+  
+  return (
+    <div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Environment
+        </label>
+        <select
+          className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+          value={selectedEnvironment}
+          onChange={(e) => onEnvironmentChange(e.target.value)}
+        >
+          {environments.map((env) => (
+            <option key={env} value={env}>
+              {env}
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Variables
+          </label>
+          <button
+            type="button"
+            className="text-xs text-blue-600 hover:text-blue-800"
+            onClick={() => setShowAddVariable(!showAddVariable)}
+          >
+            {showAddVariable ? 'Cancel' : '+ Add Variable'}
+          </button>
+        </div>
+        
+        {showAddVariable && (
+          <div className="mb-4 p-3 bg-gray-50 border rounded">
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Variable Name
+              </label>
+              <input
+                type="text"
+                className="w-full p-2 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+                value={newVarName}
+                onChange={(e) => setNewVarName(e.target.value)}
+                placeholder="e.g. username, apiKey"
+              />
+            </div>
+            
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Value
+              </label>
+              <input
+                type={isNewVarPassword ? 'password' : 'text'}
+                className="w-full p-2 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+                value={newVarValue}
+                onChange={(e) => setNewVarValue(e.target.value)}
+                placeholder="Variable value"
+              />
+            </div>
+            
+            <div className="mb-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={isNewVarPassword}
+                  onChange={(e) => setIsNewVarPassword(e.target.checked)}
+                />
+                <span className="ml-2 text-xs text-gray-700">This is a password/secret</span>
+              </label>
+            </div>
+            
+            <button
+              type="button"
+              className="w-full py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={handleAddVariable}
+            >
+              Add Variable
+            </button>
+          </div>
+        )}
+        
+        {detectedVariables.length === 0 ? (
+          <div className="text-sm text-gray-500 italic">
+            No variables detected in this test
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {detectedVariables.map((variable) => (
+              <div key={variable.name} className="flex flex-col">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {variable.name}
+                </label>
+                <input
+                  type={variable.isPassword ? 'password' : 'text'}
+                  className="w-full p-2 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+                  value={variables[variable.name] || variable.value}
+                  onChange={(e) => onVariableChange(variable.name, e.target.value)}
+                  placeholder={`Enter ${variable.name}`}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default EnvironmentConfig;
+
+
+package com.automation.api.controllers;
+
+import com.automation.api.models.ExecutionResult;
+import com.automation.api.services.ExecutionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/execution")
+public class ExecutionController {
+    
+    private final ExecutionService executionService;
+    private final SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired
+    public ExecutionController(ExecutionService executionService, SimpMessagingTemplate messagingTemplate) {
+        this.executionService = executionService;
+        this.messagingTemplate = messagingTemplate;
+    }
+    
+    @PostMapping("/start")
+    public ResponseEntity<ExecutionResult> startExecution(@RequestBody Map<String, Object> request) {
+        String projectId = (String) request.get("projectId");
+        String testCaseId = (String) request.get("testCaseId");
+        String environment = (String) request.get("environment");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, String> variables = (Map<String, String>) request.get("variables");
+        
+        ExecutionResult result = executionService.executeTest(projectId, testCaseId, variables);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/{executionId}")
+    public ResponseEntity<ExecutionResult> getExecutionStatus(@PathVariable String executionId) {
+        ExecutionResult result = executionService.getExecutionStatus(executionId);
+        return ResponseEntity.ok(result);
+    }
+    
+    @PostMapping("/{executionId}/stop")
+    public ResponseEntity<ExecutionResult> stopExecution(@PathVariable String executionId) {
+        ExecutionResult result = executionService.stopExecution(executionId);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/active")
+    public ResponseEntity<List<ExecutionResult>> listActiveExecutions() {
+        List<ExecutionResult> executions = executionService.listActiveExecutions();
+        return ResponseEntity.ok(executions);
+    }
+    
+    @GetMapping("/video/{executionId}")
+    public ResponseEntity<Resource> getExecutionVideo(@PathVariable String executionId) {
+        try {
+            ExecutionResult result = executionService.getExecutionStatus(executionId);
+            if (result.getVideoPath() == null) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Path videoPath = Paths.get(result.getVideoPath());
+            ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(videoPath));
+            
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"test_recording.webm\"")
+                    .contentType(MediaType.parseMediaType("video/webm"))
+                    .contentLength(Files.size(videoPath))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/screenshot/{executionId}/{stepId}")
+    public ResponseEntity<Resource> getStepScreenshot(@PathVariable String executionId, @PathVariable String stepId) {
+        try {
+            ExecutionResult result = executionService.getExecutionStatus(executionId);
+            Map<String, ExecutionService.StepResult> stepResults = result.getStepResults();
+            
+            if (!stepResults.containsKey(stepId) || stepResults.get(stepId).getScreenshot() == null) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            String base64Screenshot = stepResults.get(stepId).getScreenshot();
+            byte[] screenshotBytes = java.util.Base64.getDecoder().decode(base64Screenshot);
+            ByteArrayResource resource = new ByteArrayResource(screenshotBytes);
+            
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"step_screenshot.png\"")
+                    .contentType(MediaType.IMAGE_PNG)
+                    .contentLength(screenshotBytes.length)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    // WebSocket message handlers
+    @MessageMapping("/execution/start")
+    public void wsStartExecution(Map<String, Object> request) {
+        String projectId = (String) request.get("projectId");
+        String testCaseId = (String) request.get("testCaseId");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, String> variables = (Map<String, String>) request.get("variables");
+        
+        ExecutionResult result = executionService.executeTest(projectId, testCaseId, variables);
+        messagingTemplate.convertAndSend("/topic/execution/" + result.getId(), result);
+    }
+    
+    @MessageMapping("/execution/stop")
+    public void wsStopExecution(Map<String, String> request) {
+        String executionId = request.get("executionId");
+        ExecutionResult result = executionService.stopExecution(executionId);
+        messagingTemplate.convertAndSend("/topic/execution/" + executionId, result);
+    }
+    
+    @MessageMapping("/execution/status")
+    public void wsGetExecutionStatus(Map<String, String> request) {
+        String executionId = request.get("executionId");
+        ExecutionResult result = executionService.getExecutionStatus(executionId);
+        messagingTemplate.convertAndSend("/topic/execution/" + executionId, result);
+    }
+}
+
+
+package com.automation.api.services.ai;
+
+import com.automation.api.models.ElementInfo;
+import com.microsoft.playwright.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+
+/**
+ * AI-powered service for generating optimized element selectors
+ */
+@Service
+public class SelectorService {
+    private static final Logger logger = LoggerFactory.getLogger(SelectorService.class);
+    
+    // Cache for previously optimized selectors
+    private final Map<String, String> selectorCache = new ConcurrentHashMap<>();
+    
+    // Attribute importance weights
+    private final Map<String, Double> attributeWeights = new HashMap<>();
+    
+    // Patterns to identify meaningful text content
+    private final List<Pattern> meaningfulTextPatterns = new ArrayList<>();
+    
+    // Known unreliable class patterns (like dynamic classes from frameworks)
+    private final List<Pattern> unreliableClassPatterns = new ArrayList<>();
+    
+    public SelectorService() {
+        // Initialize attribute weights
+        attributeWeights.put("id", 10.0);
+        attributeWeights.put("data-testid", 9.0);
+        attributeWeights.put("data-test", 9.0);
+        attributeWeights.put("data-qa", 9.0);
+        attributeWeights.put("data-automation", 9.0);
+        attributeWeights.put("data-cy", 9.0);
+        attributeWeights.put("name", 8.0);
+        attributeWeights.put("aria-label", 7.0);
+        attributeWeights.put("alt", 7.0);
+        attributeWeights.put("title", 7.0);
+        attributeWeights.put("for", 7.0);
+        attributeWeights.put("href", 6.0);
+        attributeWeights.put("value", 6.0);
+        attributeWeights.put("placeholder", 6.0);
+        attributeWeights.put("type", 5.0);
+        attributeWeights.put("role", 5.0);
+        attributeWeights.put("class", 4.0);
+        
+        // Initialize meaningful text patterns
+        meaningfulTextPatterns.add(Pattern.compile("^[A-Z0-9][A-Za-z0-9\\s]{2,20}$")); // Button/link text
+        meaningfulTextPatterns.add(Pattern.compile("^[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-.]+$")); // Email
+        meaningfulTextPatterns.add(Pattern.compile("^(https?://)?[a-z0-9]+([-.][a-z0-9]+)*\\.[a-z]{2,}(/.*)?$")); // URL
+        
+        // Initialize unreliable class patterns
+        unreliableClassPatterns.add(Pattern.compile("^[a-z0-9]{8}$")); // Hash-based classes
+        unreliableClassPatterns.add(Pattern.compile("^(jsx|react)-[a-zA-Z0-9-_]+$")); // React-generated
+        unreliableClassPatterns.add(Pattern.compile("^v-[a-zA-Z0-9-_]+$")); // Vue-generated
+        unreliableClassPatterns.add(Pattern.compile("^ng-[a-zA-Z0-9-_]+$")); // Angular-generated
+    }
+    
+    /**
+     * Generate an optimized selector for an element
+     * @param element The element information
+     * @return An optimized selector string
+     */
+    public String generateOptimizedSelector(ElementInfo element) {
+        try {
+            // Check cache first
+            String cacheKey = generateCacheKey(element);
+            if (selectorCache.containsKey(cacheKey)) {
+                return selectorCache.get(cacheKey);
+            }
+            
+            // Generate selector candidates
+            List<SelectorCandidate> candidates = generateSelectorCandidates(element);
+            
+            // Sort candidates by score (higher is better)
+            candidates.sort(Comparator.comparing(SelectorCandidate::getScore).reversed());
+            
+            // Return the best selector
+            String bestSelector = candidates.isEmpty() ? generateFallbackSelector(element) 
+                                                       : candidates.get(0).getSelector();
+            
+            // Cache the result for future use
+            selectorCache.put(cacheKey, bestSelector);
+            return bestSelector;
+        } catch (Exception e) {
+            logger.error("Error generating optimized selector", e);
+            return generateFallbackSelector(element);
+        }
+    }
+    
+    /**
+     * Optimize an existing selector to make it more reliable
+     * @param selector The original selector
+     * @return An optimized selector string
+     */
+    public String optimizeSelector(String selector) {
+        try {
+            // Check cache first
+            if (selectorCache.containsKey(selector)) {
+                return selectorCache.get(selector);
+            }
+            
+            // Simple optimization for now - we'll improve this with feedback data
+            String optimized = selector;
+            
+            // Remove unreliable classes
+            for (Pattern pattern : unreliableClassPatterns) {
+                optimized = optimized.replaceAll("\\." + pattern.pattern(), "");
+            }
+            
+            // Cache the result
+            selectorCache.put(selector, optimized);
+            return optimized;
+        } catch (Exception e) {
+            logger.error("Error optimizing selector", e);
+            return selector;
+        }
+    }
+    
+    /**
+     * Verify if a selector uniquely identifies an element on a page
+     * @param page The Playwright page
+     * @param selector The selector to verify
+     * @return True if the selector is unique, false otherwise
+     */
+    public boolean isUniqueSelector(Page page, String selector) {
+        try {
+            return page.querySelectorAll(selector).size() == 1;
+        } catch (Exception e) {
+            logger.error("Error checking selector uniqueness", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Find a unique selector for an element based on its XPath
+     * @param page The Playwright page
+     * @param xpath The element's XPath
+     * @return A unique CSS selector for the element
+     */
+    public String findSelectorFromXPath(Page page, String xpath) {
+        try {
+            // Get element attributes using XPath
+            Map<String, String> attributes = (Map<String, String>) page.evaluate(
+                "xpath => {" +
+                "  const element = document.evaluate(xpath, document, null, " +
+                "                 XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;" +
+                "  if (!element) return null;" +
+                "  const result = {};" +
+                "  for (const attr of element.attributes) {" +
+                "    result[attr.name] = attr.value;" +
+                "  }" +
+                "  result['tagName'] = element.tagName.toLowerCase();" +
+                "  result['textContent'] = element.textContent.trim();" +
+                "  return result;" +
+                "}", xpath);
+            
+            if (attributes == null) {
+                return null;
+            }
+            
+            // Create element info from attributes
+            ElementInfo elementInfo = new ElementInfo();
+            elementInfo.setTagName(attributes.get("tagName"));
+            elementInfo.setTextContent(attributes.get("textContent"));
+            attributes.forEach((k, v) -> {
+                if (!k.equals("tagName") && !k.equals("textContent")) {
+                    elementInfo.addAttribute(k, v);
+                }
+            });
+            
+            // Generate optimized selector
+            return generateOptimizedSelector(elementInfo);
+        } catch (Exception e) {
+            logger.error("Error finding selector from XPath", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Generate multiple selector candidates for an element
+     * @param element The element information
+     * @return A list of selector candidates with scores
+     */
+    private List<SelectorCandidate> generateSelectorCandidates(ElementInfo element) {
+        List<SelectorCandidate> candidates = new ArrayList<>();
+        String tagName = element.getTagName() != null ? element.getTagName().toLowerCase() : null;
+        
+        // ID selector (highest priority)
+        if (element.hasAttribute("id")) {
+            String id = element.getAttribute("id");
+            if (!id.isBlank()) {
+                candidates.add(new SelectorCandidate("#" + id, 100.0));
+                candidates.add(new SelectorCandidate(tagName + "#" + id, 99.0));
+            }
+        }
+        
+        // Test/automation attribute selectors (high priority)
+        for (Map.Entry<String, Double> entry : attributeWeights.entrySet()) {
+            String attrName = entry.getKey();
+            double weight = entry.getValue();
+            
+            if (element.hasAttribute(attrName)) {
+                String attrValue = element.getAttribute(attrName);
+                if (!attrValue.isBlank()) {
+                    String selector = "[" + attrName + "=\"" + attrValue.replace("\"", "\\\"") + "\"]";
+                    candidates.add(new SelectorCandidate(selector, weight * 10));
+                    
+                    if (tagName != null) {
+                        candidates.add(new SelectorCandidate(tagName + selector, weight * 9.8));
+                    }
+                }
+            }
+        }
+        
+        // Text content selector
+        if (element.getTextContent() != null && !element.getTextContent().isBlank()) {
+            String text = element.getTextContent().trim();
+            
+            // Check if text is meaningful using patterns
+            boolean isMeaningful = meaningfulTextPatterns.stream()
+                    .anyMatch(pattern -> pattern.matcher(text).matches());
+            
+            // Use text content if it's short and meaningful
+            if (isMeaningful || (text.length() < 30 && !text.contains("\n"))) {
+                // Escape quotes and backslashes
+                text = text.replace("\\", "\\\\").replace("\"", "\\\"");
+                
+                if (tagName != null) {
+                    candidates.add(new SelectorCandidate(
+                            tagName + ":text(\"" + text + "\")", 
+                            70.0)
+                    );
+                    candidates.add(new SelectorCandidate(
+                            tagName + ":text-is(\"" + text + "\")", 
+                            68.0)
+                    );
+                }
+            }
+        }
+        
+        // Class selector
+        if (element.hasAttribute("class")) {
+            String classAttr = element.getAttribute("class");
+            String[] classes = classAttr.split("\\s+");
+            
+            // Filter out unreliable classes
+            List<String> reliableClasses = new ArrayList<>();
+            for (String className : classes) {
+                boolean isReliable = true;
+                for (Pattern pattern : unreliableClassPatterns) {
+                    if (pattern.matcher(className).matches()) {
+                        isReliable = false;
+                        break;
+                    }
+                }
+                if (isReliable && !className.isBlank()) {
+                    reliableClasses.add(className);
+                }
+            }
+            
+            // Generate class selectors if we have reliable classes
+            if (!reliableClasses.isEmpty()) {
+                String classSelector = "." + String.join(".", reliableClasses);
+                double score = 50.0 - (reliableClasses.size() * 2); // Lower score for more classes
+                
+                candidates.add(new SelectorCandidate(classSelector, score));
+                
+                if (tagName != null) {
+                    candidates.add(new SelectorCandidate(tagName + classSelector, score - 1));
+                }
+            }
+        }
+        
+        // Attribute combinations (for better uniqueness)
+        List<String> usefulAttributes = new ArrayList<>();
+        for (String attrName : element.getAttributeNames()) {
+            if (attributeWeights.containsKey(attrName) && 
+                attributeWeights.get(attrName) >= 5.0 && 
+                !attrName.equals("id") && 
+                !attrName.equals("class")) {
+                
+                usefulAttributes.add(attrName);
+            }
+        }
+        
+        // Generate selectors with combinations of 2 attributes
+        if (usefulAttributes.size() >= 2) {
+            for (int i = 0; i < usefulAttributes.size() - 1; i++) {
+                for (int j = i + 1; j < usefulAttributes.size(); j++) {
+                    String attr1 = usefulAttributes.get(i);
+                    String attr2 = usefulAttributes.get(j);
+                    
+                    String value1 = element.getAttribute(attr1);
+                    String value2 = element.getAttribute(attr2);
+                    
+                    String selector = "[" + attr1 + "=\"" + value1.replace("\"", "\\\"") + "\"]" +
+                                      "[" + attr2 + "=\"" + value2.replace("\"", "\\\"") + "\"]";
+                    
+                    double score = attributeWeights.get(attr1) + attributeWeights.get(attr2);
+                    candidates.add(new SelectorCandidate(selector, score));
+                    
+                    if (tagName != null) {
+                        candidates.add(new SelectorCandidate(tagName + selector, score - 0.5));
+                    }
+                }
+            }
+        }
+        
+        return candidates;
+    }
+    
+    /**
+     * Generate a fallback selector for when all other methods fail
+     * @param element The element information
+     * @return A basic selector
+     */
+    private String generateFallbackSelector(ElementInfo element) {
+        if (element.getTagName() == null) {
+            return "*";
+        }
+        
+        StringBuilder selector = new StringBuilder(element.getTagName().toLowerCase());
+        
+        // Add a common attribute if available
+        for (String attrName : Arrays.asList("type", "name", "placeholder", "role")) {
+            if (element.hasAttribute(attrName)) {
+                selector.append("[")
+                       .append(attrName)
+                       .append("=\"")
+                       .append(element.getAttribute(attrName).replace("\"", "\\\""))
+                       .append("\"]");
+                break;
+            }
+        }
+        
+        return selector.toString();
+    }
+    
+    /**
+     * Generate a cache key for an element
+     * @param element The element information
+     * @return A cache key string
+     */
+    private String generateCacheKey(ElementInfo element) {
+        StringBuilder key = new StringBuilder();
+        
+        if (element.getTagName() != null) {
+            key.append("tag:").append(element.getTagName()).append(";");
+        }
+        
+        // Add important attributes to the key
+        for (String attrName : element.getAttributeNames()) {
+            if (attributeWeights.containsKey(attrName) && attributeWeights.get(attrName) >= 7.0) {
+                key.append(attrName)
+                   .append(":")
+                   .append(element.getAttribute(attrName))
+                   .append(";");
+            }
+        }
+        
+        return key.toString();
+    }
+    
+    /**
+     * Inner class to represent a selector candidate with its score
+     */
+    private static class SelectorCandidate {
+        private final String selector;
+        private final double score;
+        
+        public SelectorCandidate(String selector, double score) {
+            this.selector = selector;
+            this.score = score;
+        }
+        
+        public String getSelector() {
+            return selector;
+        }
+        
+        public double getScore() {
+            return score;
+        }
+    }
+}
+
+
+package com.automation.api.services.ai;
+
+import com.automation.api.models.ElementFingerprint;
+import com.automation.api.models.ElementInfo;
+import com.microsoft.playwright.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * AI-powered service for element recognition and fingerprinting
+ */
+@Service
+public class ElementRecognitionService {
+    private static final Logger logger = LoggerFactory.getLogger(ElementRecognitionService.class);
+    
+    private final SelectorService selectorService;
+    
+    // Cache for element fingerprints
+    private final Map<String, ElementFingerprint> fingerprintCache = new ConcurrentHashMap<>();
+    
+    // Attribute importance for fingerprinting
+    private final Map<String, Double> attributeImportance = new HashMap<>();
+    
+    @Autowired
+    public ElementRecognitionService(SelectorService selectorService) {
+        this.selectorService = selectorService;
+        
+        // Initialize attribute importance weights
+        attributeImportance.put("id", 1.0);
+        attributeImportance.put("data-testid", 0.9);
+        attributeImportance.put("name", 0.8);
+        attributeImportance.put("href", 0.7);
+        attributeImportance.put("src", 0.7);
+        attributeImportance.put("alt", 0.7);
+        attributeImportance.put("title", 0.7);
+        attributeImportance.put("aria-label", 0.7);
+        attributeImportance.put("placeholder", 0.6);
+        attributeImportance.put("value", 0.6);
+        attributeImportance.put("type", 0.5);
+        attributeImportance.put("role", 0.5);
+        attributeImportance.put("class", 0.4);
+    }
+    
+    /**
+     * Create a fingerprint for an element
+     * @param element The element information
+     * @return An element fingerprint
+     */
+    public ElementFingerprint createFingerprint(ElementInfo element) {
+        ElementFingerprint fingerprint = new ElementFingerprint();
+        
+        // Set basic properties
+        fingerprint.setTagName(element.getTagName());
+        fingerprint.setTextContent(element.getTextContent());
+        fingerprint.setSelector(element.getSelector());
+        fingerprint.setXpath(element.getXpath());
+        
+        // Add attributes with weights
+        Map<String, Double> weightedAttributes = new HashMap<>();
+        for (String attrName : element.getAttributeNames()) {
+            String attrValue = element.getAttribute(attrName);
+            double weight = attributeImportance.getOrDefault(attrName, 0.3);
+            weightedAttributes.put(attrName + "=" + attrValue, weight);
+        }
+        fingerprint.setWeightedAttributes(weightedAttributes);
+        
+        // Generate fingerprint ID
+        String fingerprintId = generateFingerprintId(element);
+        fingerprint.setFingerprintId(fingerprintId);
+        
+        // Cache the fingerprint
+        fingerprintCache.put(fingerprintId, fingerprint);
+        
+        return fingerprint;
+    }
+    
+    /**
+     * Find an element on the page using its fingerprint
+     * @param page The Playwright page
+     * @param fingerprint The element fingerprint
+     * @return The selector for the element, or null if not found
+     */
+    public String findElementByFingerprint(Page page, ElementFingerprint fingerprint) {
+        try {
+            // Try the original selector first
+            if (fingerprint.getSelector() != null) {
+                if (isElementPresent(page, fingerprint.getSelector())) {
+                    return fingerprint.getSelector();
+                }
+            }
+            
+            // Find candidate elements
+            List<Map<String, Object>> candidates = findCandidateElements(page, fingerprint);
+            
+            if (candidates.isEmpty()) {
+                return null;
+            }
+            
+            // Calculate similarity scores
+            List<ElementMatch> matches = new ArrayList<>();
+            for (Map<String, Object> candidate : candidates) {
+                double score = calculateSimilarityScore(fingerprint, candidate);
+                String selector = (String) candidate.get("selector");
+                matches.add(new ElementMatch(selector, score));
+            }
+            
+            // Sort by score (higher is better)
+            matches.sort(Comparator.comparing(ElementMatch::getScore).reversed());
+            
+            // Return the best match if score is high enough
+            if (!matches.isEmpty() && matches.get(0).getScore() >= 0.6) {
+                return matches.get(0).getSelector();
+            }
+            
+            return null;
+        } catch (Exception e) {
+            logger.error("Error finding element by fingerprint", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Recognize an element across page changes
+     * @param page The Playwright page
+     * @param elementId The element's fingerprint ID
+     * @return The new selector for the element, or null if not found
+     */
+    public String recognizeElement(Page page, String elementId) {
+        ElementFingerprint fingerprint = fingerprintCache.get(elementId);
+        if (fingerprint == null) {
+            return null;
+        }
+        
+        return findElementByFingerprint(page, fingerprint);
+    }
+    
+    /**
+     * Get element information by selector
+     * @param page The Playwright page
+     * @param selector The element selector
+     * @return Element information
+     */
+    public ElementInfo getElementInfo(Page page, String selector) {
+        try {
+            Map<String, Object> elementData = (Map<String, Object>) page.evaluate(
+                "selector => {" +
+                "  const element = document.querySelector(selector);" +
+                "  if (!element) return null;" +
+                "  const result = {" +
+                "    tagName: element.tagName.toLowerCase()," +
+                "    textContent: element.textContent.trim()," +
+                "    attributes: {}," +
+                "    boundingBox: element.getBoundingClientRect().toJSON()" +
+                "  };" +
+                "  for (const attr of element.attributes) {" +
+                "    result.attributes[attr.name] = attr.value;" +
+                "  }" +
+                "  return result;" +
+                "}", selector);
+            
+            if (elementData == null) {
+                return null;
+            }
+            
+            ElementInfo info = new ElementInfo();
+            info.setSelector(selector);
+            info.setTagName((String) elementData.get("tagName"));
+            info.setTextContent((String) elementData.get("textContent"));
+            
+            // Set XPath
+            String xpath = (String) page.evaluate(
+                "selector => {" +
+                "  const element = document.querySelector(selector);" +
+                "  if (!element) return null;" +
+                "  const getElementXPath = function(element) {" +
+                "    if (element.id) return `//*[@id='${element.id}']`;" +
+                "    if (element === document.body) return '/html/body';" +
+                "    let ix = 0;" +
+                "    const siblings = element.parentNode.childNodes;" +
+                "    for (let i = 0; i < siblings.length; i++) {" +
+                "      const sibling = siblings[i];" +
+                "      if (sibling === element) break;" +
+                "      if (sibling.nodeType === 1 && sibling.tagName === element.tagName) ix++;" +
+                "    }" +
+                "    return getElementXPath(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';" +
+                "  };" +
+                "  return getElementXPath(element);" +
+                "}", selector);
+            info.setXpath(xpath);
+            
+            // Add attributes
+            Map<String, Object> attributes = (Map<String, Object>) elementData.get("attributes");
+            if (attributes != null) {
+                for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                    info.addAttribute(entry.getKey(), entry.getValue().toString());
+                }
+            }
+            
+            return info;
+        } catch (Exception e) {
+            logger.error("Error getting element info", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Check if an element is present on the page
+     * @param page The Playwright page
+     * @param selector The element selector
+     * @return True if the element is present, false otherwise
+     */
+    private boolean isElementPresent(Page page, String selector) {
+        try {
+            Object result = page.evaluate("selector => !!document.querySelector(selector)", selector);
+            return Boolean.TRUE.equals(result);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Find candidate elements that match the fingerprint tag
+     * @param page The Playwright page
+     * @param fingerprint The element fingerprint
+     * @return A list of candidate elements
+     */
+    private List<Map<String, Object>> findCandidateElements(Page page, ElementFingerprint fingerprint) {
+        try {
+            String tagName = fingerprint.getTagName() != null ? fingerprint.getTagName() : "*";
+            
+            // Build a query to find similar elements
+            String query = "tagName => {" +
+                           "  const elements = document.getElementsByTagName(tagName);" +
+                           "  const results = [];" +
+                           "  for (let i = 0; i < elements.length; i++) {" +
+                           "    const element = elements[i];" +
+                           "    const result = {" +
+                           "      tagName: element.tagName.toLowerCase()," +
+                           "      textContent: element.textContent.trim()," +
+                           "      attributes: {}," +
+                           "      selector: null" +
+                           "    };" +
+                           "    for (const attr of element.attributes) {" +
+                           "      result.attributes[attr.name] = attr.value;" +
+                           "    }" +
+                           "    // Generate a simple unique selector" +
+                           "    if (element.id) {" +
+                           "      result.selector = '#' + element.id;" +
+                           "    } else if (element.className) {" +
+                           "      const uniqueClass = element.className.split(' ').find(cls => {" +
+                           "        return document.getElementsByClassName(cls).length === 1;" +
+                           "      });" +
+                           "      if (uniqueClass) {" +
+                           "        result.selector = element.tagName.toLowerCase() + '.' + uniqueClass;" +
+                           "      }" +
+                           "    }" +
+                           "    if (!result.selector) {" +
+                           "      // Use attribute if unique" +
+                           "      for (const attr of element.attributes) {" +
+                           "        if (attr.name !== 'class' && attr.name !== 'style') {" +
+                           "          const selector = `${element.tagName.toLowerCase()}[${attr.name}=\"${attr.value}\"]`;" +
+                           "          if (document.querySelectorAll(selector).length === 1) {" +
+                           "            result.selector = selector;" +
+                           "            break;" +
+                           "          }" +
+                           "        }" +
+                           "      }" +
+                           "    }" +
+                           "    if (!result.selector) {" +
+                           "      // Use position as last resort" +
+                           "      const siblings = Array.from(element.parentNode.children)" +
+                           "        .filter(el => el.tagName === element.tagName);" +
+                           "      const index = siblings.indexOf(element);" +
+                           "      result.selector = `${element.tagName.toLowerCase()}:nth-child(${index + 1})`;" +
+                           "    }" +
+                           "    results.push(result);" +
+                           "  }" +
+                           "  return results;" +
+                           "}";
+            
+            Object rawResults = page.evaluate(query, tagName);
+            
+            if (!(rawResults instanceof List)) {
+                return Collections.emptyList();
+            }
+            
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> results = (List<Map<String, Object>>) rawResults;
+            
+            // Filter out candidates without selectors
+            return results.stream()
+                    .filter(result -> result.get("selector") != null)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error finding candidate elements", e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Calculate the similarity score between a fingerprint and a candidate element
+     * @param fingerprint The element fingerprint
+     * @param candidate The candidate element data
+     * @return A similarity score between 0 and 1
+     */
+    private double calculateSimilarityScore(ElementFingerprint fingerprint, Map<String, Object> candidate) {
+        double score = 0;
+        double totalWeight = 0;
+        
+        // Compare tag name (high importance)
+        String candidateTag = (String) candidate.get("tagName");
+        if (fingerprint.getTagName() != null && fingerprint.getTagName().equals(candidateTag)) {
+            score += 0.2;
+        }
+        totalWeight += 0.2;
+        
+        // Compare text content (medium-high importance)
+        String candidateText = (String) candidate.get("textContent");
+        if (fingerprint.getTextContent() != null && !fingerprint.getTextContent().isBlank() &&
+            candidateText != null && !candidateText.isBlank()) {
+            
+            // Calculate text similarity
+            double textSimilarity = calculateTextSimilarity(fingerprint.getTextContent(), candidateText);
+            score += 0.3 * textSimilarity;
+        }
+        totalWeight += 0.3;
+        
+        // Compare attributes (varying importance)
+        Map<String, Object> candidateAttrs = (Map<String, Object>) candidate.get("attributes");
+        if (candidateAttrs != null && !fingerprint.getWeightedAttributes().isEmpty()) {
+            double attrScore = 0;
+            double attrWeight = 0;
+            
+            for (Map.Entry<String, Double> entry : fingerprint.getWeightedAttributes().entrySet()) {
+                String[] parts = entry.getKey().split("=", 2);
+                if (parts.length != 2) continue;
+                
+                String attrName = parts[0];
+                String fpValue = parts[1];
+                Double weight = entry.getValue();
+                
+                if (candidateAttrs.containsKey(attrName)) {
+                    String candidateValue = (String) candidateAttrs.get(attrName);
+                    
+                    // For class attribute, check if key classes are present
+                    if (attrName.equals("class")) {
+                        double classSimilarity = calculateClassSimilarity(fpValue, candidateValue);
+                        attrScore += weight * classSimilarity;
+                    } else if (fpValue.equals(candidateValue)) {
+                        attrScore += weight;
+                    }
+                    
+                    attrWeight += weight;
+                }
+            }
+            
+            // Add weighted attribute score
+            if (attrWeight > 0) {
+                score += 0.5 * (attrScore / attrWeight);
+                totalWeight += 0.5;
+            }
+        }
+        
+        // Normalize score
+        return totalWeight > 0 ? score / totalWeight : 0;
+    }
+    
+    /**
+     * Calculate text similarity score
+     * @param text1 The first text
+     * @param text2 The second text
+     * @return A similarity score between 0 and 1
+     */
+    private double calculateTextSimilarity(String text1, String text2) {
+        if (text1 == null || text2 == null) {
+            return 0;
+        }
+        
+        // For exact match
+        if (text1.equals(text2)) {
+            return 1.0;
+        }
+        
+        // For substring match
+        if (text1.contains(text2) || text2.contains(text1)) {
+            double lengthRatio = Math.min(text1.length(), text2.length()) / 
+                               (double) Math.max(text1.length(), text2.length());
+            return 0.8 * lengthRatio;
+        }
+        
+        // For different but similar texts, use Levenshtein distance
+        int distance = calculateLevenshteinDistance(text1, text2);
+        int maxLength = Math.max(text1.length(), text2.length());
+        
+        return maxLength > 0 ? 1.0 - (distance / (double) maxLength) : 0;
+    }
+    
+    /**
+     * Calculate class similarity by comparing individual classes
+     * @param classes1 The first class string
+     * @param classes2 The second class string
+     * @return A similarity score between 0 and 1
+     */
+    private double calculateClassSimilarity(String classes1, String classes2) {
+        Set<String> set1 = new HashSet<>(Arrays.asList(classes1.split("\\s+")));
+        Set<String> set2 = new HashSet<>(Arrays.asList(classes2.split("\\s+")));
+        
+        // Count matching classes
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+        
+        // Calculate Jaccard similarity coefficient
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+        
+        return union.isEmpty() ? 0 : intersection.size() / (double) union.size();
+    }
+    
+    /**
+     * Calculate Levenshtein distance between two strings
+     * @param s1 The first string
+     * @param s2 The second string
+     * @return The Levenshtein distance
+     */
+    private int calculateLevenshteinDistance(String s1, String s2) {
+        int[] prev = new int[s2.length() + 1];
+        int[] curr = new int[s2.length() + 1];
+        
+        for (int j = 0; j < prev.length; j++) {
+            prev[j] = j;
+        }
+        
+        for (int i = 0; i < s1.length(); i++) {
+            curr[0] = i + 1;
+            for (int j = 0; j < s2.length(); j++) {
+                int cost = s1.charAt(i) == s2.charAt(j) ? 0 : 1;
+                curr[j + 1] = Math.min(Math.min(curr[j] + 1, prev[j + 1] + 1), prev[j] + cost);
+            }
+            int[] temp = prev;
+            prev = curr;
+            curr = temp;
+        }
+        
+        return prev[s2.length()];
+    }
+    
+    /**
+     * Generate a unique fingerprint ID for an element
+     * @param element The element information
+     * @return A fingerprint ID string
+     */
+    private String generateFingerprintId(ElementInfo element) {
+        StringBuilder idBuilder = new StringBuilder();
+        
+        // Add tag name
+        if (element.getTagName() != null) {
+            idBuilder.append(element.getTagName());
+        }
+        
+        // Add key attributes
+        for (String attrName : Arrays.asList("id", "name", "data-testid", "href", "src")) {
+            if (element.hasAttribute(attrName)) {
+                idBuilder.append("_").append(attrName).append("-").append(element.getAttribute(attrName));
+            }
+        }
+        
+        // Add a hash of text content if present
+        if (element.getTextContent() != null && !element.getTextContent().isBlank()) {
+            String text = element.getTextContent().trim();
+            if (text.length() > 20) {
+                text = text.substring(0, 20);
+            }
+            idBuilder.append("_text-").append(text.hashCode());
+        }
+        
+        return idBuilder.toString().replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
+    
+    /**
+     * Inner class to represent an element match with its score
+     */
+    private static class ElementMatch {
+        private final String selector;
+        private final double score;
+        
+        public ElementMatch(String selector, double score) {
+            this.selector = selector;
+            this.score = score;
+        }
+        
+        public String getSelector() {
+            return selector;
+        }
+        
+        public double getScore() {
+            return score;
+        }
+    }
+}
+
+package com.automation.api.services.ai;
+
+import com.automation.api.models.TestStep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * AI-powered service for Natural Language Processing of test steps
+ */
+@Service
+public class NLPService {
+    private static final Logger logger = LoggerFactory.getLogger(NLPService.class);
+    
+    // Patterns for matching action phrases
+    private final Map<String, List<Pattern>> actionPatterns = new HashMap<>();
+    
+    // Patterns for matching assertion phrases
+    private final Map<String, List<Pattern>> assertionPatterns = new HashMap<>();
+    
+    // Patterns for matching wait condition phrases
+    private final Map<String, List<Pattern>> waitPatterns = new HashMap<>();
+    
+    // Patterns for matching data input phrases
+    private final Map<String, List<Pattern>> dataPatterns = new HashMap<>();
+    
+    // Patterns for extracting entities from phrases
+    private final Map<String, Pattern> entityPatterns = new HashMap<>();
+    
+    public NLPService() {
+        initializeActionPatterns();
+        initializeAssertionPatterns();
+        initializeWaitPatterns();
+        initializeDataPatterns();
+        initializeEntityPatterns();
+    }
+    
+    /**
+     * Process natural language text to create a test step
+     * @param text The natural language text
+     * @return A TestStep object, or null if the text could not be parsed
+     */
+    public TestStep processNaturalLanguage(String text) {
+        try {
+            // Check for action patterns
+            TestStep actionStep = matchPatterns(text, actionPatterns, "action");
+            if (actionStep != null) {
+                return actionStep;
+            }
+            
+            // Check for assertion patterns
+            TestStep assertionStep = matchPatterns(text, assertionPatterns, "assertion");
+            if (assertionStep != null) {
+                return assertionStep;
+            }
+            
+            // Check for wait patterns
+            TestStep waitStep = matchPatterns(text, waitPatterns, "wait");
+            if (waitStep != null) {
+                return waitStep;
+            }
+            
+            // Check for data patterns
+            TestStep dataStep = matchPatterns(text, dataPatterns, "data");
+            if (dataStep != null) {
+                return dataStep;
+            }
+            
+            // If no patterns match, try generic processing
+            return processGenericText(text);
+        } catch (Exception e) {
+            logger.error("Error processing natural language text", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Generate a human-readable description for a test step
+     * @param step The test step
+     * @return A natural language description
+     */
+    public String generateStepDescription(TestStep step) {
+        String type = step.getType();
+        String action = step.getAction();
+        String selector = step.getSelector();
+        String value = step.getValue();
+        
+        StringBuilder description = new StringBuilder();
+        
+        try {
+            switch (type) {
+                case "action":
+                    generateActionDescription(description, action, selector, value);
+                    break;
+                case "assertion":
+                    generateAssertionDescription(description, action, selector, value);
+                    break;
+                case "wait":
+                    generateWaitDescription(description, action, selector, value);
+                    break;
+                case "data":
+                    generateDataDescription(description, action, selector, value, step.getAttributes());
+                    break;
+                default:
+                    description.append("Perform custom step");
+            }
+            
+            return description.toString();
+        } catch (Exception e) {
+            logger.error("Error generating step description", e);
+            return "Perform test step";
+        }
+    }
+    
+    /**
+     * Generate BDD-style Gherkin step text from a test step
+     * @param step The test step
+     * @param previousStepType The type of the previous step (for And/But keywords)
+     * @return A Gherkin step string
+     */
+    public String generateGherkinStep(TestStep step, String previousStepType) {
+        String keyword;
+        if (step.getType().equals(previousStepType)) {
+            keyword = "And";
+        } else {
+            switch (step.getType()) {
+                case "action":
+                    keyword = "When";
+                    break;
+                case "assertion":
+                    keyword = "Then";
+                    break;
+                case "wait":
+                    keyword = "When";
+                    break;
+                case "data":
+                    keyword = "When";
+                    break;
+                default:
+                    keyword = "Given";
+            }
+        }
+        
+        String description = generateGherkinStepText(step);
+        return keyword + " " + description;
+    }
+    
+    /**
+     * Match text against pattern collections to create a test step
+     * @param text The text to match
+     * @param patternMap The pattern collections to match against
+     * @param stepType The type of test step to create
+     * @return A TestStep object, or null if no patterns match
+     */
+    private TestStep matchPatterns(String text, Map<String, List<Pattern>> patternMap, String stepType) {
+        for (Map.Entry<String, List<Pattern>> entry : patternMap.entrySet()) {
+            String action = entry.getKey();
+            List<Pattern> patterns = entry.getValue();
+            
+            for (Pattern pattern : patterns) {
+                Matcher matcher = pattern.matcher(text);
+                if (matcher.matches()) {
+                    TestStep step = new TestStep();
+                    step.setId(UUID.randomUUID().toString());
+                    step.setType(stepType);
+                    step.setAction(action);
+                    step.setDescription(text);
+                    step.setTimestamp(System.currentTimeMillis());
+                    
+                    // Extract entities from the match
+                    Map<String, String> entities = extractEntities(matcher);
+                    if (entities.containsKey("selector")) {
+                        step.setSelector(entities.get("selector"));
+                    }
+                    if (entities.containsKey("value")) {
+                        step.setValue(entities.get("value"));
+                    }
+                    if (entities.containsKey("text")) {
+                        step.setValue(entities.get("text"));
+                    }
+                    if (entities.containsKey("attribute")) {
+                        step.setAttributes(Map.of("attribute", entities.get("attribute")));
+                    }
+                    if (entities.containsKey("timeout")) {
+                        step.setValue(entities.get("timeout"));
+                    }
+                    
+                    return step;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extract entities from a regex matcher
+     * @param matcher The regex matcher
+     * @return A map of entity names to values
+     */
+    private Map<String, String> extractEntities(Matcher matcher) {
+        Map<String, String> entities = new HashMap<>();
+        
+        for (String entityName : Arrays.asList("selector", "value", "text", "attribute", "timeout", "element")) {
+            try {
+                String value = matcher.group(entityName);
+                if (value != null) {
+                    // If this is an "element" entity, convert it to a selector
+                    if (entityName.equals("element")) {
+                        String selector = convertElementToSelector(value);
+                        entities.put("selector", selector);
+                    } else {
+                        entities.put(entityName, value);
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Group doesn't exist in this pattern
+            }
+        }
+        
+        return entities;
+    }
+    
+    /**
+     * Convert an element description to a selector
+     * @param elementDesc The element description
+     * @return A CSS selector
+     */
+    private String convertElementToSelector(String elementDesc) {
+        // Check for specific element patterns
+        for (Map.Entry<String, Pattern> entry : entityPatterns.entrySet()) {
+            Matcher matcher = entry.getValue().matcher(elementDesc);
+            if (matcher.matches()) {
+                switch (entry.getKey()) {
+                    case "id":
+                        return "#" + matcher.group(1);
+                    case "class":
+                        return "." + matcher.group(1);
+                    case "tag":
+                        return matcher.group(1);
+                    case "name":
+                        return "[name=\"" + matcher.group(1) + "\"]";
+                    case "text":
+                        String tag = "div";
+                        String text = matcher.group(1);
+                        try {
+                            tag = matcher.group(2) != null ? matcher.group(2) : "div";
+                        } catch (IllegalArgumentException ignored) {
+                            // Group doesn't exist in this pattern
+                        }
+                        return tag + ":text(\"" + text + "\")";
+                    case "testid":
+                        return "[data-testid=\"" + matcher.group(1) + "\"]";
+                }
+            }
+        }
+        
+        // Default case - just use as-is, assuming it's a valid selector
+        return elementDesc;
+    }
+    
+    /**
+     * Process text that doesn't match any predefined patterns
+     * @param text The text to process
+     * @return A TestStep object, or null if the text couldn't be processed
+     */
+    private TestStep processGenericText(String text) {
+        // Try to determine the most likely step type
+        String lowerText = text.toLowerCase();
+        TestStep step = new TestStep();
+        step.setId(UUID.randomUUID().toString());
+        step.setDescription(text);
+        step.setTimestamp(System.currentTimeMillis());
+        
+        if (lowerText.contains("click") || lowerText.contains("press") || lowerText.contains("select")) {
+            step.setType("action");
+            step.setAction("click");
+            
+            // Try to find an element reference
+            String element = extractElement(text);
+            if (element != null) {
+                step.setSelector(convertElementToSelector(element));
+            }
+        } else if (lowerText.contains("should") || lowerText.contains("verify") || 
+                   lowerText.contains("check") || lowerText.contains("assert")) {
+            step.setType("assertion");
+            
+            if (lowerText.contains("visible") || lowerText.contains("displayed") || 
+                lowerText.contains("present") || lowerText.contains("appear")) {
+                step.setAction("visible");
+            } else if (lowerText.contains("text") || lowerText.contains("content")) {
+                step.setAction("text");
+                String textValue = extractQuotedText(text);
+                if (textValue != null) {
+                    step.setValue(textValue);
+                }
+            } else {
+                step.setAction("custom");
+            }
+            
+            // Try to find an element reference
+            String element = extractElement(text);
+            if (element != null) {
+                step.setSelector(convertElementToSelector(element));
+            }
+        } else if (lowerText.contains("wait") || lowerText.contains("until")) {
+            step.setType("wait");
+            
+            if (lowerText.contains("visible") || lowerText.contains("displayed") || 
+                lowerText.contains("appear")) {
+                step.setAction("visible");
+            } else if (lowerText.contains("clickable") || lowerText.contains("enabled")) {
+                step.setAction("clickable");
+            } else if (lowerText.contains("navigation") || lowerText.contains("load")) {
+                step.setAction("navigation");
+            } else if (lowerText.contains("network") || lowerText.contains("ajax") || 
+                       lowerText.contains("request")) {
+                step.setAction("network");
+            } else {
+                step.setAction("fixed");
+                step.setValue("5000"); // Default timeout
+            }
+            
+            // Try to find an element reference
+            String element = extractElement(text);
+            if (element != null) {
+                step.setSelector(convertElementToSelector(element));
+            }
+            
+            // Try to find a timeout value
+            String timeout = extractTimeout(text);
+            if (timeout != null) {
+                step.setValue(timeout);
+            }
+        } else if (lowerText.contains("enter") || lowerText.contains("type") || 
+                   lowerText.contains("fill") || lowerText.contains("input")) {
+            step.setType("data");
+            step.setAction("input");
+            
+            // Try to find an element reference
+            String element = extractElement(text);
+            if (element != null) {
+                step.setSelector(convertElementToSelector(element));
+            }
+            
+            // Try to find input value
+            String value = extractQuotedText(text);
+            if (value != null) {
+                step.setValue(value);
+            } else {
+                // Check for variable references
+                String variable = extractVariable(text);
+                if (variable != null) {
+                    step.setValue("{" + variable + "}");
+                    step.setAttributes(Map.of("parameterized", "true", "variableName", variable));
+                }
+            }
+        } else {
+            // Could not determine step type
+            return null;
+        }
+        
+        return step;
+    }
+    
+    /**
+     * Extract quoted text from a string
+     * @param text The text to extract from
+     * @return The text within quotes, or null if not found
+     */
+    private String extractQuotedText(String text) {
+        Pattern pattern = Pattern.compile(".*?[\"']([^\"']+)[\"'].*");
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
+    /**
+     * Extract an element reference from text
+     * @param text The text to extract from
+     * @return An element reference, or null if not found
+     */
+    private String extractElement(String text) {
+        // Check for common element reference patterns
+        Pattern pattern = Pattern.compile(".*?(the|on|for|in)\\s+([\\w\\s.-]+?(button|link|input|field|element|dropdown|select|checkbox|radio|tab|menu|item|icon|image)).*", 
+                Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.matches()) {
+            return matcher.group(2).trim();
+        }
+        
+        // Check for references with id/class/etc.
+        for (Map.Entry<String, Pattern> entry : entityPatterns.entrySet()) {
+            matcher = entry.getValue().matcher(text);
+            if (matcher.find()) {
+                return matcher.group(0);
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extract a timeout value from text
+     * @param text The text to extract from
+     * @return A timeout value in milliseconds, or null if not found
+     */
+    private String extractTimeout(String text) {
+        // Check for timeout patterns like "5 seconds", "500ms", etc.
+        Pattern secondsPattern = Pattern.compile(".*?([0-9]+)\\s*seconds?.*", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = secondsPattern.matcher(text);
+        if (matcher.matches()) {
+            int seconds = Integer.parseInt(matcher.group(1));
+            return String.valueOf(seconds * 1000);
+        }
+        
+        Pattern msPattern = Pattern.compile(".*?([0-9]+)\\s*ms.*", Pattern.CASE_INSENSITIVE);
+        matcher = msPattern.matcher(text);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        
+        Pattern minutesPattern = Pattern.compile(".*?([0-9]+)\\s*minutes?.*", Pattern.CASE_INSENSITIVE);
+        matcher = minutesPattern.matcher(text);
+        if (matcher.matches()) {
+            int minutes = Integer.parseInt(matcher.group(1));
+            return String.valueOf(minutes * 60 * 1000);
+        }
+        
+        // Just a plain number
+        Pattern numberPattern = Pattern.compile(".*?wait\\s+([0-9]+)\\s+.*", Pattern.CASE_INSENSITIVE);
+        matcher = numberPattern.matcher(text);
+        if (matcher.matches()) {
+            // Assume milliseconds if just a number
+            return matcher.group(1);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extract a variable reference from text
+     * @param text The text to extract from
+     * @return A variable name, or null if not found
+     */
+    private String extractVariable(String text) {
+        Pattern variablePattern = Pattern.compile(".*?\\{([\\w_]+)\\}.*");
+        Matcher matcher = variablePattern.matcher(text);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        
+        Pattern namedVarPattern = Pattern.compile(".*?variable\\s+[\"']?([\\w_]+)[\"']?.*", Pattern.CASE_INSENSITIVE);
+        matcher = namedVarPattern.matcher(text);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Generate text for an action step description
+     */
+    private void generateActionDescription(StringBuilder description, String action, String selector, String value) {
+        switch (action) {
+            case "navigate":
+                description.append("Navigate to ").append(value);
+                break;
+            case "click":
+                description.append("Click on ");
+                appendSelectorDescription(description, selector);
+                break;
+            case "select":
+                description.append("Select option \"").append(value).append("\" from ");
+                appendSelectorDescription(description, selector);
+                break;
+            case "submit":
+                description.append("Submit form ");
+                appendSelectorDescription(description, selector);
+                break;
+            default:
+                description.append("Perform action \"").append(action).append("\"");
+                if (selector != null) {
+                    description.append(" on ");
+                    appendSelectorDescription(description, selector);
+                }
+        }
+    }
+    
+    /**
+     * Generate text for an assertion step description
+     */
+    private void generateAssertionDescription(StringBuilder description, String action, String selector, String value) {
+        description.append("Verify that ");
+        
+        switch (action) {
+            case "visible":
+                appendSelectorDescription(description, selector);
+                description.append(" is visible");
+                break;
+            case "text":
+                appendSelectorDescription(description, selector);
+                description.append(" contains the text \"").append(value).append("\"");
+                break;
+            case "attribute":
+                appendSelectorDescription(description, selector);
+                if (value != null && selector != null) {
+                    description.append(" has attribute value \"").append(value).append("\"");
+                }
+                break;
+            case "count":
+                description.append("there are ").append(value).append(" elements matching ");
+                appendSelectorDescription(description, selector);
+                break;
+            case "url":
+                description.append("the URL contains \"").append(value).append("\"");
+                break;
+            case "title":
+                description.append("the page title is \"").append(value).append("\"");
+                break;
+            default:
+                description.append("assertion \"").append(action).append("\" passes");
+        }
+    }
+    
+    /**
+     * Generate text for a wait step description
+     */
+    private void generateWaitDescription(StringBuilder description, String action, String selector, String value) {
+        description.append("Wait for ");
+        
+        switch (action) {
+            case "visible":
+                appendSelectorDescription(description, selector);
+                description.append(" to be visible");
+                break;
+            case "clickable":
+                appendSelectorDescription(description, selector);
+                description.append(" to be clickable");
+                break;
+            case "text":
+                description.append("text to appear in ");
+                appendSelectorDescription(description, selector);
+                break;
+            case "navigation":
+                description.append("page navigation to complete");
+                break;
+            case "network":
+                description.append("network activity to finish");
+                break;
+            case "fixed":
+                description.append(value).append(" milliseconds");
+                break;
+            default:
+                description.append("condition \"").append(action).append("\"");
+        }
+        
+        if (value != null && !action.equals("fixed")) {
+            description.append(" (timeout: ").append(value).append("ms)");
+        }
+    }
+    
+    /**
+     * Generate text for a data input step description
+     */
+    private void generateDataDescription(StringBuilder description, String action, String selector, String value, Map<String, String> attributes) {
+        switch (action) {
+            case "input":
+                description.append("Enter ");
+                
+                boolean isParameterized = attributes != null && "true".equals(attributes.get("parameterized"));
+                if (isParameterized) {
+                    String varName = attributes.get("variableName");
+                    description.append("variable {").append(varName).append("} in ");
+                } else {
+                    // Check if this is a password field
+                    boolean isPassword = selector != null && selector.toLowerCase().contains("password");
+                    String displayValue = isPassword ? "********" : value;
+                    description.append("\"").append(displayValue).append("\" in ");
+                }
+                
+                appendSelectorDescription(description, selector);
+                break;
+            default:
+                description.append("Input data for ");
+                appendSelectorDescription(description, selector);
+        }
+    }
+    
+    /**
+     * Append a human-readable description of a selector
+     */
+    private void appendSelectorDescription(StringBuilder description, String selector) {
+        if (selector == null) {
+            description.append("element");
+            return;
+        }
+        
+        if (selector.startsWith("#")) {
+            description.append("element with ID \"").append(selector.substring(1)).append("\"");
+        } else if (selector.startsWith(".")) {
+            description.append("element with class \"").append(selector.substring(1)).append("\"");
+        } else if (selector.startsWith("[data-testid=")) {
+            String testId = selector.substring("[data-testid=".length(), selector.length() - 1).replace("\"", "");
+            description.append("element with test ID \"").append(testId).append("\"");
+        } else if (selector.startsWith("[") && selector.contains("=")) {
+            int equalsIndex = selector.indexOf('=');
+            String attrName = selector.substring(1, equalsIndex);
+            String attrValue = selector.substring(equalsIndex + 1, selector.length() - 1).replace("\"", "");
+            description.append("element with ").append(attrName).append(" \"").append(attrValue).append("\"");
+        } else if (!selector.contains(" ") && !selector.contains(">") && !selector.contains("[")) {
+            // Simple tag name
+            description.append(selector).append(" element");
+        } else {
+            description.append("element matching \"").append(selector).append("\"");
+        }
+    }
+    
+    /**
+     * Generate Gherkin step text from a test step
+     */
+    private String generateGherkinStepText(TestStep step) {
+        String type = step.getType();
+        String action = step.getAction();
+        String selector = step.getSelector();
+        String value = step.getValue();
+        
+        StringBuilder text = new StringBuilder();
+        
+        switch (type) {
+            case "action":
+                switch (action) {
+                    case "navigate":
+                        text.append("I navigate to \"").append(value).append("\"");
+                        break;
+                    case "click":
+                        text.append("I click on ");
+                        appendGherkinSelector(text, selector);
+                        break;
+                    case "select":
+                        text.append("I select the option \"").append(value).append("\" from ");
+                        appendGherkinSelector(text, selector);
+                        break;
+                    case "submit":
+                        text.append("I submit the form ");
+                        appendGherkinSelector(text, selector);
+                        break;
+                    default:
+                        text.append("I perform the action \"").append(action).append("\"");
+                }
+                break;
+            case "assertion":
+                switch (action) {
+                    case "visible":
+                        appendGherkinSelector(text, selector);
+                        text.append(" should be visible");
+                        break;
+                    case "text":
+                        appendGherkinSelector(text, selector);
+                        text.append(" should contain the text \"").append(value).append("\"");
+                        break;
+                    case "attribute":
+                        Map<String, String> attrs = step.getAttributes();
+                        String attribute = attrs != null ? attrs.get("attribute") : "attribute";
+                        appendGherkinSelector(text, selector);
+                        text.append(" should have the attribute \"").append(attribute)
+                            .append("\" with value \"").append(value).append("\"");
+                        break;
+                    case "count":
+                        text.append("there should be ").append(value).append(" elements matching ");
+                        appendGherkinSelector(text, selector);
+                        break;
+                    case "url":
+                        text.append("the URL should contain \"").append(value).append("\"");
+                        break;
+                    case "title":
+                        text.append("the page title should be \"").append(value).append("\"");
+                        break;
+                    default:
+                        text.append("the assertion \"").append(action).append("\" should pass");
+                }
+                break;
+            case "wait":
+                switch (action) {
+                    case "visible":
+                        text.append("I wait for ");
+                        appendGherkinSelector(text, selector);
+                        text.append(" to be visible");
+                        break;
+                    case "clickable":
+                        text.append("I wait for ");
+                        appendGherkinSelector(text, selector);
+                        text.append(" to be clickable");
+                        break;
+                    case "text":
+                        Map<String, String> attrs = step.getAttributes();
+                        String waitText = attrs != null ? attrs.get("text") : "";
+                        text.append("I wait for the text \"").append(waitText).append("\" to appear in ");
+                        appendGherkinSelector(text, selector);
+                        break;
+                    case "navigation":
+                        text.append("I wait for the page navigation to complete");
+                        break;
+                    case "network":
+                        text.append("I wait for the network to be idle");
+                        break;
+                    case "fixed":
+                        text.append("I wait for ").append(value).append(" milliseconds");
+                        break;
+                    default:
+                        text.append("I wait for the condition \"").append(action).append("\"");
+                }
+                break;
+            case "data":
+                Map<String, String> attrs = step.getAttributes();
+                boolean isParameterized = attrs != null && "true".equals(attrs.get("parameterized"));
+                if (isParameterized) {
+                    String varName = attrs.get("variableName");
+                    text.append("I enter the {").append(varName).append("} in ");
+                } else {
+                    // Check if this is a password field
+                    boolean isPassword = selector != null && selector.toLowerCase().contains("password");
+                    String displayValue = isPassword ? "****" : value;
+                    text.append("I enter \"").append(displayValue).append("\" in ");
+                }
+                appendGherkinSelector(text, selector);
+                break;
+        }
+        
+        return text.toString();
+    }
+    
+    /**
+     * Append a Gherkin-formatted selector reference
+     */
+    private void appendGherkinSelector(StringBuilder text, String selector) {
+        if (selector == null) {
+            text.append("the element");
+            return;
+        }
+        
+        if (selector.startsWith("#")) {
+            text.append("the element with ID \"").append(selector.substring(1)).append("\"");
+        } else if (selector.startsWith(".")) {
+            text.append("the element with class \"").append(selector.substring(1)).append("\"");
+        } else if (selector.startsWith("[data-testid=")) {
+            String testId = selector.substring("[data-testid=".length(), selector.length() - 1).replace("\"", "");
+            text.append("the element with test ID \"").append(testId).append("\"");
+        } else if (selector.startsWith("[") && selector.contains("=")) {
+            int equalsIndex = selector.indexOf('=');
+            String attrName = selector.substring(1, equalsIndex);
+            String attrValue = selector.substring(equalsIndex + 1, selector.length() - 1).replace("\"", "");
+            text.append("the element with ").append(attrName).append(" \"").append(attrValue).append("\"");
+        } else if (!selector.contains(" ") && !selector.contains(">") && !selector.contains("[")) {
+            // Simple tag name
+            text.append("the ").append(selector).append(" element");
+        } else {
+            text.append("\"").append(selector).append("\"");
+        }
+    }
+    
+    /**
+     * Initialize patterns for matching action phrases
+     */
+    private void initializeActionPatterns() {
+        // Click patterns
+        List<Pattern> clickPatterns = Arrays.asList(
+            Pattern.compile(".*?click (?:on )?(?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?press (?:on )?(?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?tap (?:on )?(?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE)
+        );
+        actionPatterns.put("click", clickPatterns);
+        
+        // Navigate patterns
+        List<Pattern> navigatePatterns = Arrays.asList(
+            Pattern.compile(".*?(?:navigate|go) to [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?open (?:the )?(?:url|page|website) [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?browse to [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        actionPatterns.put("navigate", navigatePatterns);
+        
+        // Select patterns
+        List<Pattern> selectPatterns = Arrays.asList(
+            Pattern.compile(".*?select (?:the )?option [\"'](?<value>[^\"']+)[\"'] from (?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?choose [\"'](?<value>[^\"']+)[\"'] from (?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE)
+        );
+        actionPatterns.put("select", selectPatterns);
+        
+        // Submit patterns
+        List<Pattern> submitPatterns = Arrays.asList(
+            Pattern.compile(".*?submit (?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?send (?:the )?(?<element>.+)$", Pattern.CASE_INSENSITIVE)
+        );
+        actionPatterns.put("submit", submitPatterns);
+    }
+    
+    /**
+     * Initialize patterns for matching assertion phrases
+     */
+    private void initializeAssertionPatterns() {
+        // Visibility assertions
+        List<Pattern> visiblePatterns = Arrays.asList(
+            Pattern.compile(".*?(?<element>.+) should be visible.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?(?<element>.+) should (?:be displayed|appear).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?(?<element>.+) is visible.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?check (?:that )?(?<element>.+) is displayed.*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("visible", visiblePatterns);
+        
+        // Text assertions
+        List<Pattern> textPatterns = Arrays.asList(
+            Pattern.compile(".*?(?<element>.+) should (?:have|contain) (?:the )?text [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?(?<element>.+) contains [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?check (?:that )?(?<element>.+) has (?:the )?text [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("text", textPatterns);
+        
+        // URL assertions
+        List<Pattern> urlPatterns = Arrays.asList(
+            Pattern.compile(".*?(?:the )?url should (?:be|contain) [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?(?:the )?url (?:is|contains) [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?check (?:that )?(?:the )?url (?:is|contains) [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("url", urlPatterns);
+        
+        // Title assertions
+        List<Pattern> titlePatterns = Arrays.asList(
+            Pattern.compile(".*?(?:the )?(?:page )?title should be [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?(?:the )?(?:page )?title is [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?check (?:that )?(?:the )?(?:page )?title is [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("title", titlePatterns);
+        
+        // Attribute assertions
+        List<Pattern> attributePatterns = Arrays.asList(
+            Pattern.compile(".*?(?<element>.+) should have (?:the )?attribute [\"'](?<attribute>[^\"']+)[\"'] with value [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?(?<element>.+) has (?:the )?attribute [\"'](?<attribute>[^\"']+)[\"'] (?:with|equal to) [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("attribute", attributePatterns);
+        
+        // Count assertions
+        List<Pattern> countPatterns = Arrays.asList(
+            Pattern.compile(".*?there should be (?<value>\\d+) (?:elements? matching )?(?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?verify (?:that )?there (?:are|is) (?<value>\\d+) (?:elements? matching )?(?<element>.+).*", Pattern.CASE_INSENSITIVE)
+        );
+        assertionPatterns.put("count", countPatterns);
+    }
+    
+    /**
+     * Initialize patterns for matching wait condition phrases
+     */
+    private void initializeWaitPatterns() {
+        // Wait for visibility
+        List<Pattern> visiblePatterns = Arrays.asList(
+            Pattern.compile(".*?wait for (?<element>.+) to (?:be visible|appear|display).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait until (?<element>.+) (?:is visible|appears|displays).*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("visible", visiblePatterns);
+        
+        // Wait for clickable
+        List<Pattern> clickablePatterns = Arrays.asList(
+            Pattern.compile(".*?wait for (?<element>.+) to be clickable.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait until (?<element>.+) is clickable.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait for (?<element>.+) to be enabled.*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("clickable", clickablePatterns);
+        
+        // Wait for text
+        List<Pattern> textPatterns = Arrays.asList(
+            Pattern.compile(".*?wait for (?:the )?text [\"'](?<text>[^\"']+)[\"'] (?:to appear in|in) (?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait until (?<element>.+) contains (?:the )?text [\"'](?<text>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("text", textPatterns);
+        
+        // Wait for navigation
+        List<Pattern> navigationPatterns = Arrays.asList(
+            Pattern.compile(".*?wait for (?:the )?(?:page )?navigation (?:to complete|to finish).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait (?:for|until) (?:the )?page (?:loads|is loaded).*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("navigation", navigationPatterns);
+        
+        // Wait for network idle
+        List<Pattern> networkPatterns = Arrays.asList(
+            Pattern.compile(".*?wait for (?:the )?network (?:to be idle|to finish|activity to complete).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait (?:for|until) (?:all )?(?:network requests|ajax calls|requests) (?:finish|complete|end).*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("network", networkPatterns);
+        
+        // Fixed wait
+        List<Pattern> fixedPatterns = Arrays.asList(
+            Pattern.compile(".*?wait (?:for )?(?<timeout>\\d+) (?:seconds|s).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait (?:for )?(?<timeout>\\d+) (?:milliseconds|ms).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?wait (?:for )?(?<timeout>\\d+).*", Pattern.CASE_INSENSITIVE)
+        );
+        waitPatterns.put("fixed", fixedPatterns);
+    }
+    
+    /**
+     * Initialize patterns for matching data input phrases
+     */
+    private void initializeDataPatterns() {
+        // Input data
+        List<Pattern> inputPatterns = Arrays.asList(
+            Pattern.compile(".*?(?:enter|type|input) [\"'](?<value>[^\"']+)[\"'] (?:in|into) (?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?(?:enter|type|input) (?:the value )?[\"'](?<value>[^\"']+)[\"'] (?:in|into) (?:the )field (?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?fill (?<element>.+) with [\"'](?<value>[^\"']+)[\"'].*", Pattern.CASE_INSENSITIVE)
+        );
+        dataPatterns.put("input", inputPatterns);
+        
+        // Input variables
+        List<Pattern> variablePatterns = Arrays.asList(
+            Pattern.compile(".*?(?:enter|type|input) (?:the )?variable [\"']?(?<value>[\\w_]+)[\"']? (?:in|into) (?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?(?:enter|type|input) \\{(?<value>[\\w_]+)\\} (?:in|into) (?<element>.+).*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?fill (?<element>.+) with (?:the )?variable [\"']?(?<value>[\\w_]+)[\"']?.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*?fill (?<element>.+) with \\{(?<value>[\\w_]+)\\}.*", Pattern.CASE_INSENSITIVE)
+        );
+        dataPatterns.put("inputVariable", variablePatterns);
+    }
+    
+    /**
+     * Initialize patterns for extracting entities
+     */
+    private void initializeEntityPatterns() {
+        entityPatterns.put("id", Pattern.compile("element with (?:the )?id [\"']?([\\w-]+)[\"']?", Pattern.CASE_INSENSITIVE));
+        entityPatterns.put("class", Pattern.compile("element with (?:the )?class [\"']?([\\w-]+)[\"']?", Pattern.CASE_INSENSITIVE));
+        entityPatterns.put("tag", Pattern.compile("(?:the )?([a-zA-Z][a-zA-Z0-9]*) element", Pattern.CASE_INSENSITIVE));
+        entityPatterns.put("name", Pattern.compile("element with (?:the )?name [\"']?([\\w-]+)[\"']?", Pattern.CASE_INSENSITIVE));
+        entityPatterns.put("text", Pattern.compile("element (?:with|containing) (?:the )?text [\"']?([^\"']+)[\"']?", Pattern.CASE_INSENSITIVE));
+        entityPatterns.put("testid", Pattern.compile("element with (?:the )?(?:test-id|data-testid) [\"']?([\\w-]+)[\"']?", Pattern.CASE_INSENSITIVE));
+    }
+}
+
+
+package com.automation.api.services.ai;
+
+import com.automation.api.models.TestCase;
+import com.automation.api.models.TestStep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+/**
+ * AI-powered service for test optimization and suggestions
+ */
+@Service
+public class TestOptimizationService {
+    private static final Logger logger = LoggerFactory.getLogger(TestOptimizationService.class);
+    
+    /**
+     * Analyze a test case and provide optimization suggestions
+     * @param testCase The test case to analyze
+     * @return A list of optimization suggestions
+     */
+    public List<OptimizationSuggestion> analyzeTestCase(TestCase testCase) {
+        if (testCase == null || testCase.getSteps() == null || testCase.getSteps().isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        
+        try {
+            // Check for wait condition suggestions
+            suggestions.addAll(analyzeWaitConditions(testCase));
+            
+            // Check for redundant steps
+            suggestions.addAll(findRedundantSteps(testCase));
+            
+            // Check for potential flakiness
+            suggestions.addAll(identifyPotentialFlakiness(testCase));
+            
+            // Check for assertions
+            suggestions.addAll(analyzeAssertions(testCase));
+            
+            // Check for selectors
+            suggestions.addAll(analyzeSelectorQuality(testCase));
+            
+            return suggestions;
+        } catch (Exception e) {
+            logger.error("Error analyzing test case", e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Apply optimization suggestions to a test case
+     * @param testCase The test case to optimize
+     * @param suggestionIds The IDs of suggestions to apply
+     * @return The optimized test case
+     */
+    public TestCase applyOptimizations(TestCase testCase, List<String> suggestionIds) {
+        if (testCase == null || suggestionIds == null || suggestionIds.isEmpty()) {
+            return testCase;
+        }
+        
+        try {
+            // Create a copy of the test case
+            TestCase optimizedTest = cloneTestCase(testCase);
+            
+            // Get all available suggestions
+            List<OptimizationSuggestion> allSuggestions = analyzeTestCase(testCase);
+            
+            // Filter suggestions by IDs
+            List<OptimizationSuggestion> selectedSuggestions = allSuggestions.stream()
+                    .filter(s -> suggestionIds.contains(s.getId()))
+                    .toList();
+            
+            // Apply each suggestion
+            for (OptimizationSuggestion suggestion : selectedSuggestions) {
+                applySuggestion(optimizedTest, suggestion);
+            }
+            
+            return optimizedTest;
+        } catch (Exception e) {
+            logger.error("Error applying optimizations", e);
+            return testCase;
+        }
+    }
+    
+    /**
+     * Analyze wait conditions in a test case
+     * @param testCase The test case to analyze
+     * @return A list of wait condition suggestions
+     */
+    private List<OptimizationSuggestion> analyzeWaitConditions(TestCase testCase) {
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        List<TestStep> steps = testCase.getSteps();
+        
+        // Check for navigation without waits
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            if (isNavigationStep(current) && !isWaitStep(next)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "wait_after_navigation_" + i,
+                        "Add wait after navigation",
+                        "Navigation steps should be followed by a wait condition to ensure the page has loaded",
+                        SuggestionType.ADD_WAIT,
+                        i + 1
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "waitType", "navigation",
+                        "timeout", "10000"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for click without waits (when appropriate)
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            if (isClickStep(current) && !isWaitStep(next) && isLikelyToTriggerNavigation(current)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "wait_after_click_" + i,
+                        "Add wait after click",
+                        "This click likely triggers navigation or content change and should be followed by a wait condition",
+                        SuggestionType.ADD_WAIT,
+                        i + 1
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "waitType", "navigation",
+                        "timeout", "5000"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for missing visibility waits before interactions
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            
+            if ((isClickStep(step) || isInputStep(step)) && (i == 0 || !isWaitForVisibleStep(steps.get(i - 1), step.getSelector()))) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "wait_for_visible_" + i,
+                        "Add wait for element visibility",
+                        "Interactions should be preceded by a wait for element visibility to avoid timing issues",
+                        SuggestionType.ADD_WAIT,
+                        i
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "waitType", "visible",
+                        "selector", step.getSelector(),
+                        "timeout", "5000"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for fixed waits that could be replaced with explicit waits
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            
+            if (isFixedWaitStep(step)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "replace_fixed_wait_" + i,
+                        "Replace fixed wait with explicit wait",
+                        "Fixed waits should be replaced with explicit wait conditions for better reliability",
+                        SuggestionType.REPLACE_WAIT,
+                        i
+                );
+                
+                // Try to determine appropriate wait type
+                if (i < steps.size() - 1) {
+                    TestStep nextStep = steps.get(i + 1);
+                    if (isClickStep(nextStep) || isInputStep(nextStep)) {
+                        suggestion.setAdditionalInfo(Map.of(
+                                "waitType", "visible",
+                                "selector", nextStep.getSelector(),
+                                "timeout", step.getValue()
+                        ));
+                    } else if (isAssertionStep(nextStep)) {
+                        suggestion.setAdditionalInfo(Map.of(
+                                "waitType", "assertion",
+                                "selector", nextStep.getSelector(),
+                                "timeout", step.getValue()
+                        ));
+                    } else {
+                        suggestion.setAdditionalInfo(Map.of(
+                                "waitType", "network",
+                                "timeout", step.getValue()
+                        ));
+                    }
+                } else {
+                    suggestion.setAdditionalInfo(Map.of(
+                            "waitType", "network",
+                            "timeout", step.getValue()
+                    ));
+                }
+                
+                suggestions.add(suggestion);
+            }
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Find redundant steps in a test case
+     * @param testCase The test case to analyze
+     * @return A list of redundant step suggestions
+     */
+    private List<OptimizationSuggestion> findRedundantSteps(TestCase testCase) {
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        List<TestStep> steps = testCase.getSteps();
+        
+        // Check for consecutive identical clicks
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            if (isClickStep(current) && isClickStep(next) && 
+                Objects.equals(current.getSelector(), next.getSelector())) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "redundant_click_" + i,
+                        "Remove redundant click",
+                        "Consecutive clicks on the same element can be reduced to a single click",
+                        SuggestionType.REMOVE_STEP,
+                        i + 1
+                );
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for consecutive identical inputs
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            if (isInputStep(current) && isInputStep(next) && 
+                Objects.equals(current.getSelector(), next.getSelector())) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "redundant_input_" + i,
+                        "Remove redundant input",
+                        "Consecutive inputs to the same element can be reduced to a single input with the final value",
+                        SuggestionType.REMOVE_STEP,
+                        i
+                );
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for consecutive wait conditions
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            if (isWaitStep(current) && isWaitStep(next)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "consecutive_waits_" + i,
+                        "Consolidate wait conditions",
+                        "Consecutive wait conditions can be consolidated into a single, more comprehensive wait",
+                        SuggestionType.MERGE_STEPS,
+                        i
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "mergeWith", String.valueOf(i + 1),
+                        "waitType", getMostAppropriateWaitType(current, next),
+                        "timeout", getMaxTimeout(current, next)
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Identify potential sources of flakiness in a test case
+     * @param testCase The test case to analyze
+     * @return A list of flakiness suggestions
+     */
+    private List<OptimizationSuggestion> identifyPotentialFlakiness(TestCase testCase) {
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        List<TestStep> steps = testCase.getSteps();
+        
+        // Check for timing-sensitive sequences
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            TestStep next = steps.get(i + 1);
+            
+            // Click followed immediately by assertion
+            if (isClickStep(current) && isAssertionStep(next) && !isNavigationStep(current)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "timing_click_assertion_" + i,
+                        "Add wait between click and assertion",
+                        "Adding a wait condition between click and assertion can reduce flakiness",
+                        SuggestionType.ADD_WAIT,
+                        i + 1
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "waitType", "network",
+                        "timeout", "2000"
+                ));
+                suggestions.add(suggestion);
+            }
+            
+            // Navigation followed immediately by interaction
+            if (isNavigationStep(current) && (isClickStep(next) || isInputStep(next))) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "timing_navigation_interaction_" + i,
+                        "Add wait after navigation",
+                        "Adding a wait condition after navigation and before interaction can reduce flakiness",
+                        SuggestionType.ADD_WAIT,
+                        i + 1
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "waitType", "visible",
+                        "selector", next.getSelector(),
+                        "timeout", "5000"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for poor selectors that might cause flakiness
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            String selector = step.getSelector();
+            
+            if (selector != null && isPotentiallyFlakySelector(selector)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "flaky_selector_" + i,
+                        "Improve selector stability",
+                        "The current selector might be unstable across page changes or browser resizes",
+                        SuggestionType.IMPROVE_SELECTOR,
+                        i
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "currentSelector", selector,
+                        "reason", getSelectorFlakinessReason(selector)
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Analyze assertions in a test case
+     * @param testCase The test case to analyze
+     * @return A list of assertion suggestions
+     */
+    private List<OptimizationSuggestion> analyzeAssertions(TestCase testCase) {
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        List<TestStep> steps = testCase.getSteps();
+        
+        // Check for missing assertions after key actions
+        boolean hasAssertions = steps.stream().anyMatch(this::isAssertionStep);
+        if (!hasAssertions) {
+            OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                    "missing_assertions",
+                    "Add assertions to test case",
+                    "The test case does not contain any assertions, which means it doesn't verify any expected behavior",
+                    SuggestionType.ADD_ASSERTION,
+                    steps.size()
+            );
+            suggestions.add(suggestion);
+        }
+        
+        // Check for navigation without subsequent verification
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            
+            if (isNavigationStep(current)) {
+                boolean hasVerification = false;
+                
+                // Look for assertions in the next few steps
+                for (int j = i + 1; j < Math.min(i + 4, steps.size()); j++) {
+                    if (isAssertionStep(steps.get(j))) {
+                        hasVerification = true;
+                        break;
+                    }
+                }
+                
+                if (!hasVerification) {
+                    OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                            "verify_after_navigation_" + i,
+                            "Add verification after navigation",
+                            "Navigation should be followed by an assertion to verify successful navigation",
+                            SuggestionType.ADD_ASSERTION,
+                            i + 1
+                    );
+                    suggestion.setAdditionalInfo(Map.of(
+                            "assertionType", "url",
+                            "value", current.getValue()
+                    ));
+                    suggestions.add(suggestion);
+                }
+            }
+        }
+        
+        // Check for form submissions without verification
+        for (int i = 0; i < steps.size() - 1; i++) {
+            TestStep current = steps.get(i);
+            
+            if (isSubmitStep(current)) {
+                boolean hasVerification = false;
+                
+                // Look for assertions in the next few steps
+                for (int j = i + 1; j < Math.min(i + 4, steps.size()); j++) {
+                    if (isAssertionStep(steps.get(j))) {
+                        hasVerification = true;
+                        break;
+                    }
+                }
+                
+                if (!hasVerification) {
+                    OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                            "verify_after_submit_" + i,
+                            "Add verification after form submission",
+                            "Form submission should be followed by an assertion to verify successful submission",
+                            SuggestionType.ADD_ASSERTION,
+                            i + 1
+                    );
+                    suggestions.add(suggestion);
+                }
+            }
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Analyze selector quality in a test case
+     * @param testCase The test case to analyze
+     * @return A list of selector quality suggestions
+     */
+    private List<OptimizationSuggestion> analyzeSelectorQuality(TestCase testCase) {
+        List<OptimizationSuggestion> suggestions = new ArrayList<>();
+        List<TestStep> steps = testCase.getSteps();
+        
+        // Check for complex selectors that could be simplified
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            String selector = step.getSelector();
+            
+            if (selector != null && isComplexSelector(selector)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "complex_selector_" + i,
+                        "Simplify complex selector",
+                        "The current selector is complex and could be simplified for better readability and maintenance",
+                        SuggestionType.IMPROVE_SELECTOR,
+                        i
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "currentSelector", selector,
+                        "reason", "Complex selector with multiple levels or conditions"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        // Check for generic position-based selectors
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            String selector = step.getSelector();
+            
+            if (selector != null && isPositionBasedSelector(selector)) {
+                OptimizationSuggestion suggestion = new OptimizationSuggestion(
+                        "position_selector_" + i,
+                        "Improve position-based selector",
+                        "Position-based selectors are prone to breakage when page structure changes",
+                        SuggestionType.IMPROVE_SELECTOR,
+                        i
+                );
+                suggestion.setAdditionalInfo(Map.of(
+                        "currentSelector", selector,
+                        "reason", "Position-based selector that may break with page changes"
+                ));
+                suggestions.add(suggestion);
+            }
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Apply a suggestion to a test case
+     * @param testCase The test case to modify
+     * @param suggestion The suggestion to apply
+     */
+    private void applySuggestion(TestCase testCase, OptimizationSuggestion suggestion) {
+        List<TestStep> steps = testCase.getSteps();
+        int stepIndex = suggestion.getStepIndex();
+        
+        switch (suggestion.getType()) {
+            case ADD_WAIT:
+                if (stepIndex >= 0 && stepIndex <= steps.size()) {
+                    TestStep waitStep = createWaitStep(suggestion.getAdditionalInfo());
+                    steps.add(stepIndex, waitStep);
+                }
+                break;
+                
+            case ADD_ASSERTION:
+                if (stepIndex >= 0 && stepIndex <= steps.size()) {
+                    TestStep assertionStep = createAssertionStep(suggestion.getAdditionalInfo());
+                    steps.add(stepIndex, assertionStep);
+                }
+                break;
+                
+            case REMOVE_STEP:
+                if (stepIndex >= 0 && stepIndex < steps.size()) {
+                    steps.remove(stepIndex);
+                }
+                break;
+                
+            case MERGE_STEPS:
+                Map<String, String> info = suggestion.getAdditionalInfo();
+                if (info != null && info.containsKey("mergeWith")) {
+                    int mergeIndex = Integer.parseInt(info.get("mergeWith"));
+                    if (stepIndex >= 0 && stepIndex < steps.size() && 
+                        mergeIndex >= 0 && mergeIndex < steps.size()) {
+                        
+                        TestStep mergedStep = createWaitStep(info);
+                        steps.set(stepIndex, mergedStep);
+                        steps.remove(mergeIndex);
+                    }
+                }
+                break;
+                
+            case IMPROVE_SELECTOR:
+                // This would typically involve AI-based selector optimization
+                // For now, we'll just log that this would be handled by SelectorService
+                logger.info("Selector optimization would be handled by SelectorService");
+                break;
+                
+            case REPLACE_WAIT:
+                if (stepIndex >= 0 && stepIndex < steps.size()) {
+                    TestStep improvedWaitStep = createWaitStep(suggestion.getAdditionalInfo());
+                    steps.set(stepIndex, improvedWaitStep);
+                }
+                break;
+        }
+    }
+    
+    /**
+     * Create a wait step from suggestion info
+     * @param info The suggestion additional info
+     * @return A new wait step
+     */
+    private TestStep createWaitStep(Map<String, String> info) {
+        if (info == null) {
+            return null;
+        }
+        
+        TestStep step = new TestStep();
+        step.setId(UUID.randomUUID().toString());
+        step.setType("wait");
+        step.setTimestamp(System.currentTimeMillis());
+        
+        String waitType = info.get("waitType");
+        step.setAction(waitType != null ? waitType : "network");
+        
+        String timeout = info.get("timeout");
+        step.setValue(timeout != null ? timeout : "5000");
+        
+        String selector = info.get("selector");
+        if (selector != null) {
+            step.setSelector(selector);
+        }
+        
+        String text = info.get("text");
+        if (text != null) {
+            step.setAttributes(Map.of("text", text));
+        }
+        
+        // Generate a description based on the wait type
+        StringBuilder description = new StringBuilder("Wait for ");
+        switch (step.getAction()) {
+            case "visible":
+                description.append("element to be visible");
+                break;
+            case "clickable":
+                description.append("element to be clickable");
+                break;
+            case "text":
+                description.append("text to appear");
+                break;
+            case "navigation":
+                description.append("navigation to complete");
+                break;
+            case "network":
+                description.append("network to be idle");
+                break;
+            case "fixed":
+                description.append(step.getValue()).append(" milliseconds");
+                break;
+            default:
+                description.append("condition to be met");
+        }
+        
+        step.setDescription(description.toString());
+        
+        return step;
+    }
+    
+    /**
+     * Create an assertion step from suggestion info
+     * @param info The suggestion additional info
+     * @return A new assertion step
+     */
+    private TestStep createAssertionStep(Map<String, String> info) {
+        if (info == null) {
+            return null;
+        }
+        
+        TestStep step = new TestStep();
+        step.setId(UUID.randomUUID().toString());
+        step.setType("assertion");
+        step.setTimestamp(System.currentTimeMillis());
+        
+        String assertionType = info.get("assertionType");
+        step.setAction(assertionType != null ? assertionType : "visible");
+        
+        String value = info.get("value");
+        if (value != null) {
+            step.setValue(value);
+        }
+        
+        String selector = info.get("selector");
+        if (selector != null) {
+            step.setSelector(selector);
+        }
+        
+        String attribute = info.get("attribute");
+        if (attribute != null) {
+            step.setAttributes(Map.of("attribute", attribute));
+        }
+        
+        // Generate a description based on the assertion type
+        StringBuilder description = new StringBuilder("Verify that ");
+        switch (step.getAction()) {
+            case "visible":
+                description.append("element is visible");
+                break;
+            case "text":
+                description.append("element contains text \"").append(step.getValue()).append("\"");
+                break;
+            case "attribute":
+                description.append("element has attribute value \"").append(step.getValue()).append("\"");
+                break;
+            case "url":
+                description.append("URL contains \"").append(step.getValue()).append("\"");
+                break;
+            case "title":
+                description.append("page title is \"").append(step.getValue()).append("\"");
+                break;
+            default:
+                description.append("condition is met");
+        }
+        
+        step.setDescription(description.toString());
+        
+        return step;
+    }
+    
+    /**
+     * Clone a test case
+     * @param testCase The test case to clone
+     * @return A cloned test case
+     */
+    private TestCase cloneTestCase(TestCase testCase) {
+        TestCase clone = new TestCase();
+        clone.setId(testCase.getId());
+        clone.setName(testCase.getName());
+        clone.setDescription(testCase.getDescription());
+        clone.setProjectId(testCase.getProjectId());
+        clone.setCreatedAt(testCase.getCreatedAt());
+        clone.setUpdatedAt(testCase.getUpdatedAt());
+        
+        // Clone steps
+        List<TestStep> clonedSteps = new ArrayList<>();
+        for (TestStep step : testCase.getSteps()) {
+            TestStep clonedStep = new TestStep();
+            clonedStep.setId(step.getId());
+            clonedStep.setType(step.getType());
+            clonedStep.setAction(step.getAction());
+            clonedStep.setSelector(step.getSelector());
+            clonedStep.setValue(step.getValue());
+            clonedStep.setDescription(step.getDescription());
+            clonedStep.setTimestamp(step.getTimestamp());
+            clonedStep.setScreenshot(step.getScreenshot());
+            
+            // Clone attributes if present
+            if (step.getAttributes() != null) {
+                clonedStep.setAttributes(new HashMap<>(step.getAttributes()));
+            }
+            
+            clonedSteps.add(clonedStep);
+        }
+        
+        clone.setSteps(clonedSteps);
+        return clone;
+    }
+    
+    /**
+     * Check if a step is a navigation step
+     */
+    private boolean isNavigationStep(TestStep step) {
+        return "action".equals(step.getType()) && "navigate".equals(step.getAction());
+    }
+    
+    /**
+     * Check if a step is a click step
+     */
+    private boolean isClickStep(TestStep step) {
+        return "action".equals(step.getType()) && "click".equals(step.getAction());
+    }
+    
+    /**
+     * Check if a step is an input step
+     */
+    private boolean isInputStep(TestStep step) {
+        return "data".equals(step.getType()) && "input".equals(step.getAction());
+    }
+    
+    /**
+     * Check if a step is a submit step
+     */
+    private boolean isSubmitStep(TestStep step) {
+        return "action".equals(step.getType()) && "submit".equals(step.getAction());
+    }
+    
+    /**
+     * Check if a step is a wait step
+     */
+    private boolean isWaitStep(TestStep step) {
+        return "wait".equals(step.getType());
+    }
+    
+    /**
+     * Check if a step is a fixed wait step
+     */
+    private boolean isFixedWaitStep(TestStep step) {
+        return "wait".equals(step.getType()) && "fixed".equals(step.getAction());
+    }
+    
+    /**
+     * Check if a step is an assertion step
+     */
+    private boolean isAssertionStep(TestStep step) {
+        return "assertion".equals(step.getType());
+    }
+    
+    /**
+     * Check if a step is a wait for visible step for a specific selector
+     */
+    private boolean isWaitForVisibleStep(TestStep step, String selector) {
+        return "wait".equals(step.getType()) && 
+               "visible".equals(step.getAction()) && 
+               Objects.equals(step.getSelector(), selector);
+    }
+    
+    /**
+     * Check if a click step is likely to trigger navigation
+     */
+    private boolean isLikelyToTriggerNavigation(TestStep step) {
+        if (!isClickStep(step) || step.getSelector() == null) {
+            return false;
+        }
+        
+        String selector = step.getSelector().toLowerCase();
+        return selector.contains("link") || 
+               selector.contains("btn") || 
+               selector.contains("button") || 
+               selector.contains("nav") || 
+               selector.contains("submit") ||
+               selector.startsWith("a[") ||
+               selector.startsWith("a.");
+    }
+    
+    /**
+     * Get the most appropriate wait type from two wait steps
+     */
+    private String getMostAppropriateWaitType(TestStep step1, TestStep step2) {
+        // Priority: navigation > visible > network > clickable > fixed
+        if ("navigation".equals(step1.getAction()) || "navigation".equals(step2.getAction())) {
+            return "navigation";
+        } else if ("visible".equals(step1.getAction()) || "visible".equals(step2.getAction())) {
+            return "visible";
+        } else if ("network".equals(step1.getAction()) || "network".equals(step2.getAction())) {
+            return "network";
+        } else if ("clickable".equals(step1.getAction()) || "clickable".equals(step2.getAction())) {
+            return "clickable";
+        } else {
+            return "fixed";
+        }
+    }
+    
+    /**
+     * Get the maximum timeout from two wait steps
+     */
+    private String getMaxTimeout(TestStep step1, TestStep step2) {
+        int timeout1 = 0;
+        int timeout2 = 0;
+        
+        try {
+            if (step1.getValue() != null) {
+                timeout1 = Integer.parseInt(step1.getValue());
+            }
+        } catch (NumberFormatException ignored) {}
+        
+        try {
+            if (step2.getValue() != null) {
+                timeout2 = Integer.parseInt(step2.getValue());
+            }
+        } catch (NumberFormatException ignored) {}
+        
+        return String.valueOf(Math.max(timeout1, timeout2));
+    }
+    
+    /**
+     * Check if a selector is potentially flaky
+     */
+    private boolean isPotentiallyFlakySelector(String selector) {
+        if (selector == null) {
+            return false;
+        }
+        
+        // Position-based selectors are often flaky
+        if (isPositionBasedSelector(selector)) {
+            return true;
+        }
+        
+        // Generic class selectors can be flaky
+        if (selector.startsWith(".") && !selector.contains(" ") && selector.length() < 10) {
+            return true;
+        }
+        
+        // Selectors with generic tags and no specific attributes
+        if (selector.matches("(div|span|p|li|tr|td)\\s*$")) {
+            return true;
+        }
+        
+        // Selectors with very specific and complex paths are often brittle
+        if (selector.split(" ").length > 4 || selector.split(">").length > 3) {
+            return true;
+        }
+        
+        // Dynamic class patterns (often generated by frameworks)
+        if (selector.matches(".*[._]([0-9a-f]{4,}|[a-z0-9]{8,}).*")) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Check if a selector is position-based
+     */
+    private boolean isPositionBasedSelector(String selector) {
+        if (selector == null) {
+            return false;
+        }
+        
+        return selector.contains(":nth-child") || 
+               selector.contains(":nth-of-type") || 
+               selector.contains(":first-child") || 
+               selector.contains(":last-child");
+    }
+    
+    /**
+     * Check if a selector is complex
+     */
+    private boolean isComplexSelector(String selector) {
+        if (selector == null) {
+            return false;
+        }
+        
+        // Count spaces and special characters to determine complexity
+        int spacesCount = (int) selector.chars().filter(ch -> ch == ' ').count();
+        int gtCount = (int) selector.chars().filter(ch -> ch == '>').count();
+        int bracketPairsCount = (int) selector.chars().filter(ch -> ch == '[').count();
+        
+        // Complex if it has multiple levels or conditions
+        return spacesCount > 2 || gtCount > 1 || bracketPairsCount > 1;
+    }
+    
+    /**
+     * Get the reason why a selector might be flaky
+     */
+    private String getSelectorFlakinessReason(String selector) {
+        if (selector == null) {
+            return "Undefined selector";
+        }
+        
+        if (isPositionBasedSelector(selector)) {
+            return "Position-based selector that may break with layout changes";
+        }
+        
+        if (selector.startsWith(".") && !selector.contains(" ") && selector.length() < 10) {
+            return "Generic class selector that may change with UI updates";
+        }
+        
+        if (selector.matches("(div|span|p|li|tr|td)\\s*$")) {
+            return "Generic tag selector without specific attributes";
+        }
+        
+        if (selector.split(" ").length > 4 || selector.split(">").length > 3) {
+            return "Overly specific path selector that may break with minor DOM changes";
+        }
+        
+        if (selector.matches(".*[._]([0-9a-f]{4,}|[a-z0-9]{8,}).*")) {
+            return "Contains auto-generated or dynamic class names";
+        }
+        
+        return "Potentially unstable selector";
+    }
+    
+    /**
+     * Enum for suggestion types
+     */
+    public enum SuggestionType {
+        ADD_WAIT,
+        ADD_ASSERTION,
+        REMOVE_STEP,
+        MERGE_STEPS,
+        IMPROVE_SELECTOR,
+        REPLACE_WAIT
+    }
+    
+    /**
+     * Class representing a test optimization suggestion
+     */
+    public static class OptimizationSuggestion {
+        private final String id;
+        private final String title;
+        private final String description;
+        private final SuggestionType type;
+        private final int stepIndex;
+        private Map<String, String> additionalInfo;
+        
+        public OptimizationSuggestion(String id, String title, String description, SuggestionType type, int stepIndex) {
+            this.id = id;
+            this.title = title;
+            this.description = description;
+            this.type = type;
+            this.stepIndex = stepIndex;
+            this.additionalInfo = new HashMap<>();
+        }
+        
+        public String getId() {
+            return id;
+        }
+        
+        public String getTitle() {
+            return title;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+        
+        public SuggestionType getType() {
+            return type;
+        }
+        
+        public int getStepIndex() {
+            return stepIndex;
+        }
+        
+        public Map<String, String> getAdditionalInfo() {
+            return additionalInfo;
+        }
+        
+        public void setAdditionalInfo(Map<String, String> additionalInfo) {
+            this.additionalInfo = additionalInfo;
+        }
+    }
+}
+
+
+package com.automation.api.models;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Model for element fingerprinting used by the AI-powered recognition system
+ */
+public class ElementFingerprint {
+    private String fingerprintId;
+    private String tagName;
+    private String textContent;
+    private String selector;
+    private String xpath;
+    private Map<String, Double> weightedAttributes = new HashMap<>();
+    private Map<String, Object> positionalInfo;
+    private Map<String, Object> textContext;
+    private Map<String, Object> structuralContext;
+    
+    /**
+     * Default constructor
+     */
+    public ElementFingerprint() {
+    }
+    
+    /**
+     * Constructor with basic properties
+     */
+    public ElementFingerprint(String tagName, String textContent, String selector) {
+        this.tagName = tagName;
+        this.textContent = textContent;
+        this.selector = selector;
+    }
+    
+    /**
+     * Get the fingerprint ID
+     */
+    public String getFingerprintId() {
+        return fingerprintId;
+    }
+    
+    /**
+     * Set the fingerprint ID
+     */
+    public void setFingerprintId(String fingerprintId) {
+        this.fingerprintId = fingerprintId;
+    }
+    
+    /**
+     * Get the tag name
+     */
+    public String getTagName() {
+        return tagName;
+    }
+    
+    /**
+     * Set the tag name
+     */
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
+    }
+    
+    /**
+     * Get the text content
+     */
+    public String getTextContent() {
+        return textContent;
+    }
+    
+    /**
+     * Set the text content
+     */
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+    
+    /**
+     * Get the selector
+     */
+    public String getSelector() {
+        return selector;
+    }
+    
+    /**
+     * Set the selector
+     */
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
+    
+    /**
+     * Get the XPath
+     */
+    public String getXpath() {
+        return xpath;
+    }
+    
+    /**
+     * Set the XPath
+     */
+    public void setXpath(String xpath) {
+        this.xpath = xpath;
+    }
+    
+    /**
+     * Get the weighted attributes
+     */
+    public Map<String, Double> getWeightedAttributes() {
+        return weightedAttributes;
+    }
+    
+    /**
+     * Set the weighted attributes
+     */
+    public void setWeightedAttributes(Map<String, Double> weightedAttributes) {
+        this.weightedAttributes = weightedAttributes;
+    }
+    
+    /**
+     * Add a weighted attribute
+     */
+    public void addWeightedAttribute(String key, double weight) {
+        this.weightedAttributes.put(key, weight);
+    }
+    
+    /**
+     * Get the positional info
+     */
+    public Map<String, Object> getPositionalInfo() {
+        return positionalInfo;
+    }
+    
+    /**
+     * Set the positional info
+     */
+    public void setPositionalInfo(Map<String, Object> positionalInfo) {
+        this.positionalInfo = positionalInfo;
+    }
+    
+    /**
+     * Get the text context
+     */
+    public Map<String, Object> getTextContext() {
+        return textContext;
+    }
+    
+    /**
+     * Set the text context
+     */
+    public void setTextContext(Map<String, Object> textContext) {
+        this.textContext = textContext;
+    }
+    
+    /**
+     * Get the structural context
+     */
+    public Map<String, Object> getStructuralContext() {
+        return structuralContext;
+    }
+    
+    /**
+     * Set the structural context
+     */
+    public void setStructuralContext(Map<String, Object> structuralContext) {
+        this.structuralContext = structuralContext;
+    }
+    
+    /**
+     * Calculate similarity score between two fingerprints
+     * 
+     * @param other The fingerprint to compare with
+     * @return Similarity score (0-1)
+     */
+    public double calculateSimilarity(ElementFingerprint other) {
+        if (other == null) {
+            return 0.0;
+        }
+        
+        double score = 0.0;
+        double totalWeight = 0.0;
+        
+        // Compare tag name (high importance)
+        if (Objects.equals(this.tagName, other.tagName)) {
+            score += 0.2;
+        }
+        totalWeight += 0.2;
+        
+        // Compare text content (medium-high importance)
+        if (this.textContent != null && !this.textContent.isBlank() &&
+            other.textContent != null && !other.textContent.isBlank()) {
+            
+            // Calculate text similarity
+            double textSimilarity = calculateTextSimilarity(this.textContent, other.textContent);
+            score += 0.3 * textSimilarity;
+        }
+        totalWeight += 0.3;
+        
+        // Compare attributes (varying importance)
+        if (!this.weightedAttributes.isEmpty() && !other.weightedAttributes.isEmpty()) {
+            double attrScore = 0.0;
+            double attrWeight = 0.0;
+            
+            // Find common attributes
+            for (Map.Entry<String, Double> entry : this.weightedAttributes.entrySet()) {
+                String key = entry.getKey();
+                Double weight = entry.getValue();
+                
+                if (other.weightedAttributes.containsKey(key)) {
+                    attrScore += weight;
+                    attrWeight += weight;
+                }
+            }
+            
+            // Add weighted attribute score
+            if (attrWeight > 0) {
+                score += 0.5 * (attrScore / attrWeight);
+                totalWeight += 0.5;
+            }
+        }
+        
+        // Normalize score
+        return totalWeight > 0 ? score / totalWeight : 0;
+    }
+    
+    /**
+     * Calculate text similarity between two strings
+     * 
+     * @param text1 The first text
+     * @param text2 The second text
+     * @return Similarity score (0-1)
+     */
+    private double calculateTextSimilarity(String text1, String text2) {
+        if (text1 == null || text2 == null) {
+            return 0.0;
+        }
+        
+        // For exact match
+        if (text1.equals(text2)) {
+            return 1.0;
+        }
+        
+        // For substring match
+        if (text1.contains(text2) || text2.contains(text1)) {
+            double lengthRatio = Math.min(text1.length(), text2.length()) / 
+                               (double) Math.max(text1.length(), text2.length());
+            return 0.8 * lengthRatio;
+        }
+        
+        // For different but similar texts, use Levenshtein distance
+        int distance = calculateLevenshteinDistance(text1, text2);
+        int maxLength = Math.max(text1.length(), text2.length());
+        
+        return maxLength > 0 ? 1.0 - (distance / (double) maxLength) : 0;
+    }
+    
+    /**
+     * Calculate Levenshtein distance between two strings
+     * 
+     * @param s1 The first string
+     * @param s2 The second string
+     * @return The Levenshtein distance
+     */
+    private int calculateLevenshteinDistance(String s1, String s2) {
+        int[] prev = new int[s2.length() + 1];
+        int[] curr = new int[s2.length() + 1];
+        
+        for (int j = 0; j < prev.length; j++) {
+            prev[j] = j;
+        }
+        
+        for (int i = 0; i < s1.length(); i++) {
+            curr[0] = i + 1;
+            for (int j = 0; j < s2.length(); j++) {
+                int cost = s1.charAt(i) == s2.charAt(j) ? 0 : 1;
+                curr[j + 1] = Math.min(Math.min(curr[j] + 1, prev[j + 1] + 1), prev[j] + cost);
+            }
+            int[] temp = prev;
+            prev = curr;
+            curr = temp;
+        }
+        
+        return prev[s2.length()];
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ElementFingerprint that = (ElementFingerprint) o;
+        return Objects.equals(fingerprintId, that.fingerprintId);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(fingerprintId);
+    }
+    
+    @Override
+    public String toString() {
+        return "ElementFingerprint{" +
+                "id='" + fingerprintId + '\'' +
+                ", tagName='" + tagName + '\'' +
+                ", selector='" + selector + '\'' +
+                '}';
+    }
+}
+
+
+
+package com.automation.api.services.ai;
+
+import com.automation.api.models.ElementFingerprint;
+import com.automation.api.models.ElementInfo;
+import com.automation.api.models.TestCase;
+import com.automation.api.models.TestStep;
+import com.microsoft.playwright.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * AI-powered service for self-healing test execution
+ */
+@Service
+public class SelfHealingExecutionService {
+    private static final Logger logger = LoggerFactory.getLogger(SelfHealingExecutionService.class);
+    
+    private final SelectorService selectorService;
+    private final ElementRecognitionService elementRecognitionService;
+    
+    // Cache for element fingerprints to aid in recovery
+    private final Map<String, ElementFingerprint> fingerprintCache = new ConcurrentHashMap<>();
+    
+    // Cache for alternative selectors that have worked in the past
+    private final Map<String, List<String>> alternativeSelectorCache = new ConcurrentHashMap<>();
+    
+    // Success/failure statistics for selectors
+    private final Map<String, SelectorStats> selectorStatsCache = new ConcurrentHashMap<>();
+    
+    @Autowired
+    public SelfHealingExecutionService(SelectorService selectorService, 
+                                      ElementRecognitionService elementRecognitionService) {
+        this.selectorService = selectorService;
+        this.elementRecognitionService = elementRecognitionService;
+    }
+    
+    /**
+     * Prepare a test case for self-healing execution
+     * 
+     * @param testCase The test case to prepare
+     * @return The prepared test case
+     */
+    public TestCase prepareForSelfHealing(TestCase testCase) {
+        if (testCase == null || testCase.getSteps() == null) {
+            return testCase;
+        }
+        
+        TestCase preparedTestCase = new TestCase();
+        preparedTestCase.setId(testCase.getId());
+        preparedTestCase.setName(testCase.getName());
+        preparedTestCase.setDescription(testCase.getDescription());
+        preparedTestCase.setProjectId(testCase.getProjectId());
+        preparedTestCase.setCreatedAt(testCase.getCreatedAt());
+        preparedTestCase.setUpdatedAt(testCase.getUpdatedAt());
+        
+        // Prepare steps with optimized selectors and healing information
+        List<TestStep> preparedSteps = new ArrayList<>();
+        for (TestStep step : testCase.getSteps()) {
+            TestStep preparedStep = new TestStep();
+            preparedStep.setId(step.getId());
+            preparedStep.setType(step.getType());
+            preparedStep.setAction(step.getAction());
+            preparedStep.setDescription(step.getDescription());
+            preparedStep.setValue(step.getValue());
+            preparedStep.setTimestamp(step.getTimestamp());
+            preparedStep.setScreenshot(step.getScreenshot());
+            
+            // Clone attributes if present
+            if (step.getAttributes() != null) {
+                preparedStep.setAttributes(new HashMap<>(step.getAttributes()));
+            }
+            
+            // Optimize selector if present
+            if (step.getSelector() != null) {
+                String optimizedSelector = selectorService.optimizeSelector(step.getSelector());
+                preparedStep.setSelector(optimizedSelector);
+                
+                // Add healing info if available
+                Map<String, Object> healingInfo = new HashMap<>();
+                healingInfo.put("originalSelector", step.getSelector());
+                
+                List<String> alternativeSelectors = alternativeSelectorCache.get(step.getSelector());
+                if (alternativeSelectors != null && !alternativeSelectors.isEmpty()) {
+                    healingInfo.put("alternativeSelectors", alternativeSelectors);
+                }
+                
+                // Add healing info to attributes
+                if (preparedStep.getAttributes() == null) {
+                    preparedStep.setAttributes(new HashMap<>());
+                }
+                preparedStep.getAttributes().put("healingInfo", healingInfo);
+            }
+            
+            preparedSteps.add(preparedStep);
+        }
+        
+        preparedTestCase.setSteps(preparedSteps);
+        return preparedTestCase;
+    }
+    
+    /**
+     * Try to heal a broken selector during test execution
+     * 
+     * @param page The Playwright page
+     * @param selector The broken selector
+     * @param step The test step
+     * @return A healed selector or null if healing failed
+     */
+    public String healSelector(Page page, String selector, TestStep step) {
+        if (page == null || selector == null) {
+            return null;
+        }
+        
+        logger.info("Attempting to heal selector: {}", selector);
+        
+        try {
+            // Try alternative selectors first (faster)
+            String healedSelector = tryAlternativeSelectors(page, selector);
+            if (healedSelector != null) {
+                // Update statistics
+                updateSelectorStats(selector, healedSelector, true);
+                return healedSelector;
+            }
+            
+            // Try to find element by fingerprint
+            healedSelector = tryFingerprintHealing(page, selector, step);
+            if (healedSelector != null) {
+                // Update statistics
+                updateSelectorStats(selector, healedSelector, true);
+                // Add to alternative selectors cache
+                addAlternativeSelector(selector, healedSelector);
+                return healedSelector;
+            }
+            
+            // Try to generate a new selector
+            healedSelector = tryGenerateNewSelector(page, selector, step);
+            if (healedSelector != null) {
+                // Update statistics
+                updateSelectorStats(selector, healedSelector, true);
+                // Add to alternative selectors cache
+                addAlternativeSelector(selector, healedSelector);
+                return healedSelector;
+            }
+            
+            // Update failure statistics
+            updateSelectorStats(selector, null, false);
+            return null;
+        } catch (Exception e) {
+            logger.error("Error healing selector", e);
+            return null;
+        }
+    }
+    
+    /**
+     * Try alternative selectors that worked in the past
+     * 
+     * @param page The Playwright page
+     * @param selector The broken selector
+     * @return A working alternative selector or null
+     */
+    private String tryAlternativeSelectors(Page page, String selector) {
+        List<String> alternatives = alternativeSelectorCache.get(selector);
+        if (alternatives == null || alternatives.isEmpty()) {
+            return null;
+        }
+        
+        // Sort by success rate if available
+        alternatives.sort((a, b) -> {
+            SelectorStats statsA = selectorStatsCache.get(a);
+            SelectorStats statsB = selectorStatsCache.get(b);
+            if (statsA == null && statsB == null) return 0;
+            if (statsA == null) return 1;
+            if (statsB == null) return -1;
+            return Double.compare(statsB.getSuccessRate(), statsA.getSuccessRate());
+        });
+        
+        // Try each alternative
+        for (String alternative : alternatives) {
+            try {
+                boolean exists = (boolean) page.evaluate("selector => !!document.querySelector(selector)", alternative);
+                if (exists) {
+                    logger.info("Found working alternative selector: {}", alternative);
+                    return alternative;
+                }
+            } catch (Exception e) {
+                // Continue to next alternative
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Try to heal using element fingerprinting
+     * 
+     * @param page The Playwright page
+     * @param selector The broken selector
+     * @param step The test step
+     * @return A healed selector or null
+     */
+    private String tryFingerprintHealing(Page page, String selector, TestStep step) {
+        ElementFingerprint fingerprint = fingerprintCache.get(selector);
+        if (fingerprint == null) {
+            // No fingerprint available
+            return null;
+        }
+        
+        // Try to find element by fingerprint
+        return elementRecognitionService.findElementByFingerprint(page, fingerprint);
+    }
+    
+    /**
+     * Try to generate a new selector based on step context
+     * 
+     * @param page The Playwright page
+     * @param selector The broken selector
+     * @param step The test step
+     * @return A new selector or null
+     */
+    private String tryGenerateNewSelector(Page page, String selector, TestStep step) {
+        // Extract context from step
+        String stepType = step.getType();
+        String action = step.getAction();
+        String value = step.getValue();
+        
+        // Different strategies based on step type
+        if ("data".equals(stepType) && "input".equals(action) && value != null) {
+            // For input fields, try to find by placeholder, label, or nearest text
+            String[] strategies = {
+                // Try to find input by placeholder
+                "() => { " +
+                "  const inputs = Array.from(document.querySelectorAll('input, textarea')); " +
+                "  return inputs.find(el => el.placeholder && el.placeholder.includes('" + escapeJs(value) + "')); " +
+                "}",
+                
+                // Try to find input by label text
+                "() => { " +
+                "  const labels = Array.from(document.querySelectorAll('label')); " +
+                "  for (const label of labels) { " +
+                "    if (label.textContent.includes('" + escapeJs(value) + "')) { " +
+                "      const id = label.getAttribute('for'); " +
+                "      if (id) return document.getElementById(id); " +
+                "      return label.querySelector('input, textarea'); " +
+                "    } " +
+                "  } " +
+                "  return null; " +
+                "}",
+                
+                // Try to find by nearby text content
+                "() => { " +
+                "  const textNodes = []; " +
+                "  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); " +
+                "  let node; " +
+                "  while (node = walk.nextNode()) { " +
+                "    if (node.textContent.trim().includes('" + escapeJs(value) + "')) { " +
+                "      textNodes.push(node); " +
+                "    } " +
+                "  } " +
+                "  for (const node of textNodes) { " +
+                "    let el = node.parentElement; " +
+                "    let input = null; " +
+                "    for (let i = 0; i < 3; i++) { " +
+                "      input = el.querySelector('input, textarea'); " +
+                "      if (input) return input; " +
+                "      el = el.parentElement; " +
+                "      if (!el) break; " +
+                "    } " +
+                "  } " +
+                "  return null; " +
+                "}"
+            };
+            
+            // Try each strategy
+            for (String strategy : strategies) {
+                try {
+                    Object result = page.evaluate(strategy);
+                    if (result != null) {
+                        // Found an element, now get a selector for it
+                        String newSelector = (String) page.evaluate("el => { " +
+                            "  if (!el) return null; " +
+                            "  if (el.id) return '#' + el.id; " +
+                            "  if (el.name) return '[name=\"' + el.name + '\"]'; " +
+                            "  if (el.classList.length) { " +
+                            "    for (const cls of el.classList) { " +
+                            "      const selector = '.' + cls; " +
+                            "      if (document.querySelectorAll(selector).length === 1) return selector; " +
+                            "    } " +
+                            "  } " +
+                            "  return null; " +
+                            "}", result);
+                        
+                        if (newSelector != null) {
+                            logger.info("Generated new selector: {}", newSelector);
+                            return newSelector;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Continue to next strategy
+                }
+            }
+        } else if ("action".equals(stepType) && "click".equals(action)) {
+            // For click actions, try to find by text content
+            String[] strategies = {
+                // Try to find by text content
+                "() => { " +
+                "  const elements = Array.from(document.querySelectorAll('a, button, [role=\"button\"], [onclick]')); " +
+                "  return elements.find(el => el.textContent.trim() !== '' && " +
+                "    (el.textContent.length < 50)); " + // Avoid long text elements
+                "}",
+                
+                // Try to find by aria-label
+                "() => { " +
+                "  const elements = Array.from(document.querySelectorAll('[aria-label]')); " +
+                "  return elements.find(el => el.getAttribute('aria-label') !== ''); " +
+                "}"
+            };
+            
+            // Try each strategy
+            for (String strategy : strategies) {
+                try {
+                    Object result = page.evaluate(strategy);
+                    if (result != null) {
+                        // Found an element, now get a selector for it
+                        String newSelector = (String) page.evaluate("el => { " +
+                            "  if (!el) return null; " +
+                            "  if (el.id) return '#' + el.id; " +
+                            "  const text = el.textContent.trim(); " +
+                            "  if (text) { " +
+                            "    const tagName = el.tagName.toLowerCase(); " +
+                            "    return tagName + ':text(\"' + text + '\")'; " +
+                            "  } " +
+                            "  return null; " +
+                            "}", result);
+                        
+                        if (newSelector != null) {
+                            logger.info("Generated new selector: {}", newSelector);
+                            return newSelector;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Continue to next strategy
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Add a fingerprint for an element to aid in recovery
+     * 
+     * @param selector The element selector
+     * @param fingerprint The element fingerprint
+     */
+    public void addFingerprint(String selector, ElementFingerprint fingerprint) {
+        if (selector != null && fingerprint != null) {
+            fingerprintCache.put(selector, fingerprint);
+        }
+    }
+    
+    /**
+     * Add an alternative selector for a given selector
+     * 
+     * @param originalSelector The original selector
+     * @param alternativeSelector The alternative selector
+     */
+    public void addAlternativeSelector(String originalSelector, String alternativeSelector) {
+        if (originalSelector == null || alternativeSelector == null || 
+            originalSelector.equals(alternativeSelector)) {
+            return;
+        }
+        
+        alternativeSelectorCache.computeIfAbsent(originalSelector, k -> new ArrayList<>())
+                              .add(alternativeSelector);
+    }
+    
+    /**
+     * Update selector statistics
+     * 
+     * @param originalSelector The original selector
+     * @param healedSelector The healed selector (if successful)
+     * @param success Whether the healing was successful
+     */
+    private void updateSelectorStats(String originalSelector, String healedSelector, boolean success) {
+        // Update original selector stats
+        selectorStatsCache.computeIfAbsent(originalSelector, k -> new SelectorStats())
+                         .update(success);
+        
+        // Update healed selector stats if available
+        if (healedSelector != null) {
+            selectorStatsCache.computeIfAbsent(healedSelector, k -> new SelectorStats())
+                             .update(true);
+        }
+    }
+    
+    /**
+     * Escape special characters in JavaScript strings
+     * 
+     * @param input The input string
+     * @return The escaped string
+     */
+    private String escapeJs(String input) {
+        if (input == null) {
+            return "";
+        }
+        
+        return input.replace("\\", "\\\\")
+                   .replace("'", "\\'")
+                   .replace("\"", "\\\"")
+                   .replace("\n", "\\n")
+                   .replace("\r", "\\r")
+                   .replace("\t", "\\t");
+    }
+    
+    /**
+     * Class to track selector statistics
+     */
+    private static class SelectorStats {
+        private int successes = 0;
+        private int failures = 0;
+        
+        public void update(boolean success) {
+            if (success) {
+                successes++;
+            } else {
+                failures++;
+            }
+        }
+        
+        public double getSuccessRate() {
+            if (successes + failures == 0) {
+                return 0.0;
+            }
+            
+            return (double) successes / (successes + failures);
+        }
+    }
+}
+
+
+
+
