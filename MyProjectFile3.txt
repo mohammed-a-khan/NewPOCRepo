@@ -1,0 +1,5449 @@
+Frontend Files:
+
+Recorder Components:
+
+src/components/recorder/AssertionPanel.tsx
+src/components/recorder/WaitConditionsPanel.tsx
+src/components/recorder/DataInputPanel.tsx
+
+
+Execution Components:
+
+src/components/execution/ExecutionPage.tsx
+src/components/execution/TestStepList.tsx
+src/components/execution/ExecutionStatus.tsx
+src/components/execution/TestRunner.tsx
+src/components/execution/EnvironmentConfig.tsx
+
+
+Context Files:
+
+src/contexts/RecorderContext.tsx
+
+
+WebSocket Services:
+
+src/services/websocket/WebSocketService.ts
+src/services/websocket/RecorderSocketService.ts
+
+
+
+Backend Files:
+
+Controllers:
+
+com/automation/api/controllers/RecorderController.java
+com/automation/api/controllers/ExecutionController.java
+
+
+Services:
+
+com/automation/api/services/RecorderService.java
+com/automation/api/services/BrowserService.java
+com/automation/api/services/ExecutionService.java
+
+
+Models:
+
+com/automation/api/models/ExecutionResult.java
+com/automation/api/models/ElementFingerprint.java
+
+
+AI Components:
+
+com/automation/api/services/ai/SelectorService.java
+com/automation/api/services/ai/ElementRecognitionService.java
+com/automation/api/services/ai/NLPService.java
+com/automation/api/services/ai/TestOptimizationService.java
+com/automation/api/services/ai/SelfHealingExecutionService.java
+
+
+Utilities:
+
+com/automation/api/utils/PlaywrightUtils.java
+com/automation/api/utils/BddUtils.java
+
+Controllers:
+
+com/automation/api/controllers/RecorderController.java
+com/automation/api/controllers/ExecutionController.java
+
+
+Services:
+
+com/automation/api/services/RecorderService.java
+com/automation/api/services/BrowserService.java
+com/automation/api/services/ExecutionService.java
+
+
+AI Services:
+
+com/automation/api/services/ai/SelectorService.java
+com/automation/api/services/ai/ElementRecognitionService.java
+com/automation/api/services/ai/NLPService.java
+com/automation/api/services/ai/TestOptimizationService.java
+com/automation/api/services/ai/SelfHealingExecutionService.java
+
+
+Models:
+
+com/automation/api/models/ExecutionResult.java
+com/automation/api/models/ElementFingerprint.java
+
+
+Utilities:
+
+com/automation/api/utils/PlaywrightUtils.java
+com/automation/api/utils/BddUtils.java
+
+project-root/
+└── src/
+    └── main/
+        └── java/
+            └── com/
+                └── automation/
+                    └── api/
+                        └── services/
+                            └── ai/
+                                └── SelectorService.java
+
+project-root/
+└── frontend/
+    └── src/
+        ├── components/
+        │   ├── recorder/
+        │   │   ├── AssertionPanel.tsx
+        │   │   ├── WaitConditionsPanel.tsx
+        │   │   └── DataInputPanel.tsx
+        │   └── execution/
+        │       ├── ExecutionPage.tsx
+        │       ├── TestStepList.tsx
+        │       ├── ExecutionStatus.tsx
+        │       ├── TestRunner.tsx
+        │       └── EnvironmentConfig.tsx
+        ├── contexts/
+        │   └── RecorderContext.tsx
+        └── services/
+            └── websocket/
+                ├── WebSocketService.ts
+                └── RecorderSocketService.ts
+
+import React, { useState, useEffect, useContext } from 'react';
+import { RecorderContext } from '../../contexts/RecorderContext';
+import { SelectorService } from '../../services/ai/SelectorService';
+
+interface AssertionType {
+  id: string;
+  name: string;
+  description: string;
+  requiresValue: boolean;
+  requiresElement: boolean;
+}
+
+const assertionTypes: AssertionType[] = [
+  {
+    id: 'visible',
+    name: 'Is Visible',
+    description: 'Checks if an element is visible on the page',
+    requiresValue: false,
+    requiresElement: true
+  },
+  {
+    id: 'text',
+    name: 'Has Text',
+    description: 'Checks if an element contains specific text',
+    requiresValue: true,
+    requiresElement: true
+  },
+  {
+    id: 'attribute',
+    name: 'Has Attribute',
+    description: 'Checks if an element has a specific attribute value',
+    requiresValue: true,
+    requiresElement: true
+  },
+  {
+    id: 'count',
+    name: 'Element Count',
+    description: 'Checks the number of matching elements',
+    requiresValue: true,
+    requiresElement: true
+  },
+  {
+    id: 'url',
+    name: 'URL Contains',
+    description: 'Checks if the current URL contains specific text',
+    requiresValue: true,
+    requiresElement: false
+  },
+  {
+    id: 'title',
+    name: 'Page Title',
+    description: 'Checks if the page title matches specific text',
+    requiresValue: true,
+    requiresElement: false
+  }
+];
+
+const AssertionPanel: React.FC = () => {
+  const { selectedElement, addAssertion, recordingActive } = useContext(RecorderContext);
+  const [selectedAssertionType, setSelectedAssertionType] = useState<string>('visible');
+  const [assertionValue, setAssertionValue] = useState<string>('');
+  const [attributeName, setAttributeName] = useState<string>('');
+  const [elementSelector, setElementSelector] = useState<string>('');
+  const [optimizedSelector, setOptimizedSelector] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  
+  useEffect(() => {
+    if (selectedElement) {
+      setIsProcessing(true);
+      
+      // Generate optimized selector for the selected element
+      const selectorService = new SelectorService();
+      selectorService.generateOptimizedSelector(selectedElement)
+        .then(selector => {
+          setElementSelector(selector);
+          setOptimizedSelector(selector);
+          setIsProcessing(false);
+        })
+        .catch(error => {
+          console.error('Error generating selector:', error);
+          setElementSelector(selectedElement.selector || '');
+          setIsProcessing(false);
+        });
+      
+      // If the element has text content, pre-populate the assertion value
+      if (selectedElement.textContent && selectedAssertionType === 'text') {
+        setAssertionValue(selectedElement.textContent);
+      }
+    } else {
+      setElementSelector('');
+      setOptimizedSelector('');
+    }
+  }, [selectedElement]);
+
+  // Reset value when assertion type changes
+  useEffect(() => {
+    setAssertionValue('');
+    setAttributeName('');
+  }, [selectedAssertionType]);
+
+  const handleAddAssertion = () => {
+    const selectedAssertion = assertionTypes.find(type => type.id === selectedAssertionType);
+    if (!selectedAssertion) return;
+
+    if (selectedAssertion.requiresElement && !elementSelector) {
+      alert('Please select an element first');
+      return;
+    }
+
+    if (selectedAssertion.requiresValue && !assertionValue) {
+      alert('Please enter a value for the assertion');
+      return;
+    }
+
+    // Create assertion object
+    const assertion = {
+      type: selectedAssertionType,
+      selector: optimizedSelector,
+      value: assertionValue,
+      attribute: attributeName || undefined
+    };
+
+    // Add to recorder context
+    addAssertion(assertion);
+    
+    // Reset form
+    if (!selectedElement) {
+      setElementSelector('');
+      setOptimizedSelector('');
+    }
+    setAssertionValue('');
+    setAttributeName('');
+  };
+
+  return (
+    <div className="assertion-panel p-4 border rounded shadow-sm">
+      <h3 className="text-lg font-medium mb-4">Add Assertion</h3>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Assertion Type</label>
+        <select
+          className="w-full p-2 border rounded"
+          value={selectedAssertionType}
+          onChange={(e) => setSelectedAssertionType(e.target.value)}
+          disabled={isProcessing}
+        >
+          {assertionTypes.map(type => (
+            <option key={type.id} value={type.id}>{type.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          {assertionTypes.find(type => type.id === selectedAssertionType)?.description}
+        </p>
+      </div>
+
+      {assertionTypes.find(type => type.id === selectedAssertionType)?.requiresElement && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Element Selector</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={elementSelector}
+            onChange={(e) => setElementSelector(e.target.value)}
+            placeholder="Select an element or enter selector"
+            disabled={isProcessing}
+          />
+          {isProcessing && (
+            <p className="text-xs text-blue-500 mt-1">Optimizing selector...</p>
+          )}
+          {!selectedElement && elementSelector && (
+            <button 
+              className="mt-1 text-xs text-blue-600 hover:underline"
+              onClick={() => {
+                setIsProcessing(true);
+                const selectorService = new SelectorService();
+                selectorService.optimizeSelector(elementSelector)
+                  .then(selector => {
+                    setOptimizedSelector(selector);
+                    setIsProcessing(false);
+                  })
+                  .catch(() => {
+                    setOptimizedSelector(elementSelector);
+                    setIsProcessing(false);
+                  });
+              }}
+            >
+              Optimize selector
+            </button>
+          )}
+        </div>
+      )}
+
+      {selectedAssertionType === 'attribute' && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Attribute Name</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={attributeName}
+            onChange={(e) => setAttributeName(e.target.value)}
+            placeholder="e.g. class, data-testid, aria-label"
+            disabled={isProcessing}
+          />
+        </div>
+      )}
+
+      {assertionTypes.find(type => type.id === selectedAssertionType)?.requiresValue && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">
+            {selectedAssertionType === 'count' ? 'Expected Count' : 'Expected Value'}
+          </label>
+          <input
+            type={selectedAssertionType === 'count' ? 'number' : 'text'}
+            className="w-full p-2 border rounded"
+            value={assertionValue}
+            onChange={(e) => setAssertionValue(e.target.value)}
+            placeholder={selectedAssertionType === 'count' ? '1' : 'Expected value'}
+            disabled={isProcessing}
+          />
+        </div>
+      )}
+
+      <button
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+        onClick={handleAddAssertion}
+        disabled={isProcessing || !recordingActive}
+      >
+        Add Assertion
+      </button>
+    </div>
+  );
+};
+
+export default AssertionPanel;
+
+import React, { useState, useEffect, useContext } from 'react';
+import { RecorderContext } from '../../contexts/RecorderContext';
+import { SelectorService } from '../../services/ai/SelectorService';
+
+interface WaitConditionType {
+  id: string;
+  name: string;
+  description: string;
+  requiresTimeout: boolean;
+  requiresElement: boolean;
+}
+
+const waitConditionTypes: WaitConditionType[] = [
+  {
+    id: 'visible',
+    name: 'Wait For Visible',
+    description: 'Wait until an element is visible on the page',
+    requiresTimeout: true,
+    requiresElement: true
+  },
+  {
+    id: 'clickable',
+    name: 'Wait For Clickable',
+    description: 'Wait until an element is clickable',
+    requiresTimeout: true,
+    requiresElement: true
+  },
+  {
+    id: 'text',
+    name: 'Wait For Text',
+    description: 'Wait until an element contains specific text',
+    requiresTimeout: true,
+    requiresElement: true
+  },
+  {
+    id: 'navigation',
+    name: 'Wait For Navigation',
+    description: 'Wait until page navigation completes',
+    requiresTimeout: true,
+    requiresElement: false
+  },
+  {
+    id: 'network',
+    name: 'Wait For Network Idle',
+    description: 'Wait until network activity is complete',
+    requiresTimeout: true,
+    requiresElement: false
+  },
+  {
+    id: 'fixed',
+    name: 'Fixed Wait',
+    description: 'Wait for a fixed amount of time (use sparingly)',
+    requiresTimeout: true,
+    requiresElement: false
+  }
+];
+
+const WaitConditionsPanel: React.FC = () => {
+  const { selectedElement, addWaitCondition, recordingActive } = useContext(RecorderContext);
+  const [selectedWaitType, setSelectedWaitType] = useState<string>('visible');
+  const [waitText, setWaitText] = useState<string>('');
+  const [timeout, setTimeout] = useState<number>(5000);
+  const [elementSelector, setElementSelector] = useState<string>('');
+  const [optimizedSelector, setOptimizedSelector] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  
+  useEffect(() => {
+    if (selectedElement) {
+      setIsProcessing(true);
+      
+      // Generate optimized selector for the selected element
+      const selectorService = new SelectorService();
+      selectorService.generateOptimizedSelector(selectedElement)
+        .then(selector => {
+          setElementSelector(selector);
+          setOptimizedSelector(selector);
+          setIsProcessing(false);
+        })
+        .catch(error => {
+          console.error('Error generating selector:', error);
+          setElementSelector(selectedElement.selector || '');
+          setIsProcessing(false);
+        });
+      
+      // If the element has text content, pre-populate the wait text
+      if (selectedElement.textContent && selectedWaitType === 'text') {
+        setWaitText(selectedElement.textContent);
+      }
+    } else {
+      setElementSelector('');
+      setOptimizedSelector('');
+    }
+  }, [selectedElement]);
+
+  // Reset value when wait type changes
+  useEffect(() => {
+    setWaitText('');
+  }, [selectedWaitType]);
+
+  const handleAddWaitCondition = () => {
+    const selectedWait = waitConditionTypes.find(type => type.id === selectedWaitType);
+    if (!selectedWait) return;
+
+    if (selectedWait.requiresElement && !elementSelector) {
+      alert('Please select an element first');
+      return;
+    }
+
+    if (selectedWaitType === 'text' && !waitText) {
+      alert('Please enter text to wait for');
+      return;
+    }
+
+    // Create wait condition object
+    const waitCondition = {
+      type: selectedWaitType,
+      selector: selectedWait.requiresElement ? optimizedSelector : undefined,
+      timeout: timeout,
+      text: selectedWaitType === 'text' ? waitText : undefined
+    };
+
+    // Add to recorder context
+    addWaitCondition(waitCondition);
+    
+    // Reset form if needed
+    if (!selectedElement) {
+      setElementSelector('');
+      setOptimizedSelector('');
+    }
+    setWaitText('');
+  };
+
+  return (
+    <div className="wait-conditions-panel p-4 border rounded shadow-sm">
+      <h3 className="text-lg font-medium mb-4">Add Wait Condition</h3>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Wait Type</label>
+        <select
+          className="w-full p-2 border rounded"
+          value={selectedWaitType}
+          onChange={(e) => setSelectedWaitType(e.target.value)}
+          disabled={isProcessing}
+        >
+          {waitConditionTypes.map(type => (
+            <option key={type.id} value={type.id}>{type.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          {waitConditionTypes.find(type => type.id === selectedWaitType)?.description}
+        </p>
+      </div>
+
+      {waitConditionTypes.find(type => type.id === selectedWaitType)?.requiresElement && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Element Selector</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={elementSelector}
+            onChange={(e) => setElementSelector(e.target.value)}
+            placeholder="Select an element or enter selector"
+            disabled={isProcessing}
+          />
+          {isProcessing && (
+            <p className="text-xs text-blue-500 mt-1">Optimizing selector...</p>
+          )}
+          {!selectedElement && elementSelector && (
+            <button 
+              className="mt-1 text-xs text-blue-600 hover:underline"
+              onClick={() => {
+                setIsProcessing(true);
+                const selectorService = new SelectorService();
+                selectorService.optimizeSelector(elementSelector)
+                  .then(selector => {
+                    setOptimizedSelector(selector);
+                    setIsProcessing(false);
+                  })
+                  .catch(() => {
+                    setOptimizedSelector(elementSelector);
+                    setIsProcessing(false);
+                  });
+              }}
+            >
+              Optimize selector
+            </button>
+          )}
+        </div>
+      )}
+
+      {selectedWaitType === 'text' && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Text to Wait For</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={waitText}
+            onChange={(e) => setWaitText(e.target.value)}
+            placeholder="Enter text content to wait for"
+            disabled={isProcessing}
+          />
+        </div>
+      )}
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Timeout (ms)</label>
+        <input
+          type="number"
+          className="w-full p-2 border rounded"
+          value={timeout}
+          onChange={(e) => setTimeout(parseInt(e.target.value) || 5000)}
+          min="100"
+          max="60000"
+          step="100"
+          disabled={isProcessing}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum time to wait (in milliseconds)
+        </p>
+      </div>
+
+      <button
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+        onClick={handleAddWaitCondition}
+        disabled={isProcessing || !recordingActive}
+      >
+        Add Wait Condition
+      </button>
+    </div>
+  );
+};
+
+export default WaitConditionsPanel;
+
+
+import React, { useState, useEffect, useContext } from 'react';
+import { RecorderContext } from '../../contexts/RecorderContext';
+import { ProjectContext } from '../../contexts/ProjectContext';
+
+interface DataVariable {
+  name: string;
+  value: string;
+  description?: string;
+}
+
+const DataInputPanel: React.FC = () => {
+  const { selectedElement, addDataInput, recordingActive } = useContext(RecorderContext);
+  const { currentProject } = useContext(ProjectContext);
+  
+  const [inputValue, setInputValue] = useState<string>('');
+  const [isParameterized, setIsParameterized] = useState<boolean>(false);
+  const [variableName, setVariableName] = useState<string>('');
+  const [variableDescription, setVariableDescription] = useState<string>('');
+  const [existingVariables, setExistingVariables] = useState<DataVariable[]>([]);
+  const [selectedVariable, setSelectedVariable] = useState<string>('');
+  const [createNewVariable, setCreateNewVariable] = useState<boolean>(true);
+  
+  // Load existing variables from project
+  useEffect(() => {
+    if (currentProject?.id) {
+      // This would typically come from your project service
+      // For now, we'll mock some variables
+      setExistingVariables([
+        { name: 'username', value: 'testuser', description: 'Standard test username' },
+        { name: 'password', value: 'P@ssw0rd', description: 'Standard test password' },
+        { name: 'email', value: 'test@example.com', description: 'Test email address' }
+      ]);
+    } else {
+      setExistingVariables([]);
+    }
+  }, [currentProject]);
+
+  // Pre-populate input value based on selected element
+  useEffect(() => {
+    if (selectedElement && selectedElement.inputType) {
+      const inputType = selectedElement.inputType;
+      
+      // Generate appropriate test data based on input type
+      if (inputType === 'email') {
+        setInputValue('test@example.com');
+        
+        // Check if we have an email variable
+        const emailVar = existingVariables.find(v => v.name === 'email');
+        if (emailVar) {
+          setIsParameterized(true);
+          setCreateNewVariable(false);
+          setSelectedVariable('email');
+        }
+      } else if (inputType === 'password') {
+        setInputValue('P@ssw0rd');
+        
+        // Check if we have a password variable
+        const passwordVar = existingVariables.find(v => v.name === 'password');
+        if (passwordVar) {
+          setIsParameterized(true);
+          setCreateNewVariable(false);
+          setSelectedVariable('password');
+        }
+      } else if (inputType === 'number') {
+        setInputValue('123');
+      } else if (inputType === 'tel') {
+        setInputValue('555-123-4567');
+      } else if (inputType === 'date') {
+        setInputValue(new Date().toISOString().split('T')[0]);
+      } else {
+        // For text inputs
+        if (selectedElement.placeholder) {
+          setInputValue(selectedElement.placeholder);
+        } else if (selectedElement.label) {
+          // Generate input based on label
+          const label = selectedElement.label.toLowerCase();
+          if (label.includes('name')) {
+            setInputValue('Test User');
+          } else if (label.includes('email')) {
+            setInputValue('test@example.com');
+          } else if (label.includes('phone')) {
+            setInputValue('555-123-4567');
+          } else if (label.includes('address')) {
+            setInputValue('123 Test Street');
+          } else if (label.includes('city')) {
+            setInputValue('Test City');
+          } else if (label.includes('state')) {
+            setInputValue('Test State');
+          } else if (label.includes('zip') || label.includes('postal')) {
+            setInputValue('12345');
+          } else if (label.includes('country')) {
+            setInputValue('Test Country');
+          } else {
+            setInputValue(`Test ${label}`);
+          }
+          
+          // Set variable name based on label
+          setVariableName(label.replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, ''));
+        } else {
+          setInputValue('Test input');
+        }
+      }
+    } else {
+      setInputValue('');
+    }
+  }, [selectedElement, existingVariables]);
+
+  const handleAddDataInput = () => {
+    if (!selectedElement) {
+      alert('Please select an input element first');
+      return;
+    }
+
+    if (!inputValue) {
+      alert('Please enter an input value');
+      return;
+    }
+
+    let dataInput: any = {
+      selector: selectedElement.selector,
+      value: inputValue,
+      parameterized: isParameterized
+    };
+
+    if (isParameterized) {
+      if (createNewVariable) {
+        if (!variableName) {
+          alert('Please enter a variable name');
+          return;
+        }
+        
+        // Check if variable name already exists
+        if (existingVariables.some(v => v.name === variableName)) {
+          alert('A variable with this name already exists. Please choose another name.');
+          return;
+        }
+        
+        // Add new variable to project
+        const newVariable: DataVariable = {
+          name: variableName,
+          value: inputValue,
+          description: variableDescription
+        };
+        
+        // In a real application, you would save this to your project
+        setExistingVariables([...existingVariables, newVariable]);
+        
+        dataInput.variableName = variableName;
+      } else {
+        if (!selectedVariable) {
+          alert('Please select a variable');
+          return;
+        }
+        
+        dataInput.variableName = selectedVariable;
+      }
+    }
+
+    // Add to recorder context
+    addDataInput(dataInput);
+    
+    // Reset form
+    setInputValue('');
+    setIsParameterized(false);
+    setVariableName('');
+    setVariableDescription('');
+    setSelectedVariable('');
+    setCreateNewVariable(true);
+  };
+
+  return (
+    <div className="data-input-panel p-4 border rounded shadow-sm">
+      <h3 className="text-lg font-medium mb-4">Data Input</h3>
+      
+      {!selectedElement ? (
+        <div className="text-sm text-gray-500 mb-4">
+          Please select an input element on the page first
+        </div>
+      ) : (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Input Value</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Enter input value"
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="flex items-center text-sm font-medium">
+              <input
+                type="checkbox"
+                className="mr-2"
+                checked={isParameterized}
+                onChange={(e) => setIsParameterized(e.target.checked)}
+              />
+              Parameterize this input
+            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Use a variable for this input to make it reusable
+            </p>
+          </div>
+          
+          {isParameterized && (
+            <>
+              <div className="mb-4">
+                <label className="flex items-center text-sm font-medium">
+                  <input
+                    type="radio"
+                    className="mr-2"
+                    checked={!createNewVariable}
+                    onChange={() => setCreateNewVariable(false)}
+                    disabled={existingVariables.length === 0}
+                  />
+                  Use existing variable
+                </label>
+              </div>
+              
+              {!createNewVariable && (
+                <div className="mb-4 ml-6">
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={selectedVariable}
+                    onChange={(e) => setSelectedVariable(e.target.value)}
+                    disabled={existingVariables.length === 0}
+                  >
+                    <option value="">Select a variable</option>
+                    {existingVariables.map(variable => (
+                      <option key={variable.name} value={variable.name}>
+                        {variable.name} ({variable.value})
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {selectedVariable && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      {existingVariables.find(v => v.name === selectedVariable)?.description}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="mb-4">
+                <label className="flex items-center text-sm font-medium">
+                  <input
+                    type="radio"
+                    className="mr-2"
+                    checked={createNewVariable}
+                    onChange={() => setCreateNewVariable(true)}
+                  />
+                  Create new variable
+                </label>
+              </div>
+              
+              {createNewVariable && (
+                <div className="mb-4 ml-6">
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium mb-1">Variable Name</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      value={variableName}
+                      onChange={(e) => setVariableName(e.target.value)}
+                      placeholder="e.g. username, password, email"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Use lowercase letters, numbers, and underscores
+                    </p>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium mb-1">Description (Optional)</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      value={variableDescription}
+                      onChange={(e) => setVariableDescription(e.target.value)}
+                      placeholder="Describe what this variable is used for"
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+      
+      <button
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+        onClick={handleAddDataInput}
+        disabled={!selectedElement || !inputValue || !recordingActive}
+      >
+        Add Data Input
+      </button>
+    </div>
+  );
+};
+
+export default DataInputPanel;
+
+
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { WebSocketService } from '../services/websocket/WebSocketService';
+import { RecorderSocketService } from '../services/websocket/RecorderSocketService';
+import { ProjectContext } from './ProjectContext';
+
+export interface ElementInfo {
+  selector: string;
+  xpath?: string;
+  textContent?: string;
+  tagName?: string;
+  inputType?: string;
+  placeholder?: string;
+  label?: string;
+  attributes?: Record<string, string>;
+}
+
+export interface TestStep {
+  id: string;
+  type: 'action' | 'assertion' | 'wait' | 'data';
+  action?: string;
+  selector?: string;
+  value?: string;
+  description: string;
+  timestamp: number;
+  screenshot?: string;
+}
+
+export interface BrowserInfo {
+  url: string;
+  title: string;
+  isConnected: boolean;
+}
+
+export interface RecorderContextType {
+  recordingActive: boolean;
+  startRecording: () => Promise<void>;
+  stopRecording: () => Promise<void>;
+  pauseRecording: () => void;
+  resumeRecording: () => void;
+  testSteps: TestStep[];
+  browserInfo: BrowserInfo;
+  selectedElement: ElementInfo | null;
+  selectElement: (element: ElementInfo | null) => void;
+  addAssertion: (assertion: any) => void;
+  addWaitCondition: (waitCondition: any) => void;
+  addDataInput: (dataInput: any) => void;
+  removeStep: (stepId: string) => void;
+  moveStepUp: (stepId: string) => void;
+  moveStepDown: (stepId: string) => void;
+  saveTest: () => Promise<void>;
+  clearRecording: () => void;
+  isRecording: boolean;
+  isPaused: boolean;
+  isProcessing: boolean;
+  error: string | null;
+  navigateTo: (url: string) => Promise<void>;
+}
+
+const defaultBrowserInfo: BrowserInfo = {
+  url: '',
+  title: '',
+  isConnected: false
+};
+
+export const RecorderContext = createContext<RecorderContextType>({
+  recordingActive: false,
+  startRecording: async () => {},
+  stopRecording: async () => {},
+  pauseRecording: () => {},
+  resumeRecording: () => {},
+  testSteps: [],
+  browserInfo: defaultBrowserInfo,
+  selectedElement: null,
+  selectElement: () => {},
+  addAssertion: () => {},
+  addWaitCondition: () => {},
+  addDataInput: () => {},
+  removeStep: () => {},
+  moveStepUp: () => {},
+  moveStepDown: () => {},
+  saveTest: async () => {},
+  clearRecording: () => {},
+  isRecording: false,
+  isPaused: false,
+  isProcessing: false,
+  error: null,
+  navigateTo: async () => {}
+});
+
+export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentProject } = useContext(ProjectContext);
+  const [webSocketService] = useState<WebSocketService>(new WebSocketService());
+  const [recorderService] = useState<RecorderSocketService>(new RecorderSocketService(webSocketService));
+  
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [testSteps, setTestSteps] = useState<TestStep[]>([]);
+  const [browserInfo, setBrowserInfo] = useState<BrowserInfo>(defaultBrowserInfo);
+  const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
+
+  // Initialize connection and set up event listeners
+  useEffect(() => {
+    if (!currentProject) return;
+
+    const connectToRecorder = async () => {
+      try {
+        await webSocketService.connect();
+        
+        // Set up event listeners for browser updates
+        recorderService.onBrowserInfoUpdate((info) => {
+          setBrowserInfo(info);
+        });
+        
+        // Set up event listeners for new test steps
+        recorderService.onTestStepRecorded((step) => {
+          setTestSteps(prev => [...prev, step]);
+        });
+        
+        // Set up event listeners for errors
+        recorderService.onError((errorMessage) => {
+          setError(errorMessage);
+          setIsProcessing(false);
+          if (isRecording) {
+            setIsPaused(true);
+          }
+        });
+        
+        // Initialize the recorder with the current project
+        await recorderService.initializeRecorder(currentProject.id);
+      } catch (error) {
+        console.error('Failed to connect to recorder:', error);
+        setError('Failed to connect to the recorder service. Please try again.');
+        setIsProcessing(false);
+      }
+    };
+    
+    connectToRecorder();
+    
+    return () => {
+      // Clean up WebSocket connection
+      webSocketService.disconnect();
+    };
+  }, [currentProject]);
+
+  const startRecording = async () => {
+    if (!currentProject) {
+      setError('No project selected. Please select a project first.');
+      return;
+    }
+    
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      await recorderService.startRecording();
+      setIsRecording(true);
+      setIsPaused(false);
+      setTestSteps([]);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      setError('Failed to start recording. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!isRecording) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      await recorderService.stopRecording();
+      setIsRecording(false);
+      setIsPaused(false);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      setError('Failed to stop recording. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const pauseRecording = () => {
+    if (!isRecording || isPaused) return;
+    
+    try {
+      recorderService.pauseRecording();
+      setIsPaused(true);
+    } catch (error) {
+      console.error('Failed to pause recording:', error);
+      setError('Failed to pause recording. Please try again.');
+    }
+  };
+
+  const resumeRecording = () => {
+    if (!isRecording || !isPaused) return;
+    
+    try {
+      recorderService.resumeRecording();
+      setIsPaused(false);
+      setError(null);
+    } catch (error) {
+      console.error('Failed to resume recording:', error);
+      setError('Failed to resume recording. Please try again.');
+    }
+  };
+
+  const selectElement = (element: ElementInfo | null) => {
+    setSelectedElement(element);
+  };
+
+  const addAssertion = (assertion: any) => {
+    if (!isRecording) return;
+    
+    try {
+      const stepId = `assertion_${Date.now()}`;
+      
+      // Create a description based on assertion type
+      let description = '';
+      switch (assertion.type) {
+        case 'visible':
+          description = 'Element should be visible';
+          break;
+        case 'text':
+          description = `Element should contain text "${assertion.value}"`;
+          break;
+        case 'attribute':
+          description = `Element should have attribute "${assertion.attribute}" with value "${assertion.value}"`;
+          break;
+        case 'count':
+          description = `There should be ${assertion.value} matching elements`;
+          break;
+        case 'url':
+          description = `URL should contain "${assertion.value}"`;
+          break;
+        case 'title':
+          description = `Page title should be "${assertion.value}"`;
+          break;
+        default:
+          description = 'Assertion added';
+      }
+      
+      const step: TestStep = {
+        id: stepId,
+        type: 'assertion',
+        action: assertion.type,
+        selector: assertion.selector,
+        value: assertion.value,
+        description,
+        timestamp: Date.now()
+      };
+      
+      // Send to backend
+      recorderService.addAssertion(assertion);
+      
+      // Update local state
+      setTestSteps(prev => [...prev, step]);
+    } catch (error) {
+      console.error('Failed to add assertion:', error);
+      setError('Failed to add assertion. Please try again.');
+    }
+  };
+
+  const addWaitCondition = (waitCondition: any) => {
+    if (!isRecording) return;
+    
+    try {
+      const stepId = `wait_${Date.now()}`;
+      
+      // Create a description based on wait type
+      let description = '';
+      switch (waitCondition.type) {
+        case 'visible':
+          description = `Wait for element to be visible (${waitCondition.timeout}ms timeout)`;
+          break;
+        case 'clickable':
+          description = `Wait for element to be clickable (${waitCondition.timeout}ms timeout)`;
+          break;
+        case 'text':
+          description = `Wait for text "${waitCondition.text}" (${waitCondition.timeout}ms timeout)`;
+          break;
+        case 'navigation':
+          description = `Wait for navigation to complete (${waitCondition.timeout}ms timeout)`;
+          break;
+        case 'network':
+          description = `Wait for network to be idle (${waitCondition.timeout}ms timeout)`;
+          break;
+        case 'fixed':
+          description = `Wait for ${waitCondition.timeout}ms`;
+          break;
+        default:
+          description = `Wait condition added (${waitCondition.timeout}ms timeout)`;
+      }
+      
+      const step: TestStep = {
+        id: stepId,
+        type: 'wait',
+        action: waitCondition.type,
+        selector: waitCondition.selector,
+        value: waitCondition.timeout.toString(),
+        description,
+        timestamp: Date.now()
+      };
+      
+      // Send to backend
+      recorderService.addWaitCondition(waitCondition);
+      
+      // Update local state
+      setTestSteps(prev => [...prev, step]);
+    } catch (error) {
+      console.error('Failed to add wait condition:', error);
+      setError('Failed to add wait condition. Please try again.');
+    }
+  };
+
+  const addDataInput = (dataInput: any) => {
+    if (!isRecording) return;
+    
+    try {
+      const stepId = `data_${Date.now()}`;
+      
+      // Create a description based on data input
+      let description = '';
+      if (dataInput.parameterized) {
+        description = `Enter variable "${dataInput.variableName}" in input field`;
+      } else {
+        // Mask password values in the description
+        const isPassword = selectedElement?.inputType === 'password';
+        const displayValue = isPassword ? '********' : dataInput.value;
+        description = `Enter "${displayValue}" in input field`;
+      }
+      
+      const step: TestStep = {
+        id: stepId,
+        type: 'data',
+        action: 'input',
+        selector: dataInput.selector,
+        value: dataInput.value,
+        description,
+        timestamp: Date.now()
+      };
+      
+      // Send to backend
+      recorderService.addDataInput(dataInput);
+      
+      // Update local state
+      setTestSteps(prev => [...prev, step]);
+    } catch (error) {
+      console.error('Failed to add data input:', error);
+      setError('Failed to add data input. Please try again.');
+    }
+  };
+
+  const removeStep = (stepId: string) => {
+    try {
+      // Send to backend
+      recorderService.removeStep(stepId);
+      
+      // Update local state
+      setTestSteps(prev => prev.filter(step => step.id !== stepId));
+    } catch (error) {
+      console.error('Failed to remove step:', error);
+      setError('Failed to remove step. Please try again.');
+    }
+  };
+
+  const moveStepUp = (stepId: string) => {
+    const index = testSteps.findIndex(step => step.id === stepId);
+    if (index <= 0) return;
+    
+    try {
+      // Create new array with reordered steps
+      const newSteps = [...testSteps];
+      const temp = newSteps[index];
+      newSteps[index] = newSteps[index - 1];
+      newSteps[index - 1] = temp;
+      
+      // Send to backend
+      recorderService.reorderSteps(newSteps.map(step => step.id));
+      
+      // Update local state
+      setTestSteps(newSteps);
+    } catch (error) {
+      console.error('Failed to move step up:', error);
+      setError('Failed to reorder steps. Please try again.');
+    }
+  };
+
+  const moveStepDown = (stepId: string) => {
+    const index = testSteps.findIndex(step => step.id === stepId);
+    if (index === -1 || index >= testSteps.length - 1) return;
+    
+    try {
+      // Create new array with reordered steps
+      const newSteps = [...testSteps];
+      const temp = newSteps[index];
+      newSteps[index] = newSteps[index + 1];
+      newSteps[index + 1] = temp;
+      
+      // Send to backend
+      recorderService.reorderSteps(newSteps.map(step => step.id));
+      
+      // Update local state
+      setTestSteps(newSteps);
+    } catch (error) {
+      console.error('Failed to move step down:', error);
+      setError('Failed to reorder steps. Please try again.');
+    }
+  };
+
+  const saveTest = async () => {
+    if (!currentProject || testSteps.length === 0) {
+      setError('No test steps to save.');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      await recorderService.saveTest(currentProject.id);
+      setIsProcessing(false);
+      
+      // Reset after saving
+      setTestSteps([]);
+      setIsRecording(false);
+      setIsPaused(false);
+    } catch (error) {
+      console.error('Failed to save test:', error);
+      setError('Failed to save test. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
+  const clearRecording = () => {
+    setTestSteps([]);
+    setError(null);
+  };
+
+  const navigateTo = async (url: string) => {
+    if (!browserInfo.isConnected) {
+      setError('Browser is not connected. Please start recording first.');
+      return;
+    }
+    
+    try {
+      await recorderService.navigateTo(url);
+    } catch (error) {
+      console.error('Failed to navigate:', error);
+      setError('Failed to navigate to URL. Please try again.');
+    }
+  };
+
+  return (
+    <RecorderContext.Provider
+      value={{
+        recordingActive: isRecording && !isPaused,
+        startRecording,
+        stopRecording,
+        pauseRecording,
+        resumeRecording,
+        testSteps,
+        browserInfo,
+        selectedElement,
+        selectElement,
+        addAssertion,
+        addWaitCondition,
+        addDataInput,
+        removeStep,
+        moveStepUp,
+        moveStepDown,
+        saveTest,
+        clearRecording,
+        isRecording,
+        isPaused,
+        isProcessing,
+        error,
+        navigateTo
+      }}
+    >
+      {children}
+    </RecorderContext.Provider>
+  );
+};
+
+export default RecorderProvider;
+
+
+import { WebSocketService } from './WebSocketService';
+import { BrowserInfo, ElementInfo, TestStep } from '../../contexts/RecorderContext';
+
+type BrowserInfoCallback = (info: BrowserInfo) => void;
+type TestStepCallback = (step: TestStep) => void;
+type ErrorCallback = (error: string) => void;
+
+export class RecorderSocketService {
+  private webSocketService: WebSocketService;
+  private browserInfoCallbacks: BrowserInfoCallback[] = [];
+  private testStepCallbacks: TestStepCallback[] = [];
+  private errorCallbacks: ErrorCallback[] = [];
+
+  constructor(webSocketService: WebSocketService) {
+    this.webSocketService = webSocketService;
+
+    // Set up message handlers
+    this.webSocketService.addMessageHandler('browserInfo', (data) => {
+      this.handleBrowserInfoUpdate(data);
+    });
+
+    this.webSocketService.addMessageHandler('testStep', (data) => {
+      this.handleTestStepRecorded(data);
+    });
+
+    this.webSocketService.addMessageHandler('error', (data) => {
+      this.handleError(data.message);
+    });
+
+    this.webSocketService.addMessageHandler('elementSelected', (data) => {
+      // This would be handled directly by the component that
+      // needs access to the selected element
+    });
+  }
+
+  // Event registration methods
+  onBrowserInfoUpdate(callback: BrowserInfoCallback): void {
+    this.browserInfoCallbacks.push(callback);
+  }
+
+  onTestStepRecorded(callback: TestStepCallback): void {
+    this.testStepCallbacks.push(callback);
+  }
+
+  onError(callback: ErrorCallback): void {
+    this.errorCallbacks.push(callback);
+  }
+
+  // Event handlers
+  private handleBrowserInfoUpdate(info: BrowserInfo): void {
+    this.browserInfoCallbacks.forEach(callback => callback(info));
+  }
+
+  private handleTestStepRecorded(step: TestStep): void {
+    this.testStepCallbacks.forEach(callback => callback(step));
+  }
+
+  private handleError(error: string): void {
+    this.errorCallbacks.forEach(callback => callback(error));
+  }
+
+  // Recorder control methods
+  async initializeRecorder(projectId: string): Promise<void> {
+    return this.webSocketService.sendMessage('initializeRecorder', { projectId });
+  }
+
+  async startRecording(): Promise<void> {
+    return this.webSocketService.sendMessage('startRecording', {});
+  }
+
+  async stopRecording(): Promise<void> {
+    return this.webSocketService.sendMessage('stopRecording', {});
+  }
+
+  pauseRecording(): void {
+    this.webSocketService.sendMessage('pauseRecording', {});
+  }
+
+  resumeRecording(): void {
+    this.webSocketService.sendMessage('resumeRecording', {});
+  }
+
+  // Test step methods
+  addAssertion(assertion: any): void {
+    this.webSocketService.sendMessage('addAssertion', assertion);
+  }
+
+  addWaitCondition(waitCondition: any): void {
+    this.webSocketService.sendMessage('addWaitCondition', waitCondition);
+  }
+
+  addDataInput(dataInput: any): void {
+    this.webSocketService.sendMessage('addDataInput', dataInput);
+  }
+
+  removeStep(stepId: string): void {
+    this.webSocketService.sendMessage('removeStep', { stepId });
+  }
+
+  reorderSteps(stepIds: string[]): void {
+    this.webSocketService.sendMessage('reorderSteps', { stepIds });
+  }
+
+  async saveTest(projectId: string): Promise<void> {
+    return this.webSocketService.sendMessage('saveTest', { projectId });
+  }
+
+  // Browser control methods
+  async navigateTo(url: string): Promise<void> {
+    return this.webSocketService.sendMessage('navigateTo', { url });
+  }
+
+  async captureScreenshot(): Promise<string> {
+    const response = await this.webSocketService.sendMessage('captureScreenshot', {});
+    return response.screenshot as string;
+  }
+
+  async getPageHtml(): Promise<string> {
+    const response = await this.webSocketService.sendMessage('getPageHtml', {});
+    return response.html as string;
+  }
+
+  async highlightElement(selector: string): Promise<void> {
+    return this.webSocketService.sendMessage('highlightElement', { selector });
+  }
+
+  async inspectElement(selector: string): Promise<ElementInfo> {
+    const response = await this.webSocketService.sendMessage('inspectElement', { selector });
+    return response.element as ElementInfo;
+  }
+
+  async executeScript<T>(script: string, args: any[] = []): Promise<T> {
+    const response = await this.webSocketService.sendMessage('executeScript', { script, args });
+    return response.result as T;
+  }
+}
+
+
+import { io, Socket } from 'socket.io-client';
+
+export type MessageHandler = (data: any) => void;
+
+type MessagePromiseResolver = {
+  resolve: (value: any) => void;
+  reject: (reason: any) => void;
+  timeout: NodeJS.Timeout;
+};
+
+export class WebSocketService {
+  private socket: Socket | null = null;
+  private connected: boolean = false;
+  private reconnecting: boolean = false;
+  private messageHandlers: Map<string, MessageHandler[]> = new Map();
+  private messagePromises: Map<string, MessagePromiseResolver> = new Map();
+  private messageCounter: number = 0;
+  private backoffTime: number = 500;
+  private maxBackoffTime: number = 10000;
+  private connectPromise: Promise<void> | null = null;
+
+  constructor(private url: string = 'http://localhost:8080') {}
+
+  isConnected(): boolean {
+    return this.connected;
+  }
+
+  async connect(): Promise<void> {
+    if (this.connected) return;
+    
+    // If we're already trying to connect, return the existing promise
+    if (this.connectPromise) return this.connectPromise;
+    
+    this.connectPromise = new Promise<void>((resolve, reject) => {
+      try {
+        // Create socket.io connection
+        this.socket = io(this.url, {
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          timeout: 20000
+        });
+        
+        // Set up event listeners
+        this.socket.on('connect', () => {
+          console.log('WebSocket connected');
+          this.connected = true;
+          this.backoffTime = 500; // Reset backoff time
+          resolve();
+          this.connectPromise = null;
+        });
+        
+        this.socket.on('disconnect', () => {
+          console.log('WebSocket disconnected');
+          this.connected = false;
+          this.handleReconnection();
+        });
+        
+        this.socket.on('connect_error', (error) => {
+          console.error('WebSocket connection error:', error);
+          if (!this.connected) {
+            reject(error);
+            this.connectPromise = null;
+          }
+          this.handleReconnection();
+        });
+        
+        this.socket.on('error', (error) => {
+          console.error('WebSocket error:', error);
+        });
+        
+        // Set up message handler
+        this.socket.on('message', (message) => {
+          this.handleMessage(message);
+        });
+        
+        // Set up response handler for promised messages
+        this.socket.on('response', (response) => {
+          this.handleResponse(response);
+        });
+      } catch (error) {
+        console.error('Error initializing WebSocket:', error);
+        this.connectPromise = null;
+        reject(error);
+      }
+    });
+    
+    return this.connectPromise;
+  }
+
+  disconnect(): void {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+    this.connected = false;
+    this.connectPromise = null;
+  }
+
+  addMessageHandler(type: string, handler: MessageHandler): void {
+    if (!this.messageHandlers.has(type)) {
+      this.messageHandlers.set(type, []);
+    }
+    this.messageHandlers.get(type)?.push(handler);
+  }
+
+  removeMessageHandler(type: string, handler: MessageHandler): void {
+    const handlers = this.messageHandlers.get(type);
+    if (handlers) {
+      this.messageHandlers.set(
+        type,
+        handlers.filter(h => h !== handler)
+      );
+    }
+  }
+
+  async sendMessage(type: string, data: any, timeout: number = 30000): Promise<any> {
+    if (!this.connected) {
+      try {
+        await this.connect();
+      } catch (error) {
+        throw new Error(`Failed to connect to WebSocket server: ${error}`);
+      }
+    }
+
+    if (!this.socket) {
+      throw new Error('WebSocket is not initialized');
+    }
+
+    // Generate a unique message ID
+    const messageId = `${type}_${this.messageCounter++}`;
+    
+    // Create a promise that will be resolved when the response is received
+    const promise = new Promise<any>((resolve, reject) => {
+      // Set a timeout to reject the promise if no response is received
+      const timeoutId = setTimeout(() => {
+        const resolver = this.messagePromises.get(messageId);
+        if (resolver) {
+          this.messagePromises.delete(messageId);
+          reject(new Error(`Request timed out after ${timeout}ms: ${type}`));
+        }
+      }, timeout);
+      
+      // Store the resolver
+      this.messagePromises.set(messageId, { resolve, reject, timeout: timeoutId });
+    });
+    
+    // Send the message
+    this.socket.emit('message', {
+      id: messageId,
+      type,
+      data
+    });
+    
+    return promise;
+  }
+
+  private handleMessage(message: any): void {
+    const { type, data } = message;
+    
+    // Dispatch to handlers
+    const handlers = this.messageHandlers.get(type);
+    if (handlers) {
+      handlers.forEach(handler => {
+        try {
+          handler(data);
+        } catch (error) {
+          console.error(`Error in message handler for type ${type}:`, error);
+        }
+      });
+    }
+  }
+
+  private handleResponse(response: any): void {
+    const { id, success, data, error } = response;
+    
+    // Find the promise resolver
+    const resolver = this.messagePromises.get(id);
+    if (resolver) {
+      clearTimeout(resolver.timeout);
+      this.messagePromises.delete(id);
+      
+      if (success) {
+        resolver.resolve(data);
+      } else {
+        resolver.reject(new Error(error || 'Unknown error'));
+      }
+    }
+  }
+
+  private handleReconnection(): void {
+    if (this.reconnecting) return;
+    this.reconnecting = true;
+    
+    // Exponential backoff for reconnection
+    setTimeout(async () => {
+      try {
+        this.reconnecting = false;
+        if (!this.connected) {
+          console.log(`Attempting to reconnect in ${this.backoffTime}ms...`);
+          await this.connect();
+        }
+      } catch (error) {
+        console.error('Reconnection failed:', error);
+        // Increase backoff time for next attempt, up to a maximum
+        this.backoffTime = Math.min(this.backoffTime * 2, this.maxBackoffTime);
+      }
+    }, this.backoffTime);
+  }
+}
+
+export default WebSocketService;
+
+
+package com.automation.api.controllers;
+
+import com.automation.api.models.TestStep;
+import com.automation.api.services.RecorderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/recorder")
+public class RecorderController {
+
+    private final RecorderService recorderService;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    public RecorderController(RecorderService recorderService, SimpMessagingTemplate messagingTemplate) {
+        this.recorderService = recorderService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    @PostMapping("/initialize")
+    public ResponseEntity<Map<String, Object>> initializeRecorder(@RequestBody Map<String, String> request) {
+        String projectId = request.get("projectId");
+        Map<String, Object> result = recorderService.initializeRecorder(projectId);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/start")
+    public ResponseEntity<Map<String, Object>> startRecording(@RequestBody Map<String, String> request) {
+        String projectId = request.get("projectId");
+        Map<String, Object> result = recorderService.startRecording(projectId);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/stop")
+    public ResponseEntity<Map<String, Object>> stopRecording() {
+        Map<String, Object> result = recorderService.stopRecording();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/pause")
+    public ResponseEntity<Map<String, Object>> pauseRecording() {
+        Map<String, Object> result = recorderService.pauseRecording();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/resume")
+    public ResponseEntity<Map<String, Object>> resumeRecording() {
+        Map<String, Object> result = recorderService.resumeRecording();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<Map<String, Object>> saveTest(@RequestBody Map<String, String> request) {
+        String projectId = request.get("projectId");
+        String testName = request.get("testName");
+        Map<String, Object> result = recorderService.saveTest(projectId, testName);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/navigate")
+    public ResponseEntity<Map<String, Object>> navigateTo(@RequestBody Map<String, String> request) {
+        String url = request.get("url");
+        Map<String, Object> result = recorderService.navigateTo(url);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/screenshot")
+    public ResponseEntity<Map<String, String>> captureScreenshot() {
+        String screenshot = recorderService.captureScreenshot();
+        return ResponseEntity.ok(Map.of("screenshot", screenshot));
+    }
+
+    @GetMapping("/steps")
+    public ResponseEntity<List<TestStep>> getRecordedSteps() {
+        List<TestStep> steps = recorderService.getRecordedSteps();
+        return ResponseEntity.ok(steps);
+    }
+
+    @PostMapping("/step/assertion")
+    public ResponseEntity<TestStep> addAssertion(@RequestBody Map<String, Object> assertionData) {
+        TestStep step = recorderService.addAssertion(assertionData);
+        return ResponseEntity.ok(step);
+    }
+
+    @PostMapping("/step/wait")
+    public ResponseEntity<TestStep> addWaitCondition(@RequestBody Map<String, Object> waitConditionData) {
+        TestStep step = recorderService.addWaitCondition(waitConditionData);
+        return ResponseEntity.ok(step);
+    }
+
+    @PostMapping("/step/data")
+    public ResponseEntity<TestStep> addDataInput(@RequestBody Map<String, Object> dataInputData) {
+        TestStep step = recorderService.addDataInput(dataInputData);
+        return ResponseEntity.ok(step);
+    }
+
+    @DeleteMapping("/step/{stepId}")
+    public ResponseEntity<Map<String, Boolean>> removeStep(@PathVariable String stepId) {
+        boolean removed = recorderService.removeStep(stepId);
+        return ResponseEntity.ok(Map.of("success", removed));
+    }
+
+    @PostMapping("/steps/reorder")
+    public ResponseEntity<Map<String, Boolean>> reorderSteps(@RequestBody List<String> stepIds) {
+        boolean reordered = recorderService.reorderSteps(stepIds);
+        return ResponseEntity.ok(Map.of("success", reordered));
+    }
+
+    // WebSocket message mappings
+    @MessageMapping("/recorder/initialize")
+    @SendTo("/topic/recorder/status")
+    public Map<String, Object> wsInitializeRecorder(Map<String, String> request) {
+        String projectId = request.get("projectId");
+        return recorderService.initializeRecorder(projectId);
+    }
+
+    @MessageMapping("/recorder/start")
+    public void wsStartRecording(Map<String, String> request) {
+        String projectId = request.get("projectId");
+        Map<String, Object> result = recorderService.startRecording(projectId);
+        messagingTemplate.convertAndSend("/topic/recorder/status", result);
+    }
+
+    @MessageMapping("/recorder/stop")
+    public void wsStopRecording() {
+        Map<String, Object> result = recorderService.stopRecording();
+        messagingTemplate.convertAndSend("/topic/recorder/status", result);
+    }
+
+    @MessageMapping("/recorder/pause")
+    public void wsPauseRecording() {
+        Map<String, Object> result = recorderService.pauseRecording();
+        messagingTemplate.convertAndSend("/topic/recorder/status", result);
+    }
+
+    @MessageMapping("/recorder/resume")
+    public void wsResumeRecording() {
+        Map<String, Object> result = recorderService.resumeRecording();
+        messagingTemplate.convertAndSend("/topic/recorder/status", result);
+    }
+
+    @MessageMapping("/recorder/save")
+    public void wsSaveTest(Map<String, String> request) {
+        String projectId = request.get("projectId");
+        String testName = request.get("testName");
+        Map<String, Object> result = recorderService.saveTest(projectId, testName);
+        messagingTemplate.convertAndSend("/topic/recorder/status", result);
+    }
+
+    @MessageMapping("/recorder/navigate")
+    public void wsNavigateTo(Map<String, String> request) {
+        String url = request.get("url");
+        Map<String, Object> result = recorderService.navigateTo(url);
+        messagingTemplate.convertAndSend("/topic/recorder/browser", result);
+    }
+
+    @MessageMapping("/recorder/screenshot")
+    public void wsCaptureScreenshot() {
+        String screenshot = recorderService.captureScreenshot();
+        messagingTemplate.convertAndSend("/topic/recorder/screenshot", Map.of("screenshot", screenshot));
+    }
+
+    @MessageMapping("/recorder/step/assertion")
+    public void wsAddAssertion(Map<String, Object> assertionData) {
+        TestStep step = recorderService.addAssertion(assertionData);
+        messagingTemplate.convertAndSend("/topic/recorder/steps", step);
+    }
+
+    @MessageMapping("/recorder/step/wait")
+    public void wsAddWaitCondition(Map<String, Object> waitConditionData) {
+        TestStep step = recorderService.addWaitCondition(waitConditionData);
+        messagingTemplate.convertAndSend("/topic/recorder/steps", step);
+    }
+
+    @MessageMapping("/recorder/step/data")
+    public void wsAddDataInput(Map<String, Object> dataInputData) {
+        TestStep step = recorderService.addDataInput(dataInputData);
+        messagingTemplate.convertAndSend("/topic/recorder/steps", step);
+    }
+
+    @MessageMapping("/recorder/step/remove")
+    public void wsRemoveStep(Map<String, String> request) {
+        String stepId = request.get("stepId");
+        boolean removed = recorderService.removeStep(stepId);
+        messagingTemplate.convertAndSend("/topic/recorder/steps/removed", Map.of("stepId", stepId, "success", removed));
+    }
+
+    @MessageMapping("/recorder/steps/reorder")
+    public void wsReorderSteps(Map<String, List<String>> request) {
+        List<String> stepIds = request.get("stepIds");
+        boolean reordered = recorderService.reorderSteps(stepIds);
+        messagingTemplate.convertAndSend("/topic/recorder/steps/reordered", Map.of("success", reordered));
+    }
+}
+
+package com.automation.api.services;
+
+import com.automation.api.models.Project;
+import com.automation.api.models.TestCase;
+import com.automation.api.models.TestStep;
+import com.automation.api.services.ai.SelectorService;
+import com.automation.api.utils.BddUtils;
+import com.automation.api.utils.PlaywrightUtils;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@Service
+public class RecorderService {
+    private static final Logger logger = LoggerFactory.getLogger(RecorderService.class);
+
+    private final ProjectService projectService;
+    private final FileSystemService fileSystemService;
+    private final BrowserService browserService;
+    private final SelectorService selectorService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final BddUtils bddUtils;
+
+    // State variables
+    private final AtomicBoolean isRecording = new AtomicBoolean(false);
+    private final AtomicBoolean isPaused = new AtomicBoolean(false);
+    private Project currentProject;
+    private TestCase currentTestCase;
+    private final List<TestStep> recordedSteps = Collections.synchronizedList(new ArrayList<>());
+    private final Map<String, Object> recorderState = new ConcurrentHashMap<>();
+
+    @Autowired
+    public RecorderService(
+            ProjectService projectService,
+            FileSystemService fileSystemService,
+            BrowserService browserService,
+            SelectorService selectorService,
+            SimpMessagingTemplate messagingTemplate,
+            BddUtils bddUtils) {
+        this.projectService = projectService;
+        this.fileSystemService = fileSystemService;
+        this.browserService = browserService;
+        this.selectorService = selectorService;
+        this.messagingTemplate = messagingTemplate;
+        this.bddUtils = bddUtils;
+    }
+
+    /**
+     * Initialize the recorder for a specific project
+     */
+    public Map<String, Object> initializeRecorder(String projectId) {
+        try {
+            // Get the project
+            currentProject = projectService.getProjectById(projectId);
+            if (currentProject == null) {
+                throw new IllegalArgumentException("Project not found: " + projectId);
+            }
+
+            // Create a new test case
+            currentTestCase = new TestCase();
+            currentTestCase.setId(UUID.randomUUID().toString());
+            currentTestCase.setName("Unnamed Test Case " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            currentTestCase.setProjectId(projectId);
+            currentTestCase.setCreatedAt(LocalDateTime.now());
+            currentTestCase.setUpdatedAt(LocalDateTime.now());
+
+            // Clear any existing recorded steps
+            recordedSteps.clear();
+            
+            // Reset recorder state
+            isRecording.set(false);
+            isPaused.set(false);
+            recorderState.clear();
+            recorderState.put("projectId", projectId);
+            recorderState.put("testCaseId", currentTestCase.getId());
+            
+            return Map.of(
+                "success", true,
+                "message", "Recorder initialized for project: " + currentProject.getName(),
+                "projectId", projectId,
+                "testCaseId", currentTestCase.getId()
+            );
+        } catch (Exception e) {
+            logger.error("Error initializing recorder", e);
+            return Map.of(
+                "success", false,
+                "message", "Error initializing recorder: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Start the recording process
+     */
+    public Map<String, Object> startRecording(String projectId) {
+        try {
+            // Initialize if needed
+            if (currentProject == null || !currentProject.getId().equals(projectId)) {
+                initializeRecorder(projectId);
+            }
+
+            // Launch browser if not already running
+            if (!browserService.isBrowserRunning()) {
+                browserService.launchBrowser();
+            }
+
+            // Get the current page
+            Page page = browserService.getPage();
+            
+            // Register event listeners for page actions
+            registerPageEventListeners(page);
+            
+            // Set recording state
+            isRecording.set(true);
+            isPaused.set(false);
+            
+            // Send browser info update
+            updateBrowserInfo();
+            
+            return Map.of(
+                "success", true,
+                "message", "Recording started",
+                "isRecording", true,
+                "isPaused", false,
+                "testCaseId", currentTestCase.getId()
+            );
+        } catch (Exception e) {
+            logger.error("Error starting recording", e);
+            return Map.of(
+                "success", false,
+                "message", "Error starting recording: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Stop the recording process
+     */
+    public Map<String, Object> stopRecording() {
+        try {
+            // Check if we're recording
+            if (!isRecording.get()) {
+                return Map.of(
+                    "success", false,
+                    "message", "Not currently recording"
+                );
+            }
+            
+            // Set recording state
+            isRecording.set(false);
+            isPaused.set(false);
+            
+            // Unregister event listeners
+            if (browserService.isBrowserRunning()) {
+                unregisterPageEventListeners(browserService.getPage());
+            }
+            
+            return Map.of(
+                "success", true,
+                "message", "Recording stopped",
+                "isRecording", false,
+                "isPaused", false,
+                "stepsCount", recordedSteps.size()
+            );
+        } catch (Exception e) {
+            logger.error("Error stopping recording", e);
+            return Map.of(
+                "success", false,
+                "message", "Error stopping recording: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Pause the recording process
+     */
+    public Map<String, Object> pauseRecording() {
+        try {
+            // Check if we're recording
+            if (!isRecording.get()) {
+                return Map.of(
+                    "success", false,
+                    "message", "Not currently recording"
+                );
+            }
+            
+            // Set recording state
+            isPaused.set(true);
+            
+            // Temporarily unregister event listeners
+            if (browserService.isBrowserRunning()) {
+                unregisterPageEventListeners(browserService.getPage());
+            }
+            
+            return Map.of(
+                "success", true,
+                "message", "Recording paused",
+                "isRecording", true,
+                "isPaused", true
+            );
+        } catch (Exception e) {
+            logger.error("Error pausing recording", e);
+            return Map.of(
+                "success", false,
+                "message", "Error pausing recording: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Resume the recording process
+     */
+    public Map<String, Object> resumeRecording() {
+        try {
+            // Check if we're paused
+            if (!isRecording.get() || !isPaused.get()) {
+                return Map.of(
+                    "success", false,
+                    "message", "Not currently paused"
+                );
+            }
+            
+            // Set recording state
+            isPaused.set(false);
+            
+            // Re-register event listeners
+            if (browserService.isBrowserRunning()) {
+                registerPageEventListeners(browserService.getPage());
+            }
+            
+            return Map.of(
+                "success", true,
+                "message", "Recording resumed",
+                "isRecording", true,
+                "isPaused", false
+            );
+        } catch (Exception e) {
+            logger.error("Error resuming recording", e);
+            return Map.of(
+                "success", false,
+                "message", "Error resuming recording: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Save the current test case
+     */
+    public Map<String, Object> saveTest(String projectId, String testName) {
+        try {
+            // Check if we have a current project and test case
+            if (currentProject == null || currentTestCase == null) {
+                return Map.of(
+                    "success", false,
+                    "message", "No active test recording"
+                );
+            }
+            
+            // Stop recording if still active
+            if (isRecording.get()) {
+                stopRecording();
+            }
+            
+            // Update test case details
+            currentTestCase.setName(testName != null && !testName.isBlank() ? 
+                                    testName : "Recorded Test - " + LocalDateTime.now());
+            currentTestCase.setUpdatedAt(LocalDateTime.now());
+            currentTestCase.setSteps(new ArrayList<>(recordedSteps));
+            
+            // Generate BDD feature file
+            String featureContent = bddUtils.generateFeatureFile(currentTestCase);
+            
+            // Save to file system
+            Path featureFilePath = fileSystemService.saveFeatureFile(
+                currentProject.getId(), 
+                currentTestCase.getId(), 
+                featureContent
+            );
+            
+            // Add test case to project
+            projectService.addTestCase(projectId, currentTestCase);
+            
+            // Clear recorded steps
+            recordedSteps.clear();
+            
+            return Map.of(
+                "success", true,
+                "message", "Test saved successfully",
+                "testCaseId", currentTestCase.getId(),
+                "testName", currentTestCase.getName(),
+                "featureFile", featureFilePath.toString()
+            );
+        } catch (Exception e) {
+            logger.error("Error saving test", e);
+            return Map.of(
+                "success", false,
+                "message", "Error saving test: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Navigate to a URL
+     */
+    public Map<String, Object> navigateTo(String url) {
+        try {
+            // Check if browser is running
+            if (!browserService.isBrowserRunning()) {
+                browserService.launchBrowser();
+            }
+            
+            // Navigate to URL
+            Page page = browserService.getPage();
+            page.navigate(url);
+            
+            // Wait for page to load
+            page.waitForLoadState();
+            
+            // If recording, add navigation step
+            if (isRecording.get() && !isPaused.get()) {
+                addNavigationStep(url);
+            }
+            
+            // Update browser info
+            updateBrowserInfo();
+            
+            return Map.of(
+                "success", true,
+                "message", "Navigated to URL: " + url,
+                "url", page.url(),
+                "title", page.title()
+            );
+        } catch (Exception e) {
+            logger.error("Error navigating to URL", e);
+            return Map.of(
+                "success", false,
+                "message", "Error navigating to URL: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * Capture screenshot of the current page
+     */
+    public String captureScreenshot() {
+        try {
+            if (!browserService.isBrowserRunning()) {
+                return "";
+            }
+            
+            Page page = browserService.getPage();
+            byte[] screenshot = page.screenshot();
+            
+            // Convert to base64
+            return Base64.getEncoder().encodeToString(screenshot);
+        } catch (Exception e) {
+            logger.error("Error capturing screenshot", e);
+            return "";
+        }
+    }
+
+    /**
+     * Get all recorded steps
+     */
+    public List<TestStep> getRecordedSteps() {
+        return new ArrayList<>(recordedSteps);
+    }
+
+    /**
+     * Add a manual assertion step
+     */
+    public TestStep addAssertion(Map<String, Object> assertionData) {
+        try {
+            String type = (String) assertionData.get("type");
+            String selector = (String) assertionData.get("selector");
+            String value = assertionData.get("value") != null ? assertionData.get("value").toString() : null;
+            String attribute = (String) assertionData.get("attribute");
+            
+            // Create description based on assertion type
+            String description;
+            switch (type) {
+                case "visible":
+                    description = "Element should be visible";
+                    break;
+                case "text":
+                    description = "Element should contain text \"" + value + "\"";
+                    break;
+                case "attribute":
+                    description = "Element should have attribute \"" + attribute + "\" with value \"" + value + "\"";
+                    break;
+                case "count":
+                    description = "There should be " + value + " matching elements";
+                    break;
+                case "url":
+                    description = "URL should contain \"" + value + "\"";
+                    break;
+                case "title":
+                    description = "Page title should be \"" + value + "\"";
+                    break;
+                default:
+                    description = "Assertion added";
+            }
+            
+            // Create test step
+            TestStep step = new TestStep();
+            step.setId(UUID.randomUUID().toString());
+            step.setType("assertion");
+            step.setAction(type);
+            step.setSelector(selector);
+            step.setValue(value);
+            step.setAttributes(attribute != null ? Map.of("attribute", attribute) : null);
+            step.setDescription(description);
+            step.setTimestamp(System.currentTimeMillis());
+            
+            // Add screenshot
+            if (browserService.isBrowserRunning()) {
+                step.setScreenshot(captureScreenshot());
+            }
+            
+            // Add to recorded steps
+            recordedSteps.add(step);
+            
+            return step;
+        } catch (Exception e) {
+            logger.error("Error adding assertion", e);
+            throw new RuntimeException("Error adding assertion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Add a manual wait condition step
+     */
+    public TestStep addWaitCondition(Map<String, Object> waitConditionData) {
+        try {
+            String type = (String) waitConditionData.get("type");
+            String selector = (String) waitConditionData.get("selector");
+            Integer timeout = waitConditionData.get("timeout") instanceof Integer ? 
+                             (Integer) waitConditionData.get("timeout") : 
+                             Integer.parseInt(waitConditionData.get("timeout").toString());
+            String text = (String) waitConditionData.get("text");
+            
+            // Create description based on wait type
+            String description;
+            switch (type) {
+                case "visible":
+                    description = "Wait for element to be visible (" + timeout + "ms timeout)";
+                    break;
+                case "clickable":
+                    description = "Wait for element to be clickable (" + timeout + "ms timeout)";
+                    break;
+                case "text":
+                    description = "Wait for text \"" + text + "\" (" + timeout + "ms timeout)";
+                    break;
+                case "navigation":
+                    description = "Wait for navigation to complete (" + timeout + "ms timeout)";
+                    break;
+                case "network":
+                    description = "Wait for network to be idle (" + timeout + "ms timeout)";
+                    break;
+                case "fixed":
+                    description = "Wait for " + timeout + "ms";
+                    break;
+                default:
+                    description = "Wait condition added (" + timeout + "ms timeout)";
+            }
+            
+            // Create test step
+            TestStep step = new TestStep();
+            step.setId(UUID.randomUUID().toString());
+            step.setType("wait");
+            step.setAction(type);
+            step.setSelector(selector);
+            step.setValue(timeout.toString());
+            step.setAttributes(text != null ? Map.of("text", text) : null);
+            step.setDescription(description);
+            step.setTimestamp(System.currentTimeMillis());
+            
+            // Add to recorded steps
+            recordedSteps.add(step);
+            
+            return step;
+        } catch (Exception e) {
+            logger.error("Error adding wait condition", e);
+            throw new RuntimeException("Error adding wait condition: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Add a manual data input step
+     */
+    public TestStep addDataInput(Map<String, Object> dataInputData) {
+        try {
+            String selector = (String) dataInputData.get("selector");
+            String value = (String) dataInputData.get("value");
+            boolean parameterized = dataInputData.get("parameterized") != null && 
+                                   (boolean) dataInputData.get("parameterized");
+            String variableName = (String) dataInputData.get("variableName");
+            
+            // Create description
+            String description;
+            if (parameterized) {
+                description = "Enter variable \"" + variableName + "\" in input field";
+            } else {
+                // Check if it's a password input
+                boolean isPassword = false;
+                if (browserService.isBrowserRunning()) {
+                    Page page = browserService.getPage();
+                    isPassword = (boolean) page.evaluate(
+                        "selector => document.querySelector(selector)?.type === 'password'", 
+                        selector
+                    );
+                }
+                
+                String displayValue = isPassword ? "********" : value;
+                description = "Enter \"" + displayValue + "\" in input field";
+            }
+            
+            // Create test step
+            TestStep step = new TestStep();
+            step.setId(UUID.randomUUID().toString());
+            step.setType("data");
+            step.setAction("input");
+            step.setSelector(selector);
+            step.setValue(value);
+            step.setAttributes(parameterized && variableName != null ? 
+                              Map.of("parameterized", "true", "variableName", variableName) : null);
+            step.setDescription(description);
+            step.setTimestamp(System.currentTimeMillis());
+            
+            // Add screenshot
+            if (browserService.isBrowserRunning()) {
+                step.setScreenshot(captureScreenshot());
+            }
+            
+            // If we're recording, actually perform the input
+            if (isRecording.get() && !isPaused.get() && browserService.isBrowserRunning()) {
+                Page page = browserService.getPage();
+                
+                // Clear any existing value
+                page.fill(selector, "");
+                
+                // Enter the new value
+                page.fill(selector, value);
+            }
+            
+            // Add to recorded steps
+            recordedSteps.add(step);
+            
+            return step;
+        } catch (Exception e) {
+            logger.error("Error adding data input", e);
+            throw new RuntimeException("Error adding data input: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Remove a step from the recorded steps
+     */
+    public boolean removeStep(String stepId) {
+        synchronized (recordedSteps) {
+            return recordedSteps.removeIf(step -> step.getId().equals(stepId));
+        }
+    }
+
+    /**
+     * Reorder steps based on provided order
+     */
+    public boolean reorderSteps(List<String> stepIds) {
+        try {
+            synchronized (recordedSteps) {
+                // Create a map of steps by ID for quick lookup
+                Map<String, TestStep> stepsMap = new HashMap<>();
+                for (TestStep step : recordedSteps) {
+                    stepsMap.put(step.getId(), step);
+                }
+                
+                // Create a new list with the specified order
+                List<TestStep> orderedSteps = new ArrayList<>(recordedSteps.size());
+                for (String id : stepIds) {
+                    TestStep step = stepsMap.get(id);
+                    if (step != null) {
+                        orderedSteps.add(step);
+                    }
+                }
+                
+                // Verify that we have the same number of steps
+                if (orderedSteps.size() != recordedSteps.size()) {
+                    return false;
+                }
+                
+                // Update the recordedSteps list
+                recordedSteps.clear();
+                recordedSteps.addAll(orderedSteps);
+                
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Error reordering steps", e);
+            return false;
+        }
+    }
+
+    /**
+     * Register event listeners for page actions
+     */
+    private void registerPageEventListeners(Page page) {
+        // Add click event listener
+        page.onLoad(this::handlePageLoad);
+        
+        // Use JavaScript to capture events
+        PlaywrightUtils.injectEventListeners(page, this::handleDomEvent);
+    }
+
+    /**
+     * Unregister event listeners for page actions
+     */
+    private void unregisterPageEventListeners(Page page) {
+        page.offLoad(this::handlePageLoad);
+        
+        // Remove JavaScript event listeners
+        PlaywrightUtils.removeEventListeners(page);
+    }
+
+    /**
+     * Handle DOM events from JavaScript
+     */
+    private void handleDomEvent(Map<String, Object> event) {
+        if (!isRecording.get() || isPaused.get()) {
+            return;
+        }
+
+        try {
+            String eventType = (String) event.get("type");
+            String selector = (String) event.get("selector");
+            Map<String, Object> details = (Map<String, Object>) event.get("details");
+            
+            TestStep step = new TestStep();
+            step.setId(UUID.randomUUID().toString());
+            step.setSelector(selector);
+            step.setTimestamp(System.currentTimeMillis());
+            
+            switch (eventType) {
+                case "click":
+                    step.setType("action");
+                    step.setAction("click");
+                    step.setDescription("Click on element");
+                    break;
+                case "input":
+                    String value = (String) details.get("value");
+                    boolean isPassword = Boolean.TRUE.equals(details.get("isPassword"));
+                    
+                    step.setType("data");
+                    step.setAction("input");
+                    step.setValue(value);
+                    
+                    // Create appropriate description
+                    if (isPassword) {
+                        step.setDescription("Enter password in input field");
+                    } else {
+                        step.setDescription("Enter \"" + value + "\" in input field");
+                    }
+                    break;
+                case "select":
+                    String selectedValue = (String) details.get("value");
+                    String selectedText = (String) details.get("text");
+                    
+                    step.setType("action");
+                    step.setAction("select");
+                    step.setValue(selectedValue);
+                    step.setAttributes(Map.of("text", selectedText));
+                    step.setDescription("Select option \"" + selectedText + "\" from dropdown");
+                    break;
+                case "submit":
+                    step.setType("action");
+                    step.setAction("submit");
+                    step.setDescription("Submit form");
+                    break;
+                default:
+                    // Ignore unhandled event types
+                    return;
+            }
+            
+            // Add screenshot
+            step.setScreenshot(captureScreenshot());
+            
+            // Add to recorded steps
+            recordedSteps.add(step);
+            
+            // Notify listeners
+            messagingTemplate.convertAndSend("/topic/recorder/steps", step);
+        } catch (Exception e) {
+            logger.error("Error handling DOM event", e);
+        }
+    }
+
+    /**
+     * Handle page load events
+     */
+    private void handlePageLoad() {
+        if (!isRecording.get() || isPaused.get()) {
+            return;
+        }
+
+        try {
+            Page page = browserService.getPage();
+            String url = page.url();
+            String title = page.title();
+            
+            // Add navigation step if this is not the initial page load
+            if (!recordedSteps.isEmpty()) {
+                addNavigationStep(url);
+            }
+            
+            // Update browser info
+            updateBrowserInfo();
+        } catch (Exception e) {
+            logger.error("Error handling page load", e);
+        }
+    }
+
+    /**
+     * Add a navigation step to recorded steps
+     */
+    private void addNavigationStep(String url) {
+        TestStep step = new TestStep();
+        step.setId(UUID.randomUUID().toString());
+        step.setType("action");
+        step.setAction("navigate");
+        step.setValue(url);
+        step.setDescription("Navigate to \"" + url + "\"");
+        step.setTimestamp(System.currentTimeMillis());
+        step.setScreenshot(captureScreenshot());
+        
+        recordedSteps.add(step);
+        
+        // Notify listeners
+        messagingTemplate.convertAndSend("/topic/recorder/steps", step);
+    }
+
+    /**
+     * Update browser info and notify listeners
+     */
+    private void updateBrowserInfo() {
+        try {
+            if (!browserService.isBrowserRunning()) {
+                Map<String, Object> info = Map.of(
+                    "url", "",
+                    "title", "",
+                    "isConnected", false
+                );
+                messagingTemplate.convertAndSend("/topic/recorder/browser", info);
+                return;
+            }
+            
+            Page page = browserService.getPage();
+            Map<String, Object> info = Map.of(
+                "url", page.url(),
+                "title", page.title(),
+                "isConnected", true
+            );
+            messagingTemplate.convertAndSend("/topic/recorder/browser", info);
+        } catch (Exception e) {
+            logger.error("Error updating browser info", e);
+        }
+    }
+}
+
+
+package com.automation.api.services;
+
+import com.microsoft.playwright.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PreDestroy;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+
+@Service
+public class BrowserService {
+    private static final Logger logger = LoggerFactory.getLogger(BrowserService.class);
+
+    private Playwright playwright;
+    private Browser browser;
+    private BrowserContext context;
+    private Page page;
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final ReentrantLock browserLock = new ReentrantLock();
+
+    /**
+     * Check if the browser is running
+     */
+    public boolean isBrowserRunning() {
+        return isRunning.get() && browser != null && context != null && page != null;
+    }
+
+    /**
+     * Get the current page
+     */
+    public Page getPage() {
+        if (!isBrowserRunning()) {
+            throw new IllegalStateException("Browser is not running");
+        }
+        return page;
+    }
+
+    /**
+     * Launch the browser with default settings
+     */
+    public void launchBrowser() {
+        launchBrowser(new BrowserLaunchOptions());
+    }
+
+    /**
+     * Launch the browser with custom options
+     */
+    public void launchBrowser(BrowserLaunchOptions options) {
+        browserLock.lock();
+        try {
+            // Close existing browser if it's running
+            if (isBrowserRunning()) {
+                closeBrowser();
+            }
+
+            // Create Playwright instance
+            playwright = Playwright.create();
+
+            // Set up browser launch options
+            BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
+                    .setHeadless(options.isHeadless())
+                    .setSlowMo(options.getSlowMo());
+
+            // Launch browser
+            if ("firefox".equalsIgnoreCase(options.getBrowserType())) {
+                browser = playwright.firefox().launch(launchOptions);
+            } else if ("webkit".equalsIgnoreCase(options.getBrowserType())) {
+                browser = playwright.webkit().launch(launchOptions);
+            } else {
+                // Default to Chromium
+                browser = playwright.chromium().launch(launchOptions);
+            }
+
+            // Create a browser context
+            Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
+                    .setViewportSize(options.getWidth(), options.getHeight())
+                    .setRecordVideoDir(options.isRecordVideo() ? Path.of("videos") : null);
+
+            if (options.getUserAgent() != null) {
+                contextOptions.setUserAgent(options.getUserAgent());
+            }
+
+            context = browser.newContext(contextOptions);
+
+            // Create a new page
+            page = context.newPage();
+
+            // Handle JavaScript dialogs automatically
+            page.onDialog(dialog -> {
+                logger.info("Dialog appeared: " + dialog.message());
+                dialog.dismiss(); // Default behavior is to dismiss
+            });
+
+            // Navigate to the initial URL
+            if (options.getInitialUrl() != null) {
+                page.navigate(options.getInitialUrl());
+            }
+
+            isRunning.set(true);
+            logger.info("Browser launched successfully");
+        } catch (Exception e) {
+            logger.error("Error launching browser", e);
+            closeBrowser(); // Clean up any partially initialized resources
+            throw new RuntimeException("Failed to launch browser: " + e.getMessage(), e);
+        } finally {
+            browserLock.unlock();
+        }
+    }
+
+    /**
+     * Close the browser and release resources
+     */
+    public void closeBrowser() {
+        browserLock.lock();
+        try {
+            if (page != null) {
+                try {
+                    page.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing page", e);
+                }
+                page = null;
+            }
+
+            if (context != null) {
+                try {
+                    context.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing context", e);
+                }
+                context = null;
+            }
+
+            if (browser != null) {
+                try {
+                    browser.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing browser", e);
+                }
+                browser = null;
+            }
+
+            if (playwright != null) {
+                try {
+                    playwright.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing playwright", e);
+                }
+                playwright = null;
+            }
+
+            isRunning.set(false);
+            logger.info("Browser closed successfully");
+        } finally {
+            browserLock.unlock();
+        }
+    }
+
+    /**
+     * Execute JavaScript in the current page
+     */
+    public <T> T executeScript(String script, Object... args) {
+        if (!isBrowserRunning()) {
+            throw new IllegalStateException("Browser is not running");
+        }
+        return (T) page.evaluate(script, args);
+    }
+
+    /**
+     * Execute JavaScript function in the current page
+     */
+    public <T> T executeFunction(String function, Object... args) {
+        if (!isBrowserRunning()) {
+            throw new IllegalStateException("Browser is not running");
+        }
+        return (T) page.evaluateHandle(function, args).jsonValue();
+    }
+
+    /**
+     * Get information about the current page
+     */
+    public Map<String, Object> getPageInfo() {
+        if (!isBrowserRunning()) {
+            return Map.of(
+                "url", "",
+                "title", "",
+                "isConnected", false
+            );
+        }
+        
+        return Map.of(
+            "url", page.url(),
+            "title", page.title(),
+            "isConnected", true
+        );
+    }
+
+    /**
+     * Clean up resources when the service is destroyed
+     */
+    @PreDestroy
+    public void cleanup() {
+        closeBrowser();
+    }
+
+    /**
+     * Browser launch options
+     */
+    public static class BrowserLaunchOptions {
+        private String browserType = "chromium";
+        private boolean headless = false;
+        private int slowMo = 0;
+        private int width = 1366;
+        private int height = 768;
+        private String userAgent = null;
+        private String initialUrl = "about:blank";
+        private boolean recordVideo = false;
+
+        public String getBrowserType() {
+            return browserType;
+        }
+
+        public BrowserLaunchOptions setBrowserType(String browserType) {
+            this.browserType = browserType;
+            return this;
+        }
+
+        public boolean isHeadless() {
+            return headless;
+        }
+
+        public BrowserLaunchOptions setHeadless(boolean headless) {
+            this.headless = headless;
+            return this;
+        }
+
+        public int getSlowMo() {
+            return slowMo;
+        }
+
+        public BrowserLaunchOptions setSlowMo(int slowMo) {
+            this.slowMo = slowMo;
+            return this;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public BrowserLaunchOptions setWidth(int width) {
+            this.width = width;
+            return this;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public BrowserLaunchOptions setHeight(int height) {
+            this.height = height;
+            return this;
+        }
+
+        public String getUserAgent() {
+            return userAgent;
+        }
+
+        public BrowserLaunchOptions setUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
+
+        public String getInitialUrl() {
+            return initialUrl;
+        }
+
+        public BrowserLaunchOptions setInitialUrl(String initialUrl) {
+            this.initialUrl = initialUrl;
+            return this;
+        }
+
+        public boolean isRecordVideo() {
+            return recordVideo;
+        }
+
+        public BrowserLaunchOptions setRecordVideo(boolean recordVideo) {
+            this.recordVideo = recordVideo;
+            return this;
+        }
+    }
+}
+
+package com.automation.api.utils;
+
+import com.microsoft.playwright.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.function.Consumer;
+
+/**
+ * Utility class for common Playwright operations
+ */
+public class PlaywrightUtils {
+    private static final Logger logger = LoggerFactory.getLogger(PlaywrightUtils.class);
+
+    /**
+     * Inject event listeners into the page to capture user interactions
+     * @param page The Playwright page
+     * @param eventHandler Handler for captured events
+     */
+    public static void injectEventListeners(Page page, Consumer<Map<String, Object>> eventHandler) {
+        try {
+            // First, check if we already have the event listeners in place
+            boolean hasListeners = (boolean) page.evaluate("() => !!window._testRecorderInitialized");
+            if (hasListeners) {
+                return;
+            }
+
+            // Add JavaScript to capture events
+            page.evaluate("() => {" +
+                    "  window._testRecorderInitialized = true;" +
+                    "  window._testRecorderEvents = [];" +
+                    
+                    // Helper function to generate unique selectors
+                    "  function getSelector(element) {" +
+                    "    if (!element) return null;" +
+                    "    if (element.id) return '#' + element.id;" +
+                    "    if (element.name) return '[name=\"' + element.name + '\"]';" +
+                    
+                    "    // Try data attributes" +
+                    "    const dataTestId = element.getAttribute('data-testid');" +
+                    "    if (dataTestId) return '[data-testid=\"' + dataTestId + '\"]';" +
+                    
+                    "    // Try with classes but only if they're not too generic" +
+                    "    if (element.classList && element.classList.length && element.classList.length < 3) {" +
+                    "      return '.' + Array.from(element.classList).join('.');" +
+                    "    }" +
+                    
+                    "    // Get element tag and position among siblings" +
+                    "    const tag = element.tagName.toLowerCase();" +
+                    "    const siblings = Array.from(element.parentNode.children);" +
+                    "    const sameTagSiblings = siblings.filter(e => e.tagName.toLowerCase() === tag);" +
+                    "    const index = sameTagSiblings.indexOf(element);" +
+                    
+                    "    // If this is the only element with this tag, just use the tag" +
+                    "    if (sameTagSiblings.length === 1) {" +
+                    "      return tag;" +
+                    "    }" +
+                    
+                    "    // Otherwise, use nth-child" +
+                    "    return tag + ':nth-child(' + (index + 1) + ')';" +
+                    "  }" +
+                    
+                    // Helper function to get a more unique selector
+                    "  function getBetterSelector(element, maxParents = 3) {" +
+                    "    if (!element) return null;" +
+                    "    let selector = getSelector(element);" +
+                    "    let current = element;" +
+                    "    let parents = 0;" +
+                    
+                    "    // Try to make selector more specific by adding parent selectors" +
+                    "    while (current.parentElement && parents < maxParents) {" +
+                    "      const parentSelector = getSelector(current.parentElement);" +
+                    "      if (parentSelector) {" +
+                    "        selector = parentSelector + ' > ' + selector;" +
+                    "      }" +
+                    "      current = current.parentElement;" +
+                    "      parents++;" +
+                    "    }" +
+                    
+                    "    return selector;" +
+                    "  }" +
+                    
+                    // Function to dispatch events to Java
+                    "  function dispatchEvent(type, selector, details = {}) {" +
+                    "    const event = { type, selector, details, timestamp: Date.now() };" +
+                    "    window._testRecorderEvents.push(event);" +
+                    "    // Send event to Java" +
+                    "    window._reportEventToJava(event);" +
+                    "  }" +
+                    
+                    // Click event handler
+                    "  document.addEventListener('click', function(e) {" +
+                    "    const selector = getBetterSelector(e.target);" +
+                    "    if (selector) {" +
+                    "      dispatchEvent('click', selector, {" +
+                    "        x: e.clientX," +
+                    "        y: e.clientY," +
+                    "        target: e.target.tagName.toLowerCase()," +
+                    "        text: e.target.textContent?.trim()" +
+                    "      });" +
+                    "    }" +
+                    "  }, true);" +
+                    
+                    // Input event handler
+                    "  document.addEventListener('change', function(e) {" +
+                    "    const target = e.target;" +
+                    "    if (target.tagName.toLowerCase() === 'input' || target.tagName.toLowerCase() === 'textarea') {" +
+                    "      const selector = getBetterSelector(target);" +
+                    "      if (selector) {" +
+                    "        const isPassword = target.type === 'password';" +
+                    "        dispatchEvent('input', selector, {" +
+                    "          value: target.value," +
+                    "          isPassword," +
+                    "          type: target.type" +
+                    "        });" +
+                    "      }" +
+                    "    } else if (target.tagName.toLowerCase() === 'select') {" +
+                    "      const selector = getBetterSelector(target);" +
+                    "      if (selector) {" +
+                    "        const selectedOption = target.options[target.selectedIndex];" +
+                    "        dispatchEvent('select', selector, {" +
+                    "          value: target.value," +
+                    "          text: selectedOption.text," +
+                    "          index: target.selectedIndex" +
+                    "        });" +
+                    "      }" +
+                    "    }" +
+                    "  }, true);" +
+                    
+                    // Form submit handler
+                    "  document.addEventListener('submit', function(e) {" +
+                    "    const selector = getBetterSelector(e.target);" +
+                    "    if (selector) {" +
+                    "      dispatchEvent('submit', selector, {" +
+                    "        action: e.target.action," +
+                    "        method: e.target.method" +
+                    "      });" +
+                    "    }" +
+                    "  }, true);" +
+                    "}"
+            );
+
+            // Set up the callback from JavaScript to Java
+            page.exposeFunction("_reportEventToJava", eventHandler::accept);
+
+            logger.info("Injected event listeners into page");
+        } catch (Exception e) {
+            logger.error("Error injecting event listeners", e);
+        }
+    }
+
+    /**
+     * Remove the event listeners from the page
+     * @param page The Playwright page
+     */
+    public static void removeEventListeners(Page page) {
+        try {
+            page.evaluate("() => {" +
+                    "  window._testRecorderInitialized = false;" +
+                    "  window._testRecorderEvents = [];" +
+                    "}"
+            );
+            logger.info("Removed event listeners from page");
+        } catch (Exception e) {
+            logger.error("Error removing event listeners", e);
+        }
+    }
+
+    /**
+     * Highlight an element on the page
+     * @param page The Playwright page
+     * @param selector The CSS selector of the element to highlight
+     */
+    public static void highlightElement(Page page, String selector) {
+        try {
+            page.evaluate("selector => {" +
+                    "  const element = document.querySelector(selector);" +
+                    "  if (!element) return false;" +
+                    
+                    "  // Remove any existing highlights" +
+                    "  const existing = document.getElementById('__test_recorder_highlight');" +
+                    "  if (existing) existing.remove();" +
+                    
+                    "  // Get element position and dimensions" +
+                    "  const rect = element.getBoundingClientRect();" +
+                    
+                    "  // Create highlight overlay" +
+                    "  const highlight = document.createElement('div');" +
+                    "  highlight.id = '__test_recorder_highlight';" +
+                    "  highlight.style.position = 'fixed';" +
+                    "  highlight.style.top = rect.top + 'px';" +
+                    "  highlight.style.left = rect.left + 'px';" +
+                    "  highlight.style.width = rect.width + 'px';" +
+                    "  highlight.style.height = rect.height + 'px';" +
+                    "  highlight.style.border = '2px solid red';" +
+                    "  highlight.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';" +
+                    "  highlight.style.zIndex = '10000';" +
+                    "  highlight.style.pointerEvents = 'none';" +
+                    
+                    "  // Add to body" +
+                    "  document.body.appendChild(highlight);" +
+                    
+                    "  // Auto-remove after 2 seconds" +
+                    "  setTimeout(() => {" +
+                    "    if (highlight.parentNode) highlight.remove();" +
+                    "  }, 2000);" +
+                    
+                    "  return true;" +
+                    "}", selector
+            );
+        } catch (Exception e) {
+            logger.error("Error highlighting element", e);
+        }
+    }
+
+    /**
+     * Generate an optimized selector for an element
+     * @param page The Playwright page
+     * @param originalSelector The initial selector to optimize
+     * @return An optimized selector that uniquely identifies the element
+     */
+    public static String generateOptimizedSelector(Page page, String originalSelector) {
+        try {
+            return (String) page.evaluate("selector => {" +
+                    "  const element = document.querySelector(selector);" +
+                    "  if (!element) return selector;" +
+                    
+                    "  // Try ID" +
+                    "  if (element.id) {" +
+                    "    const idSelector = '#' + element.id;" +
+                    "    if (document.querySelectorAll(idSelector).length === 1) {" +
+                    "      return idSelector;" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Try data-testid" +
+                    "  const testId = element.getAttribute('data-testid');" +
+                    "  if (testId) {" +
+                    "    const testIdSelector = '[data-testid=\"' + testId + '\"]';" +
+                    "    if (document.querySelectorAll(testIdSelector).length === 1) {" +
+                    "      return testIdSelector;" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Try other data attributes" +
+                    "  for (const attr of element.attributes) {" +
+                    "    if (attr.name.startsWith('data-') && attr.name !== 'data-testid') {" +
+                    "      const dataSelector = '[' + attr.name + '=\"' + attr.value + '\"]';" +
+                    "      if (document.querySelectorAll(dataSelector).length === 1) {" +
+                    "        return dataSelector;" +
+                    "      }" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Try with unique combination of element type and text content" +
+                    "  if (element.textContent && element.textContent.trim()) {" +
+                    "    const text = element.textContent.trim();" +
+                    "    if (text.length < 50) {" +  // Only use short text to avoid too complex selectors
+                    "      const tag = element.tagName.toLowerCase();" +
+                    "      const textSelector = tag + ':has-text(\"' + text + '\")';" +
+                    "      if (document.querySelectorAll(textSelector).length === 1) {" +
+                    "        return textSelector;" +
+                    "      }" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Try with element type and class" +
+                    "  if (element.classList.length > 0) {" +
+                    "    const tag = element.tagName.toLowerCase();" +
+                    "    const classes = Array.from(element.classList).join('.');" +
+                    "    const classSelector = tag + '.' + classes;" +
+                    "    if (document.querySelectorAll(classSelector).length === 1) {" +
+                    "      return classSelector;" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // If nothing else works, use the original selector" +
+                    "  return selector;" +
+                    "}", originalSelector
+            );
+        } catch (Exception e) {
+            logger.error("Error generating optimized selector", e);
+            return originalSelector;
+        }
+    }
+
+    /**
+     * Get element details from the page
+     * @param page The Playwright page
+     * @param selector The CSS selector of the element
+     * @return A map containing element details
+     */
+    public static Map<String, Object> getElementDetails(Page page, String selector) {
+        try {
+            return (Map<String, Object>) page.evaluate("selector => {" +
+                    "  const element = document.querySelector(selector);" +
+                    "  if (!element) return null;" +
+                    
+                    "  // Get element attributes" +
+                    "  const attributes = {};" +
+                    "  for (const attr of element.attributes) {" +
+                    "    attributes[attr.name] = attr.value;" +
+                    "  }" +
+                    
+                    "  // Determine if element is an input and its type" +
+                    "  let inputType = null;" +
+                    "  let placeholder = null;" +
+                    "  if (element.tagName.toLowerCase() === 'input') {" +
+                    "    inputType = element.type || 'text';" +
+                    "    placeholder = element.placeholder || null;" +
+                    "  } else if (element.tagName.toLowerCase() === 'textarea') {" +
+                    "    inputType = 'textarea';" +
+                    "    placeholder = element.placeholder || null;" +
+                    "  }" +
+                    
+                    "  // Try to find a label for the element" +
+                    "  let label = null;" +
+                    "  if (element.id) {" +
+                    "    const labelElement = document.querySelector('label[for=\"' + element.id + '\"]');" +
+                    "    if (labelElement) {" +
+                    "      label = labelElement.textContent.trim();" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Check if element is inside a label" +
+                    "  if (!label) {" +
+                    "    let parent = element.parentElement;" +
+                    "    while (parent) {" +
+                    "      if (parent.tagName.toLowerCase() === 'label') {" +
+                    "        label = parent.textContent.trim();" +
+                    "        break;" +
+                    "      }" +
+                    "      parent = parent.parentElement;" +
+                    "    }" +
+                    "  }" +
+                    
+                    "  // Generate XPath" +
+                    "  function getElementXPath(element) {" +
+                    "    if (element.id) return `//*[@id='${element.id}']`;" +
+                    "    if (element === document.body) return '/html/body';" +
+                    
+                    "    let ix = 0;" +
+                    "    const siblings = element.parentNode.childNodes;" +
+                    "    for (let i = 0; i < siblings.length; i++) {" +
+                    "      const sibling = siblings[i];" +
+                    "      if (sibling === element) break;" +
+                    "      if (sibling.nodeType === 1 && sibling.tagName === element.tagName) ix++;" +
+                    "    }" +
+                    
+                    "    const tagName = element.tagName.toLowerCase();" +
+                    "    return getElementXPath(element.parentNode) + '/' + tagName + '[' + (ix + 1) + ']';" +
+                    "  }" +
+                    
+                    "  return {" +
+                    "    selector: selector," +
+                    "    xpath: getElementXPath(element)," +
+                    "    tagName: element.tagName.toLowerCase()," +
+                    "    textContent: element.textContent.trim()," +
+                    "    attributes: attributes," +
+                    "    inputType: inputType," +
+                    "    placeholder: placeholder," +
+                    "    label: label," +
+                    "    isVisible: element.offsetWidth > 0 && element.offsetHeight > 0" +
+                    "  };" +
+                    "}", selector
+            );
+        } catch (Exception e) {
+            logger.error("Error getting element details", e);
+            return null;
+        }
+    }
+}
+
+
+package com.automation.api.utils;
+
+import com.automation.api.models.TestCase;
+import com.automation.api.models.TestStep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Utility class for BDD-related functionality
+ */
+@Component
+public class BddUtils {
+    private static final Logger logger = LoggerFactory.getLogger(BddUtils.class);
+
+    /**
+     * Generate a Gherkin feature file from a test case
+     * @param testCase The test case model
+     * @return Gherkin feature file content as a string
+     */
+    public String generateFeatureFile(TestCase testCase) {
+        try {
+            StringBuilder featureBuilder = new StringBuilder();
+            
+            // Add Feature header
+            featureBuilder.append("Feature: ").append(testCase.getName()).append("\n\n");
+            
+            // Add description if available
+            if (testCase.getDescription() != null && !testCase.getDescription().isBlank()) {
+                featureBuilder.append(testCase.getDescription()).append("\n\n");
+            }
+            
+            // Add Scenario
+            featureBuilder.append("  Scenario: ").append(testCase.getName()).append("\n");
+            
+            // Group steps by type for better organization
+            List<TestStep> steps = testCase.getSteps();
+            
+            // Process steps and convert to Gherkin steps
+            List<String> gherkinSteps = convertStepsToGherkin(steps);
+            
+            // Add steps to feature file
+            for (String step : gherkinSteps) {
+                featureBuilder.append("    ").append(step).append("\n");
+            }
+            
+            return featureBuilder.toString();
+        } catch (Exception e) {
+            logger.error("Error generating feature file", e);
+            return "# Error generating feature file: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Parse a Gherkin feature file into a test case model
+     * @param featureContent The Gherkin feature file content
+     * @return A TestCase model
+     */
+    public TestCase parseFeatureFile(String featureContent) {
+        try {
+            TestCase testCase = new TestCase();
+            testCase.setId(UUID.randomUUID().toString());
+            
+            // Parse feature name
+            String[] lines = featureContent.split("\\r?\\n");
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i].trim();
+                
+                if (line.startsWith("Feature:")) {
+                    testCase.setName(line.substring("Feature:".length()).trim());
+                } else if (line.startsWith("Scenario:")) {
+                    // We could have multiple scenarios, but for now we'll just use the first one
+                    String scenarioName = line.substring("Scenario:".length()).trim();
+                    if (testCase.getName() == null) {
+                        testCase.setName(scenarioName);
+                    }
+                    
+                    // Extract steps from this scenario
+                    List<TestStep> steps = new ArrayList<>();
+                    i++; // Move to the next line
+                    
+                    while (i < lines.length && !lines[i].trim().startsWith("Scenario:")) {
+                        String stepLine = lines[i].trim();
+                        if (stepLine.startsWith("Given ") || stepLine.startsWith("When ") || 
+                            stepLine.startsWith("Then ") || stepLine.startsWith("And ") || 
+                            stepLine.startsWith("But ")) {
+                            
+                            TestStep step = convertGherkinToStep(stepLine);
+                            if (step != null) {
+                                steps.add(step);
+                            }
+                        }
+                        i++;
+                    }
+                    i--; // Go back one line to account for the next iteration
+                    
+                    testCase.setSteps(steps);
+                }
+            }
+            
+            testCase.setCreatedAt(LocalDateTime.now());
+            testCase.setUpdatedAt(LocalDateTime.now());
+            
+            return testCase;
+        } catch (Exception e) {
+            logger.error("Error parsing feature file", e);
+            throw new RuntimeException("Error parsing feature file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Convert a list of test steps to Gherkin step statements
+     * @param steps The list of test steps
+     * @return A list of Gherkin step statements
+     */
+    private List<String> convertStepsToGherkin(List<TestStep> steps) {
+        List<String> gherkinSteps = new ArrayList<>();
+        
+        // Keep track of the last step type to determine whether to use "And"
+        String lastStepType = null;
+        
+        for (int i = 0; i < steps.size(); i++) {
+            TestStep step = steps.get(i);
+            String currentStepType;
+            String stepText;
+            
+            // Determine the step type and text based on the test step type and action
+            switch (step.getType()) {
+                case "action":
+                    if (i == 0) {
+                        // First step is always "Given"
+                        currentStepType = "Given";
+                    } else {
+                        currentStepType = "When";
+                    }
+                    
+                    stepText = getActionStepText(step);
+                    break;
+                case "assertion":
+                    currentStepType = "Then";
+                    stepText = getAssertionStepText(step);
+                    break;
+                case "wait":
+                    currentStepType = "When";
+                    stepText = getWaitStepText(step);
+                    break;
+                case "data":
+                    currentStepType = "When";
+                    stepText = getDataStepText(step);
+                    break;
+                default:
+                    // Skip unknown step types
+                    continue;
+            }
+            
+            // Use "And" if the current step is the same type as the previous step
+            if (lastStepType != null && currentStepType.equals(lastStepType)) {
+                gherkinSteps.add("And " + stepText);
+            } else {
+                gherkinSteps.add(currentStepType + " " + stepText);
+                lastStepType = currentStepType;
+            }
+        }
+        
+        return gherkinSteps;
+    }
+
+    /**
+     * Convert an action test step to a Gherkin step text
+     * @param step The action test step
+     * @return The Gherkin step text
+     */
+    private String getActionStepText(TestStep step) {
+        switch (step.getAction()) {
+            case "navigate":
+                return "I navigate to \"" + step.getValue() + "\"";
+            case "click":
+                return "I click on the element " + formatSelector(step.getSelector());
+            case "select":
+                return "I select the option \"" + step.getValue() + "\" from " + formatSelector(step.getSelector());
+            case "submit":
+                return "I submit the form " + formatSelector(step.getSelector());
+            default:
+                return "I perform the action \"" + step.getAction() + "\"";
+        }
+    }
+
+    /**
+     * Convert an assertion test step to a Gherkin step text
+     * @param step The assertion test step
+     * @return The Gherkin step text
+     */
+    private String getAssertionStepText(TestStep step) {
+        switch (step.getAction()) {
+            case "visible":
+                return "the element " + formatSelector(step.getSelector()) + " should be visible";
+            case "text":
+                return "the element " + formatSelector(step.getSelector()) + " should contain the text \"" + step.getValue() + "\"";
+            case "attribute":
+                Map<String, String> attrs = step.getAttributes();
+                String attribute = attrs != null ? attrs.get("attribute") : "attribute";
+                return "the element " + formatSelector(step.getSelector()) + " should have the attribute \"" + attribute + "\" with value \"" + step.getValue() + "\"";
+            case "count":
+                return "there should be " + step.getValue() + " elements matching " + formatSelector(step.getSelector());
+            case "url":
+                return "the URL should contain \"" + step.getValue() + "\"";
+            case "title":
+                return "the page title should be \"" + step.getValue() + "\"";
+            default:
+                return "the assertion \"" + step.getAction() + "\" should pass";
+        }
+    }
+
+    /**
+     * Convert a wait test step to a Gherkin step text
+     * @param step The wait test step
+     * @return The Gherkin step text
+     */
+    private String getWaitStepText(TestStep step) {
+        switch (step.getAction()) {
+            case "visible":
+                return "I wait for the element " + formatSelector(step.getSelector()) + " to be visible";
+            case "clickable":
+                return "I wait for the element " + formatSelector(step.getSelector()) + " to be clickable";
+            case "text":
+                Map<String, String> attrs = step.getAttributes();
+                String text = attrs != null ? attrs.get("text") : "";
+                return "I wait for the text \"" + text + "\" to appear in " + formatSelector(step.getSelector());
+            case "navigation":
+                return "I wait for the page navigation to complete";
+            case "network":
+                return "I wait for the network to be idle";
+            case "fixed":
+                return "I wait for " + step.getValue() + " milliseconds";
+            default:
+                return "I wait for the condition \"" + step.getAction() + "\"";
+        }
+    }
+
+    /**
+     * Convert a data input test step to a Gherkin step text
+     * @param step The data input test step
+     * @return The Gherkin step text
+     */
+    private String getDataStepText(TestStep step) {
+        // Check if this is a parameterized input
+        Map<String, String> attrs = step.getAttributes();
+        if (attrs != null && "true".equals(attrs.get("parameterized"))) {
+            String varName = attrs.get("variableName");
+            return "I enter the {" + varName + "} in " + formatSelector(step.getSelector());
+        } else {
+            // Special handling for passwords
+            boolean isPassword = step.getSelector() != null && step.getSelector().contains("password");
+            String displayValue = isPassword ? "****" : step.getValue();
+            return "I enter \"" + displayValue + "\" in " + formatSelector(step.getSelector());
+        }
+    }
+
+    /**
+     * Format a selector for better readability in Gherkin steps
+     * @param selector The CSS selector
+     * @return A readable format of the selector
+     */
+    private String formatSelector(String selector) {
+        if (selector == null || selector.isBlank()) {
+            return "the element";
+        }
+        
+        // For ID selectors, make them more readable
+        if (selector.startsWith("#")) {
+            return "the element with ID \"" + selector.substring(1) + "\"";
+        }
+        
+        // For data-testid selectors
+        if (selector.startsWith("[data-testid=")) {
+            String testId = selector.substring("[data-testid=".length(), selector.length() - 1).replace("\"", "");
+            return "the element with test ID \"" + testId + "\"";
+        }
+        
+        // For other data attributes
+        if (selector.startsWith("[data-")) {
+            int equalsIndex = selector.indexOf('=');
+            if (equalsIndex > 0) {
+                String attrName = selector.substring(1, equalsIndex);
+                String attrValue = selector.substring(equalsIndex + 1, selector.length() - 1).replace("\"", "");
+                return "the element with " + attrName + " \"" + attrValue + "\"";
+            }
+        }
+        
+        // For class selectors
+        if (selector.startsWith(".")) {
+            return "the element with class \"" + selector.substring(1) + "\"";
+        }
+        
+        // For tag selectors
+        if (!selector.contains(" ") && !selector.contains(">") && !selector.contains("[")) {
+            return "the " + selector + " element";
+        }
+        
+        // For complex selectors, use a shorthand notation
+        return "\"" + selector + "\"";
+    }
+
+    /**
+     * Convert a Gherkin step to a TestStep model
+     * @param gherkinStep The Gherkin step text
+     * @return A TestStep model
+     */
+    private TestStep convertGherkinToStep(String gherkinStep) {
+        // Extract the keyword and step text
+        String[] parts = gherkinStep.trim().split(" ", 2);
+        if (parts.length < 2) {
+            return null;
+        }
+        
+        String keyword = parts[0];
+        String stepText = parts[1];
+        
+        TestStep step = new TestStep();
+        step.setId(UUID.randomUUID().toString());
+        step.setTimestamp(System.currentTimeMillis());
+        step.setDescription(gherkinStep);
+        
+        // Parse the step text based on patterns
+        if (stepText.startsWith("I navigate to")) {
+            step.setType("action");
+            step.setAction("navigate");
+            step.setValue(extractQuotedText(stepText));
+        } else if (stepText.startsWith("I click on")) {
+            step.setType("action");
+            step.setAction("click");
+            step.setSelector(extractSelector(stepText));
+        } else if (stepText.startsWith("I select the option")) {
+            step.setType("action");
+            step.setAction("select");
+            step.setValue(extractQuotedText(stepText));
+            step.setSelector(extractSelector(stepText));
+        } else if (stepText.startsWith("I enter")) {
+            step.setType("data");
+            step.setAction("input");
+            
+            // Check if this is a parameterized input
+            if (stepText.contains("{") && stepText.contains("}")) {
+                String varName = stepText.substring(stepText.indexOf('{') + 1, stepText.indexOf('}'));
+                step.setAttributes(Map.of("parameterized", "true", "variableName", varName));
+                // Set a placeholder value that will be replaced at runtime
+                step.setValue("{" + varName + "}");
+            } else {
+                step.setValue(extractQuotedText(stepText));
+            }
+            
+            step.setSelector(extractSelector(stepText));
+        } else if (stepText.startsWith("I wait for")) {
+            step.setType("wait");
+            
+            if (stepText.contains("milliseconds") || stepText.contains("seconds")) {
+                step.setAction("fixed");
+                // Extract the numeric value
+                String valueStr = stepText.replaceAll("[^0-9]", "");
+                step.setValue(valueStr);
+            } else if (stepText.contains("to be visible")) {
+                step.setAction("visible");
+                step.setSelector(extractSelector(stepText));
+            } else if (stepText.contains("to be clickable")) {
+                step.setAction("clickable");
+                step.setSelector(extractSelector(stepText));
+            } else if (stepText.contains("navigation to complete")) {
+                step.setAction("navigation");
+            } else if (stepText.contains("network to be idle")) {
+                step.setAction("network");
+            } else {
+                step.setAction("custom");
+            }
+        } else if (stepText.startsWith("the element") && stepText.contains("should be visible")) {
+            step.setType("assertion");
+            step.setAction("visible");
+            step.setSelector(extractSelector(stepText));
+        } else if (stepText.startsWith("the element") && stepText.contains("should contain the text")) {
+            step.setType("assertion");
+            step.setAction("text");
+            step.setSelector(extractSelector(stepText));
+            step.setValue(extractQuotedText(stepText));
+        } else if (stepText.startsWith("the URL should contain")) {
+            step.setType("assertion");
+            step.setAction("url");
+            step.setValue(extractQuotedText(stepText));
+        } else if (stepText.startsWith("the page title should be")) {
+            step.setType("assertion");
+            step.setAction("title");
+            step.setValue(extractQuotedText(stepText));
+        } else {
+            // Default case for unrecognized steps
+            step.setType("unknown");
+            step.setAction("custom");
+            step.setValue(stepText);
+        }
+        
+        return step;
+    }
+
+    /**
+     * Extract text within quotes from a string
+     * @param text The text to extract from
+     * @return The text within the first pair of quotes, or an empty string if not found
+     */
+    private String extractQuotedText(String text) {
+        int start = text.indexOf('"');
+        int end = text.indexOf('"', start + 1);
+        
+        if (start >= 0 && end > start) {
+            return text.substring(start + 1, end);
+        }
+        
+        return "";
+    }
+
+    /**
+     * Extract a selector from a Gherkin step text
+     * @param text The step text
+     * @return The extracted selector, or null if not found
+     */
+    private String extractSelector(String text) {
+        // Try to extract a quoted selector
+        if (text.contains("\"")) {
+            int lastQuoteIndex = text.lastIndexOf('"');
+            int secondLastQuoteIndex = text.lastIndexOf('"', lastQuoteIndex - 1);
+            
+            if (lastQuoteIndex > 0 && secondLastQuoteIndex >= 0) {
+                String quoted = text.substring(secondLastQuoteIndex + 1, lastQuoteIndex);
+                
+                // Check if this looks like a selector (starts with # or . or [ or is a tag name)
+                if (quoted.startsWith("#") || quoted.startsWith(".") || quoted.startsWith("[") || 
+                    (!quoted.contains(" ") && !quoted.contains("\"") && !quoted.contains("'"))) {
+                    return quoted;
+                }
+            }
+        }
+        
+        // Try to extract based on specific phrases
+        if (text.contains("element with ID")) {
+            String idText = extractQuotedText(text);
+            return "#" + idText;
+        } else if (text.contains("element with test ID")) {
+            String testId = extractQuotedText(text);
+            return "[data-testid=\"" + testId + "\"]";
+        } else if (text.contains("element with class")) {
+            String className = extractQuotedText(text);
+            return "." + className;
+        } else if (text.matches(".*the ([a-zA-Z0-9]+) element.*")) {
+            // Extract tag name
+            String[] words = text.split(" ");
+            for (int i = 0; i < words.length - 1; i++) {
+                if (words[i].equals("the") && words[i + 1].matches("[a-zA-Z0-9]+") && 
+                    i + 2 < words.length && words[i + 2].equals("element")) {
+                    return words[i + 1];
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Import an existing BDD feature file
+     * @param projectId The project ID
+     * @param featureContent The feature file content
+     * @return The created test case
+     */
+    public TestCase importFeatureFile(String projectId, String featureContent) {
+        TestCase testCase = parseFeatureFile(featureContent);
+        testCase.setProjectId(projectId);
+        return testCase;
+    }
+
+    /**
+     * Validate a feature file content
+     * @param featureContent The feature file content
+     * @return Validation result (true if valid, false otherwise)
+     */
+    public boolean validateFeatureFile(String featureContent) {
+        try {
+            TestCase testCase = parseFeatureFile(featureContent);
+            return testCase != null && 
+                   testCase.getName() != null && 
+                   !testCase.getName().isBlank() && 
+                   testCase.getSteps() != null && 
+                   !testCase.getSteps().isEmpty();
+        } catch (Exception e) {
+            logger.error("Error validating feature file", e);
+            return false;
+        }
+    }
+}
+
+
+package com.automation.api.services;
+
+import com.automation.api.models.ExecutionResult;
+import com.automation.api.models.TestCase;
+import com.automation.api.models.TestStep;
+import com.automation.api.services.ai.SelectorService;
+import com.automation.api.utils.PlaywrightUtils;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.options.WaitForSelectorState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
+
+/**
+ * Service for executing test cases
+ */
+@Service
+public class ExecutionService {
+    private static final Logger logger = LoggerFactory.getLogger(ExecutionService.class);
+    
+    private final ProjectService projectService;
+    private final FileSystemService fileSystemService;
+    private final BrowserService browserService;
+    private final SelectorService selectorService;
+    private final SimpMessagingTemplate messagingTemplate;
+    
+    private final ExecutorService executorService;
+    private final ConcurrentMap<String, ExecutionContext> activeExecutions = new ConcurrentHashMap<>();
+    
+    @Autowired
+    public ExecutionService(
+            ProjectService projectService,
+            FileSystemService fileSystemService,
+            BrowserService browserService,
+            SelectorService selectorService,
+            SimpMessagingTemplate messagingTemplate) {
+        this.projectService = projectService;
+        this.fileSystemService = fileSystemService;
+        this.browserService = browserService;
+        this.selectorService = selectorService;
+        this.messagingTemplate = messagingTemplate;
+        
+        // Create a thread pool for parallel test execution
+        this.executorService = Executors.newFixedThreadPool(5);
+    }
+    
+    /**
+     * Execute a test case
+     * @param projectId The project ID
+     * @param testCaseId The test case ID
+     * @return The execution result
+     */
+    public ExecutionResult executeTest(String projectId, String testCaseId) {
+        return executeTest(projectId, testCaseId, null);
+    }
+    
+    /**
+     * Execute a test case with custom variables
+     * @param projectId The project ID
+     * @param testCaseId The test case ID
+     * @param variables Custom variables for the test
+     * @return The execution result
+     */
+    public ExecutionResult executeTest(String projectId, String testCaseId, Map<String, String> variables) {
+        try {
+            // Get the test case
+            TestCase testCase = projectService.getTestCase(projectId, testCaseId);
+            if (testCase == null) {
+                throw new IllegalArgumentException("Test case not found: " + testCaseId);
+            }
+            
+            // Create an execution context
+            String executionId = UUID.randomUUID().toString();
+            ExecutionContext context = new ExecutionContext(executionId, projectId, testCase, variables);
+            activeExecutions.put(executionId, context);
+            
+            // Send initial status update
+            sendExecutionUpdate(context);
+            
+            // Submit execution task to thread pool
+            CompletableFuture.runAsync(() -> executeTestAsync(context), executorService)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        logger.error("Error executing test", ex);
+                        context.fail("Execution error: " + ex.getMessage());
+                    }
+                    
+                    // Clean up
+                    activeExecutions.remove(executionId);
+                    
+                    // Send final status update
+                    sendExecutionUpdate(context);
+                });
+            
+            // Return initial execution result
+            return context.getResult();
+        } catch (Exception e) {
+            logger.error("Error starting test execution", e);
+            
+            // Create a failed execution result
+            ExecutionResult result = new ExecutionResult();
+            result.setId(UUID.randomUUID().toString());
+            result.setTestCaseId(testCaseId);
+            result.setProjectId(projectId);
+            result.setStartTime(LocalDateTime.now());
+            result.setEndTime(LocalDateTime.now());
+            result.setStatus("FAILED");
+            result.setErrorMessage("Failed to start test execution: " + e.getMessage());
+            
+            return result;
+        }
+    }
+    
+    /**
+     * Get the status of a test execution
+     * @param executionId The execution ID
+     * @return The execution result
+     */
+    public ExecutionResult getExecutionStatus(String executionId) {
+        ExecutionContext context = activeExecutions.get(executionId);
+        if (context == null) {
+            throw new IllegalArgumentException("Execution not found: " + executionId);
+        }
+        
+        return context.getResult();
+    }
+    
+    /**
+     * Stop a running test execution
+     * @param executionId The execution ID
+     * @return The execution result
+     */
+    public ExecutionResult stopExecution(String executionId) {
+        ExecutionContext context = activeExecutions.get(executionId);
+        if (context == null) {
+            throw new IllegalArgumentException("Execution not found: " + executionId);
+        }
+        
+        context.stop("Execution stopped by user");
+        return context.getResult();
+    }
+    
+    /**
+     * List all active executions
+     * @return A list of execution results
+     */
+    public List<ExecutionResult> listActiveExecutions() {
+        return activeExecutions.values().stream()
+                .map(ExecutionContext::getResult)
+                .toList();
+    }
+    
+    /**
+     * Execute a test asynchronously
+     * @param context The execution context
+     */
+    private void executeTestAsync(ExecutionContext context) {
+        try {
+            // Set status to running
+            context.start();
+            sendExecutionUpdate(context);
+            
+            // Launch a new browser instance
+            BrowserService.BrowserLaunchOptions options = new BrowserService.BrowserLaunchOptions()
+                    .setHeadless(true)
+                    .setRecordVideo(true);
+            
+            // Create a new browser instance specifically for this test
+            Playwright playwright = Playwright.create();
+            
+            // Set up browser launch options
+            com.microsoft.playwright.BrowserType.LaunchOptions launchOptions = new com.microsoft.playwright.BrowserType.LaunchOptions()
+                    .setHeadless(options.isHeadless())
+                    .setSlowMo(options.getSlowMo());
+            
+            // Launch browser
+            com.microsoft.playwright.Browser browser = playwright.chromium().launch(launchOptions);
+            
+            // Create a browser context
+            com.microsoft.playwright.Browser.NewContextOptions contextOptions = new com.microsoft.playwright.Browser.NewContextOptions()
+                    .setViewportSize(options.getWidth(), options.getHeight())
+                    .setRecordVideoDir(options.isRecordVideo() ? Path.of("videos") : null);
+            
+            if (options.getUserAgent() != null) {
+                contextOptions.setUserAgent(options.getUserAgent());
+            }
+            
+            com.microsoft.playwright.BrowserContext browserContext = browser.newContext(contextOptions);
+            
+            // Create a new page
+            Page page = browserContext.newPage();
+            
+            try {
+                // Handle JavaScript dialogs automatically
+                page.onDialog(dialog -> {
+                    logger.info("Dialog appeared: " + dialog.message());
+                    dialog.dismiss(); // Default behavior is to dismiss
+                });
+                
+                // Execute each test step
+                List<TestStep> steps = context.getTestCase().getSteps();
+                for (int i = 0; i < steps.size(); i++) {
+                    if (context.isStopped()) {
+                        break;
+                    }
+                    
+                    TestStep step = steps.get(i);
+                    context.setCurrentStepIndex(i);
+                    sendExecutionUpdate(context);
+                    
+                    try {
+                        executeStep(step, page, context);
+                        
+                        // Capture screenshot after step execution
+                        byte[] screenshot = page.screenshot();
+                        String base64Screenshot = Base64.getEncoder().encodeToString(screenshot);
+                        context.addStepResult(step.getId(), true, null, base64Screenshot);
+                    } catch (Exception e) {
+                        logger.error("Error executing step", e);
+                        
+                        // Capture screenshot of failure
+                        byte[] screenshot = page.screenshot();
+                        String base64Screenshot = Base64.getEncoder().encodeToString(screenshot);
+                        
+                        context.addStepResult(step.getId(), false, e.getMessage(), base64Screenshot);
+                        context.fail("Step " + (i + 1) + " failed: " + e.getMessage());
+                        break;
+                    }
+                    
+                    sendExecutionUpdate(context);
+                }
+                
+                // If all steps completed successfully, mark as passed
+                if (!context.isStopped() && !context.isFailed()) {
+                    context.pass();
+                }
+            } finally {
+                // Close browser resources
+                try {
+                    if (page != null) {
+                        page.close();
+                    }
+                    if (browserContext != null) {
+                        // Save video path if it was recorded
+                        if (options.isRecordVideo()) {
+                            String videoPath = browserContext.pages().get(0).video().path().toString();
+                            context.setVideoPath(videoPath);
+                        }
+                        browserContext.close();
+                    }
+                    if (browser != null) {
+                        browser.close();
+                    }
+                    if (playwright != null) {
+                        playwright.close();
+                    }
+                } catch (Exception e) {
+                    logger.error("Error closing browser resources", e);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error in test execution", e);
+            context.fail("Execution error: " + e.getMessage());
+        } finally {
+            // Ensure the test is marked as complete
+            if (context.isRunning()) {
+                context.fail("Execution ended unexpectedly");
+            }
+            
+            // Send final update
+            sendExecutionUpdate(context);
+        }
+    }
+    
+    /**
+     * Execute a single test step
+     * @param step The test step to execute
+     * @param page The Playwright page
+     * @param context The execution context
+     * @throws Exception If the step execution fails
+     */
+    private void executeStep(TestStep step, Page page, ExecutionContext context) throws Exception {
+        logger.info("Executing step: {}", step.getDescription());
+        
+        String type = step.getType();
+        String action = step.getAction();
+        String selector = step.getSelector();
+        String value = step.getValue();
+        
+        // Process variables in values
+        if (value != null && value.contains("{") && value.contains("}")) {
+            value = processVariables(value, context.getVariables());
+        }
+        
+        switch (type) {
+            case "action":
+                executeActionStep(action, selector, value, page, context);
+                break;
+            case "assertion":
+                executeAssertionStep(action, selector, value, step.getAttributes(), page, context);
+                break;
+            case "wait":
+                executeWaitStep(action, selector, value, step.getAttributes(), page, context);
+                break;
+            case "data":
+                executeDataStep(action, selector, value, step.getAttributes(), page, context);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported step type: " + type);
+        }
+    }
+    
+    /**
+     * Execute an action step
+     */
+    private void executeActionStep(String action, String selector, String value, Page page, ExecutionContext context) throws Exception {
+        switch (action) {
+            case "navigate":
+                page.navigate(value);
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+                break;
+            case "click":
+                page.click(selector);
+                break;
+            case "select":
+                page.selectOption(selector, value);
+                break;
+            case "submit":
+                page.evaluate("selector => document.querySelector(selector).submit()", selector);
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported action: " + action);
+        }
+    }
+    
+    /**
+     * Execute an assertion step
+     */
+    private void executeAssertionStep(String action, String selector, String value, Map<String, String> attributes, Page page, ExecutionContext context) throws Exception {
+        switch (action) {
+            case "visible":
+                boolean isVisible = page.isVisible(selector);
+                if (!isVisible) {
+                    throw new AssertionError("Element is not visible: " + selector);
+                }
+                break;
+            case "text":
+                String text = page.textContent(selector);
+                if (text == null || !text.contains(value)) {
+                    throw new AssertionError("Element does not contain text '" + value + "': " + selector);
+                }
+                break;
+            case "attribute":
+                String attribute = attributes != null ? attributes.get("attribute") : null;
+                if (attribute == null) {
+                    throw new IllegalArgumentException("Missing attribute name for attribute assertion");
+                }
+                
+                String attrValue = page.getAttribute(selector, attribute);
+                if (attrValue == null || !attrValue.equals(value)) {
+                    throw new AssertionError("Element attribute '" + attribute + "' does not have value '" + value + "': " + selector);
+                }
+                break;
+            case "count":
+                int count = page.querySelectorAll(selector).size();
+                int expectedCount = Integer.parseInt(value);
+                if (count != expectedCount) {
+                    throw new AssertionError("Expected " + expectedCount + " elements, but found " + count + ": " + selector);
+                }
+                break;
+            case "url":
+                String url = page.url();
+                if (!url.contains(value)) {
+                    throw new AssertionError("URL does not contain '" + value + "': " + url);
+                }
+                break;
+            case "title":
+                String title = page.title();
+                if (!title.equals(value)) {
+                    throw new AssertionError("Page title is not '" + value + "', actual: '" + title + "'");
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported assertion: " + action);
+        }
+    }
+    
+    /**
+     * Execute a wait step
+     */
+    private void executeWaitStep(String action, String selector, String value, Map<String, String> attributes, Page page, ExecutionContext context) throws Exception {
+        // Parse timeout value
+        int timeout = 5000; // Default timeout
+        if (value != null && !value.isEmpty()) {
+            try {
+                timeout = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid timeout value: {}", value);
+            }
+        }
+        
+        switch (action) {
+            case "visible":
+                page.waitForSelector(selector, new Page.WaitForSelectorOptions()
+                        .setState(WaitForSelectorState.VISIBLE)
+                        .setTimeout(timeout));
+                break;
+            case "clickable":
+                // First wait for the element to be visible
+                page.waitForSelector(selector, new Page.WaitForSelectorOptions()
+                        .setState(WaitForSelectorState.VISIBLE)
+                        .setTimeout(timeout));
+                
+                // Then check if it's enabled
+                boolean isEnabled = (boolean) page.evaluate("selector => {" +
+                        "  const element = document.querySelector(selector);" +
+                        "  return element && !element.disabled && " +
+                        "    !element.hasAttribute('disabled') && " +
+                        "    getComputedStyle(element).pointerEvents !== 'none';" +
+                        "}", selector);
+                
+                if (!isEnabled) {
+                    throw new RuntimeException("Element is not clickable: " + selector);
+                }
+                break;
+            case "text":
+                String textToWaitFor = attributes != null ? attributes.get("text") : null;
+                if (textToWaitFor == null) {
+                    throw new IllegalArgumentException("Missing text to wait for");
+                }
+                
+                // Wait for text to be present in the element
+                page.waitForFunction("([selector, text]) => {" +
+                        "  const element = document.querySelector(selector);" +
+                        "  return element && element.textContent.includes(text);" +
+                        "}", Arrays.asList(selector, textToWaitFor), 
+                        new Page.WaitForFunctionOptions().setTimeout(timeout));
+                break;
+            case "navigation":
+                page.waitForNavigation(new Page.WaitForNavigationOptions()
+                        .setTimeout(timeout));
+                break;
+            case "network":
+                page.waitForLoadState(LoadState.NETWORKIDLE, 
+                        new Page.WaitForLoadStateOptions().setTimeout(timeout));
+                break;
+            case "fixed":
+                // Convert to milliseconds if needed
+                int waitTime = timeout;
+                page.waitForTimeout(waitTime);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported wait condition: " + action);
+        }
+    }
+    
+    /**
+     * Execute a data input step
+     */
+    private void executeDataStep(String action, String selector, String value, Map<String, String> attributes, Page page, ExecutionContext context) throws Exception {
+        switch (action) {
+            case "input":
+                // Clear existing input first
+                page.fill(selector, "");
+                
+                // Then fill with the new value
+                page.fill(selector, value);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported data action: " + action);
+        }
+    }
+    
+    /**
+     * Process variables in a string
+     * @param text The text containing variables in the format {varName}
+     * @param variables The variables map
+     * @return The processed text with variables replaced
+     */
+    private String processVariables(String text, Map<String, String> variables) {
+        if (text == null || variables == null || variables.isEmpty()) {
+            return text;
+        }
+        
+        String result = text;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String varName = entry.getKey();
+            String varValue = entry.getValue();
+            result = result.replace("{" + varName + "}", varValue);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Send an execution update to WebSocket clients
+     * @param context The execution context
+     */
+    private void sendExecutionUpdate(ExecutionContext context) {
+        messagingTemplate.convertAndSend(
+                "/topic/execution/" + context.getExecutionId(), 
+                context.getResult());
+    }
+    
+    /**
+     * Execution context class to track the state of a test execution
+     */
+    private static class ExecutionContext {
+        private final String executionId;
+        private final String projectId;
+        private final TestCase testCase;
+        private final Map<String, String> variables;
+        private final ExecutionResult result;
+        private final Map<String, StepResult> stepResults = new HashMap<>();
+        
+        private boolean running = false;
+        private boolean stopped = false;
+        private boolean failed = false;
+        private int currentStepIndex = -1;
+        private String videoPath;
+        
+        public ExecutionContext(String executionId, String projectId, TestCase testCase, Map<String, String> variables) {
+            this.executionId = executionId;
+            this.projectId = projectId;
+            this.testCase = testCase;
+            this.variables = variables != null ? variables : new HashMap<>();
+            
+            // Initialize result
+            this.result = new ExecutionResult();
+            this.result.setId(executionId);
+            this.result.setTestCaseId(testCase.getId());
+            this.result.setProjectId(projectId);
+            this.result.setTestName(testCase.getName());
+            this.result.setStatus("PENDING");
+            this.result.setStartTime(LocalDateTime.now());
+        }
+        
+        public String getExecutionId() {
+            return executionId;
+        }
+        
+        public String getProjectId() {
+            return projectId;
+        }
+        
+        public TestCase getTestCase() {
+            return testCase;
+        }
+        
+        public Map<String, String> getVariables() {
+            return variables;
+        }
+        
+        public ExecutionResult getResult() {
+            // Create a copy to avoid concurrent modification
+            ExecutionResult copy = new ExecutionResult();
+            copy.setId(result.getId());
+            copy.setTestCaseId(result.getTestCaseId());
+            copy.setProjectId(result.getProjectId());
+            copy.setTestName(result.getTestName());
+            copy.setStatus(result.getStatus());
+            copy.setStartTime(result.getStartTime());
+            copy.setEndTime(result.getEndTime());
+            copy.setErrorMessage(result.getErrorMessage());
+            copy.setCurrentStep(currentStepIndex >= 0 && currentStepIndex < testCase.getSteps().size() ? 
+                    testCase.getSteps().get(currentStepIndex).getDescription() : null);
+            copy.setCurrentStepIndex(currentStepIndex);
+            copy.setTotalSteps(testCase.getSteps().size());
+            copy.setStepResults(new HashMap<>(stepResults));
+            copy.setVideoPath(videoPath);
+            
+            return copy;
+        }
+        
+        public void start() {
+            running = true;
+            result.setStatus("RUNNING");
+            result.setStartTime(LocalDateTime.now());
+        }
+        
+        public void pass() {
+            running = false;
+            result.setStatus("PASSED");
+            result.setEndTime(LocalDateTime.now());
+        }
+        
+        public void fail(String errorMessage) {
+            running = false;
+            failed = true;
+            result.setStatus("FAILED");
+            result.setErrorMessage(errorMessage);
+            result.setEndTime(LocalDateTime.now());
+        }
+        
+        public void stop(String reason) {
+            running = false;
+            stopped = true;
+            result.setStatus("STOPPED");
+            result.setErrorMessage(reason);
+            result.setEndTime(LocalDateTime.now());
+        }
+        
+        public boolean isRunning() {
+            return running;
+        }
+        
+        public boolean isStopped() {
+            return stopped;
+        }
+        
+        public boolean isFailed() {
+            return failed;
+        }
+        
+        public void setCurrentStepIndex(int index) {
+            this.currentStepIndex = index;
+        }
+        
+        public void setVideoPath(String videoPath) {
+            this.videoPath = videoPath;
+            result.setVideoPath(videoPath);
+        }
+        
+        public void addStepResult(String stepId, boolean passed, String errorMessage, String screenshot) {
+            StepResult stepResult = new StepResult();
+            stepResult.setPassed(passed);
+            stepResult.setErrorMessage(errorMessage);
+            stepResult.setScreenshot(screenshot);
+            stepResult.setTimestamp(LocalDateTime.now());
+            
+            stepResults.put(stepId, stepResult);
+        }
+    }
+    
+    /**
+     * Inner class to represent a test step result
+     */
+    public static class StepResult {
+        private boolean passed;
+        private String errorMessage;
+        private String screenshot;
+        private LocalDateTime timestamp;
+        
+        public boolean isPassed() {
+            return passed;
+        }
+        
+        public void setPassed(boolean passed) {
+            this.passed = passed;
+        }
+        
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+        
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+        
+        public String getScreenshot() {
+            return screenshot;
+        }
+        
+        public void setScreenshot(String screenshot) {
+            this.screenshot = screenshot;
+        }
+        
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+        
+        public void setTimestamp(LocalDateTime timestamp) {
+            this.timestamp = timestamp;
+        }
+    }
+}
+
+package com.automation.api.models;
+
+import com.automation.api.services.ExecutionService;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Model for test execution results
+ */
+public class ExecutionResult {
+    private String id;
+    private String testCaseId;
+    private String projectId;
+    private String testName;
+    private String status;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String errorMessage;
+    private String currentStep;
+    private int currentStepIndex;
+    private int totalSteps;
+    private Map<String, ExecutionService.StepResult> stepResults = new HashMap<>();
+    private String videoPath;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTestCaseId() {
+        return testCaseId;
+    }
+
+    public void setTestCaseId(String testCaseId) {
+        this.testCaseId = testCaseId;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getTestName() {
+        return testName;
+    }
+
+    public void setTestName(String testName) {
+        this.testName = testName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getCurrentStep() {
+        return currentStep;
+    }
+
+    public void setCurrentStep(String currentStep) {
+        this.currentStep = currentStep;
+    }
+
+    public int getCurrentStepIndex() {
+        return currentStepIndex;
+    }
+
+    public void setCurrentStepIndex(int currentStepIndex) {
+        this.currentStepIndex = currentStepIndex;
+    }
+
+    public int getTotalSteps() {
+        return totalSteps;
+    }
+
+    public void setTotalSteps(int totalSteps) {
+        this.totalSteps = totalSteps;
+    }
+
+    public Map<String, ExecutionService.StepResult> getStepResults() {
+        return stepResults;
+    }
+
+    public void setStepResults(Map<String, ExecutionService.StepResult> stepResults) {
+        this.stepResults = stepResults;
+    }
+
+    public String getVideoPath() {
+        return videoPath;
+    }
+
+    public void setVideoPath(String videoPath) {
+        this.videoPath = videoPath;
+    }
+
+    public long getDurationMillis() {
+        if (startTime == null) {
+            return 0;
+        }
+        
+        LocalDateTime end = endTime != null ? endTime : LocalDateTime.now();
+        return java.time.Duration.between(startTime, end).toMillis();
+    }
+
+    public boolean isCompleted() {
+        return "PASSED".equals(status) || "FAILED".equals(status) || "STOPPED".equals(status);
+    }
+
+    public int getPassedStepsCount() {
+        if (stepResults == null || stepResults.isEmpty()) {
+            return 0;
+        }
+        
+        return (int) stepResults.values().stream()
+                .filter(ExecutionService.StepResult::isPassed)
+                .count();
+    }
+
+    public int getFailedStepsCount() {
+        if (stepResults == null || stepResults.isEmpty()) {
+            return 0;
+        }
+        
+        return (int) stepResults.values().stream()
+                .filter(result -> !result.isPassed())
+                .count();
+    }
+
+    public double getSuccessRate() {
+        if (stepResults == null || stepResults.isEmpty()) {
+            return 0.0;
+        }
+        
+        int total = stepResults.size();
+        int passed = getPassedStepsCount();
+        
+        return (double) passed / total * 100.0;
+    }
+}
+
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ProjectContext } from '../../contexts/ProjectContext';
+import { WebSocketService } from '../../services/websocket/WebSocketService';
+import ExecutionStatus from './ExecutionStatus';
+import TestRunner from './TestRunner';
+import TestStepList from './TestStepList';
+import EnvironmentConfig from './EnvironmentConfig';
+
+interface ExecutionParams {
+  projectId: string;
+  testId?: string;
+}
+
+interface ExecutionResult {
+  id: string;
+  testCaseId: string;
+  projectId: string;
+  testName: string;
+  status: string;
+  startTime: string;
+  endTime?: string;
+  errorMessage?: string;
+  currentStep?: string;
+  currentStepIndex: number;
+  totalSteps: number;
+  stepResults: Record<string, StepResult>;
+  videoPath?: string;
+}
+
+interface StepResult {
+  passed: boolean;
+  errorMessage?: string;
+  screenshot?: string;
+  timestamp: string;
+}
+
+interface TestCase {
+  id: string;
+  name: string;
+  steps: Array<{
+    id: string;
+    type: string;
+    action: string;
+    description: string;
+  }>;
+}
+
+const ExecutionPage: React.FC = () => {
+  const { projectId, testId } = useParams<ExecutionParams>();
+  const navigate = useNavigate();
+  const { currentProject, getTestCase } = useContext(ProjectContext);
+  
+  const [webSocketService] = useState<WebSocketService>(new WebSocketService());
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+  const [testCase, setTestCase] = useState<TestCase | null>(null);
+  const [environments, setEnvironments] = useState<string[]>(['Development', 'Testing', 'Staging', 'Production']);
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Development');
+  const [variables, setVariables] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch test case data
+  useEffect(() => {
+    if (!projectId || !testId) {
+      setError('Project or test case ID not specified');
+      setIsLoading(false);
+      return;
+    }
+    
+    const fetchTestCase = async () => {
+      try {
+        setIsLoading(true);
+        const test = await getTestCase(projectId, testId);
+        if (!test) {
+          throw new Error('Test case not found');
+        }
+        
+        setTestCase(test);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching test case:', error);
+        setError('Failed to load test case');
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTestCase();
+  }, [projectId, testId, getTestCase]);
+  
+  // Set up WebSocket connection for real-time updates
+  const setupWebSocket = useCallback((executionId: string) => {
+    if (webSocketService.isConnected()) {
+      webSocketService.disconnect();
+    }
+    
+    webSocketService.connect().then(() => {
+      webSocketService.addMessageHandler(`/topic/execution/${executionId}`, (data: ExecutionResult) => {
+        setExecutionResult(data);
+        
+        // If execution completed, clean up
+        if (data.status === 'PASSED' || data.status === 'FAILED' || data.status === 'STOPPED') {
+          setTimeout(() => {
+            webSocketService.disconnect();
+          }, 5000); // Keep connection active for a short time to receive any final updates
+        }
+      });
+    }).catch(error => {
+      console.error('Failed to connect to WebSocket:', error);
+      setError('Failed to establish real-time connection');
+    });
+    
+    return () => {
+      webSocketService.disconnect();
+    };
+  }, [webSocketService]);
+  
+  // Start test execution
+  const runTest = async () => {
+    if (!projectId || !testId) {
+      setError('Project or test case ID not specified');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // Call API to start test execution
+      const response = await fetch(`/api/execution/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId,
+          testCaseId: testId,
+          environment: selectedEnvironment,
+          variables
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to start test execution');
+      }
+      
+      const result = await response.json();
+      setExecutionResult(result);
+      
+      // Set up WebSocket for real-time updates
+      setupWebSocket(result.id);
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error starting test execution:', error);
+      setError('Failed to start test execution');
+      setIsLoading(false);
+    }
+  };
+  
+  // Stop running test
+  const stopTest = async () => {
+    if (!executionResult) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/execution/${executionResult.id}/stop`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to stop test execution');
+      }
+      
+      // Update will come via WebSocket
+    } catch (error) {
+      console.error('Error stopping test execution:', error);
+      setError('Failed to stop test execution');
+    }
+  };
+  
+  // Update environment variables
+  const updateVariable = (name: string, value: string) => {
+    setVariables(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Navigate back to test list
+  const goBack = () => {
+    navigate(`/project/${projectId}/tests`);
+  };
+  
+  if (isLoading && !executionResult) {
+    return (
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Test Execution</h1>
+          <button 
+            onClick={goBack}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Back to Tests
+          </button>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <span className="ml-3">Loading test case...</span>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Test Execution</h1>
+          <button 
+            onClick={goBack}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Back to Tests
+          </button>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
+          <button 
+            onClick={() => setError(null)}
+            className="mt-2 px-4 py-2 bg-red-200 rounded hover:bg-red-300"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Test Execution</h1>
+        <button 
+          onClick={goBack}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Back to Tests
+        </button>
+      </div>
+      
+      {testCase && (
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">{testCase.name}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="border rounded p-4">
+              <h3 className="text-lg font-medium mb-3">Test Configuration</h3>
+              <EnvironmentConfig 
+                environments={environments}
+                selectedEnvironment={selectedEnvironment}
+                onEnvironmentChange={setSelectedEnvironment}
+                variables={variables}
+                onVariableChange={updateVariable}
+              />
+              
+              <TestRunner 
+                isRunning={executionResult?.status === 'RUNNING'}
+                onRun={runTest}
+                onStop={stopTest}
+                disabled={isLoading}
+              />
+            </div>
+            
+            {executionResult && (
+              <div className="border rounded p-4">
+                <h3 className="text-lg font-medium mb-3">Execution Status</h3>
+                <ExecutionStatus result={executionResult} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {testCase && (
+        <div className="border rounded p-4">
+          <h3 className="text-lg font-medium mb-3">Test Steps</h3>
+          <TestStepList 
+            steps={testCase.steps} 
+            currentStepIndex={executionResult?.currentStepIndex || -1}
+            stepResults={executionResult?.stepResults || {}}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ExecutionPage;
+
+
+import React, { useState } from 'react';
+
+interface TestStep {
+  id: string;
+  type: string;
+  action: string;
+  description: string;
+}
+
+interface StepResult {
+  passed: boolean;
+  errorMessage?: string;
+  screenshot?: string;
+  timestamp: string;
+}
+
+interface TestStepListProps {
+  steps: TestStep[];
+  currentStepIndex: number;
+  stepResults: Record<string, StepResult>;
+}
+
+const TestStepList: React.FC<TestStepListProps> = ({ steps, currentStepIndex, stepResults }) => {
+  const [expandedStepId, setExpandedStepId] = useState<string | null>(null);
+  
+  const toggleExpand = (stepId: string) => {
+    if (expandedStepId === stepId) {
+      setExpandedStepId(null);
+    } else {
+      setExpandedStepId(stepId);
+    }
+  };
+  
+  const getStatusIcon = (index: number, stepId: string) => {
+    // If the step is currently being executed
+    if (index === currentStepIndex) {
+      return (
+        <div className="flex-shrink-0 w-6 h-6 mr-3">
+          <div className="animate-pulse w-4 h-4 rounded-full bg-blue-500"></div>
+        </div>
+      );
+    }
+    
+    // If step has results
+    if (stepResults[stepId]) {
+      const result = stepResults[stepId];
+      if (result.passed) {
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-3 text-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-3 text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        );
+      }
+    }
+    
+    // If step hasn't been executed yet
+    return (
+      <div className="flex-shrink-0 w-6 h-6 mr-3 text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    );
+  };
+  
+  const getStepTypeIcon = (type: string) => {
+    switch (type) {
+      case 'action':
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-2 text-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+          </div>
+        );
+      case 'assertion':
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-2 text-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+      case 'wait':
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-2 text-yellow-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+      case 'data':
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-2 text-purple-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex-shrink-0 w-6 h-6 mr-2 text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+    }
+  };
+  
+  if (!steps || steps.length === 0) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No test steps available
+      </div>
+    );
+  }
+  
+  return (
+    <div className="overflow-hidden border border-gray-200 rounded-lg">
+      <ul className="divide-y divide-gray-200">
+        {steps.map((step, index) => {
+          const isExpanded = expandedStepId === step.id;
+          const hasResult = stepResults[step.id] !== undefined;
+          const result = hasResult ? stepResults[step.id] : null;
+          
+          return (
+            <li 
+              key={step.id}
+              className={`
+                ${index === currentStepIndex ? 'bg-blue-50' : ''}
+                ${hasResult && result?.passed ? 'bg-green-50' : ''}
+                ${hasResult && !result?.passed ? 'bg-red-50' : ''}
+                hover:bg-gray-50
+              `}
+            >
+              <div 
+                className="flex items-start px-4 py-3 cursor-pointer"
+                onClick={() => toggleExpand(step.id)}
+              >
+                {getStatusIcon(index, step.id)}
+                
+                <div className="flex-grow">
+                  <div className="flex items-center">
+                    {getStepTypeIcon(step.type)}
+                    <span className="font-medium text-gray-900">
+                      {step.description}
+                    </span>
+                  </div>
+                  
+                  <div className="mt-1 text-sm text-gray-500">
+                    {step.type}: {step.action}
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0 ml-2">
+                  <svg 
+                    className={`w-5 h-5 transition-transform ${isExpanded ? 'transform rotate-180' : ''}`} 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              
+              {isExpanded && (
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  {result ? (
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <span className={`font-medium ${result.passed ? 'text-green-600' : 'text-red-600'}`}>
+                          {result.passed ? 'Passed' : 'Failed'}
+                        </span>
+                        <span className="ml-4 text-sm text-gray-500">
+                          {new Date(result.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      
+                      {result.errorMessage && (
+                        <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                          {result.errorMessage}
+                        </div>
+                      )}
+                      
+                      {result.screenshot && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-700 mb-1">Screenshot:</p>
+                          <img 
+                            src={`data:image/png;base64,${result.screenshot}`} 
+                            alt="Step screenshot"
+                            className="border border-gray-200 rounded max-w-full h-auto"
+                            style={{ maxHeight: '300px' }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      No execution data available for this step yet.
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
+
+export default TestStepList;
+
+
+import React from 'react';
+
+interface ExecutionResult {
+  id: string;
+  testCaseId: string;
+  projectId: string;
+  testName: string;
+  status: string;
+  startTime: string;
+  endTime?: string;
+  errorMessage?: string;
+  currentStep?: string;
+  currentStepIndex: number;
+  totalSteps: number;
+  stepResults: Record<string, StepResult>;
+  videoPath?: string;
+}
+
+interface StepResult {
+  passed: boolean;
+  errorMessage?: string;
+  screenshot?: string;
+  timestamp: string;
+}
+
+interface ExecutionStatusProps {
+  result: ExecutionResult;
+}
+
+const ExecutionStatus: React.FC<ExecutionStatusProps> = ({ result }) => {
+  const isCompleted = ['PASSED', 'FAILED', 'STOPPED'].includes(result.status);
+  const passedSteps = Object.values(result.stepResults).filter(step => step.passed).length;
+  const failedSteps = Object.values(result.stepResults).filter(step => !step.passed).length;
+  
+  // Calculate duration
+  const startTime = new Date(result.startTime);
+  const endTime = result.endTime ? new Date(result.endTime) : new Date();
+  const durationMs = endTime.getTime() - startTime.getTime();
+  const durationSecs = Math.floor(durationMs / 1000);
+  const minutes = Math.floor(durationSecs / 60);
+  const seconds = durationSecs % 60;
+  const durationFormatted = `${minutes}m ${seconds}s`;
+  
+  // Calculate success rate
+  const completedSteps = passedSteps + failedSteps;
+  const successRate = completedSteps > 0 ? Math.round((passedSteps / completedSteps) * 100) : 0;
+  
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PASSED':
+        return 'bg-green-100 text-green-800';
+      case 'FAILED':
+        return 'bg-red-100 text-red-800';
+      case 'RUNNING':
+        return 'bg-blue-100 text-blue-800';
+      case 'STOPPED':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'PENDING':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-500">Status:</span>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(result.status)}`}>
+          {result.status}
+        </span>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-500">Progress:</span>
+        <div className="flex items-center">
+          <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+            <div 
+              className={`h-2.5 rounded-full ${
+                result.status === 'FAILED' ? 'bg-red-600' : 
+                result.status === 'PASSED' ? 'bg-green-600' : 'bg-blue-600'
+              }`}
+              style={{ width: `${completedSteps > 0 ? (completedSteps / result.totalSteps) * 100 : 0}%` }}
+            ></div>
+          </div>
+          <span className="text-xs text-gray-500">
+            {completedSteps} / {result.totalSteps} steps
+          </span>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-500">Duration:</span>
+        <span className="text-sm text-gray-700">{durationFormatted}</span>
+      </div>
+      
+      {isCompleted && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-500">Success Rate:</span>
+          <div className="flex items-center">
+            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+              <div 
+                className={`h-2.5 rounded-full ${successRate > 80 ? 'bg-green-600' : successRate > 50 ? 'bg-yellow-600' : 'bg-red-600'}`}
+                style={{ width: `${successRate}%` }}
+              ></div>
+            </div>
+            <span className="text-xs text-gray-500">{successRate}%</span>
+          </div>
+        </div>
+      )}
+      
+      <div className="grid grid-cols-2 gap-2 mt-4">
+        <div className="bg-green-50 p-3 rounded border border-green-200">
+          <div className="text-xs font-medium text-green-800 mb-1">Passed</div>
+          <div className="text-2xl font-bold text-green-600">{passedSteps}</div>
+        </div>
+        <div className="bg-red-50 p-3 rounded border border-red-200">
+          <div className="text-xs font-medium text-red-800 mb-1">Failed</div>
+          <div className="text-2xl font-bold text-red-600">{failedSteps}</div>
+        </div>
+      </div>
+      
+      {result.currentStep && result.status === 'RUNNING' && (
+        <div className="mt-4">
+          <span className="text-sm font-medium text-gray-500">Current Step:</span>
+          <div className="mt-1 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+            {result.currentStep}
+          </div>
+        </div>
+      )}
+      
+      {result.errorMessage && (
+        <div className="mt-4">
+          <span className="text-sm font-medium text-gray-500">Error:</span>
+          <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+            {result.errorMessage}
+          </div>
+        </div>
+      )}
+      
+      {result.videoPath && isCompleted && (
+        <div className="mt-4">
+          <span className="text-sm font-medium text-gray-500">Video Recording:</span>
+          <a 
+            href={`/api/execution/video/${result.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            View Test Recording
+          </a>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ExecutionStatus;
+
