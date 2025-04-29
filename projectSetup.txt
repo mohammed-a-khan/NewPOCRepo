@@ -7,8 +7,8 @@ mkdir src
 mkdir target
 mkdir data
 mkdir uploads
-echo. > pom.xml
-echo. > README.md
+echo // TODO: Replace with actual POM content > pom.xml
+echo # Zero-Code Playwright Test Automation Platform > README.md
 echo target/ > .gitignore
 echo node_modules/ >> .gitignore
 echo *.iml >> .gitignore
@@ -75,423 +75,121 @@ mkdir src\main\java\com\automation\platform\dto\datasource
 mkdir src\main\java\com\automation\platform\dto\database
 mkdir src\main\java\com\automation\platform\dto\auth
 
-REM Create file storage utility classes
+REM Create Java files with minimal content
 echo package com.automation.platform.repositories.filesystem;> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo. >> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo import java.util.List;>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo import java.util.Optional;>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo. >> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo /**>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo  * Generic interface for file system-based repositories>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo  */>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo public interface FileSystemRepository^<T^> {>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo     T save(T entity);>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo     Optional^<T^> findById(String id);>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo     List^<T^> findAll();>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo     void deleteById(String id);>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo     boolean existsById(String id);>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo }>> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
+echo // TODO: Implement file system repository interface >> src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
 
-REM Create exception class for storage operations
 echo package com.automation.platform.exceptions;> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo. >> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo /**>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo  * Exception thrown when file storage operations fail>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo  */>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo public class StorageException extends RuntimeException {>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo     public StorageException(String message) {>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo         super(message);>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo     }>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo. >> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo     public StorageException(String message, Throwable cause) {>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo         super(message, cause);>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo     }>> src\main\java\com\automation\platform\exceptions\StorageException.java
-echo }>> src\main\java\com\automation\platform\exceptions\StorageException.java
+echo // TODO: Implement storage exception class >> src\main\java\com\automation\platform\exceptions\StorageException.java
 
-REM Create main application class
 echo package com.automation.platform;> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo. >> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo import org.springframework.boot.SpringApplication;>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo import org.springframework.boot.autoconfigure.SpringBootApplication;>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo. >> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo public class PlaywrightAutomationPlatformApplication {>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo. >> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo     public static void main(String[] args) {>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo         SpringApplication.run(PlaywrightAutomationPlatformApplication.class, args);>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo     }>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo }>> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
+echo // TODO: Implement main application class >> src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
 
-REM Create file system configuration
 echo package com.automation.platform.config;> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import org.springframework.beans.factory.annotation.Value;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import org.springframework.context.annotation.Bean;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import org.springframework.context.annotation.Configuration;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import com.fasterxml.jackson.databind.ObjectMapper;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import com.fasterxml.jackson.databind.SerializationFeature;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo import java.io.File;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo @Configuration>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo public class FileStorageConfig {>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     @Value("${app.file-storage.location:./data}")>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     private String fileStorageLocation;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     @Bean>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     public void initializeStorage() {>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         File baseDir = new File(fileStorageLocation);>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         if (!baseDir.exists()) {>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo             baseDir.mkdirs();>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         }>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         // Create core directories>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         new File(fileStorageLocation + "/projects").mkdirs();>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         new File(fileStorageLocation + "/users").mkdirs();>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         new File(fileStorageLocation + "/notifications").mkdirs();>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     }>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. >> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     @Bean>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     public ObjectMapper objectMapper() {>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         ObjectMapper objectMapper = new ObjectMapper();>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         objectMapper.registerModule(new JavaTimeModule());>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo         return objectMapper;>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo     }>> src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo }>> src\main\java\com\automation\platform\config\FileStorageConfig.java
+echo // TODO: Implement file storage configuration >> src\main\java\com\automation\platform\config\FileStorageConfig.java
 
-REM Create file utility class
 echo package com.automation.platform.utils;> src\main\java\com\automation\platform\utils\FileUtils.java
-echo. >> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import com.automation.platform.exceptions.StorageException;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo. >> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import java.io.File;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import java.io.IOException;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import java.nio.channels.FileChannel;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import java.nio.channels.FileLock;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo import java.nio.file.StandardOpenOption;>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo. >> src\main\java\com\automation\platform\utils\FileUtils.java
-echo /**>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo  * Utility class for file operations>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo  */>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo public class FileUtils {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo. >> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     /**>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo      * Create all directories in path if they don't exist>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo      */>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     public static void createDirectories(String path) {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         File directory = new File(path);>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         if (!directory.exists()) {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo             if (!directory.mkdirs()) {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo                 throw new StorageException("Failed to create directory: " + path);>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo             }>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         }>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     }>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo. >> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     /**>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo      * Acquire a file lock for exclusive access>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo      */>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     public static FileLock lockFile(File file) {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         try {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo             FileChannel channel = FileChannel.open(>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo                     file.toPath(),>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo                     StandardOpenOption.CREATE,>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo                     StandardOpenOption.WRITE,>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo                     StandardOpenOption.READ);>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo             return channel.tryLock();>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         } catch (IOException e) {>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo             throw new StorageException("Failed to lock file: " + file.getPath(), e);>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo         }>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo     }>> src\main\java\com\automation\platform\utils\FileUtils.java
-echo }>> src\main\java\com\automation\platform\utils\FileUtils.java
+echo // TODO: Implement file utility methods >> src\main\java\com\automation\platform\utils\FileUtils.java
 
-REM Create resources directory
-mkdir src\main\resources
-mkdir src\main\resources\static
-
-REM Create resources files
-echo spring.application.name=playwright-automation-platform> src\main\resources\application.properties
-echo. >> src\main\resources\application.properties
-echo # File Storage Configuration>> src\main\resources\application.properties
-echo app.file-storage.location=./data>> src\main\resources\application.properties
-echo app.upload-storage.location=./uploads>> src\main\resources\application.properties
-echo. >> src\main\resources\application.properties
-echo # Server Configuration>> src\main\resources\application.properties
-echo server.port=8080>> src\main\resources\application.properties
-echo. >> src\main\resources\application.properties
-echo # JWT Configuration>> src\main\resources\application.properties
-echo app.jwt.secret=strong-secret-key-should-be-changed-in-production>> src\main\resources\application.properties
-echo app.jwt.expiration=86400000>> src\main\resources\application.properties
-echo. >> src\main\resources\application.properties
-echo # Jackson Configuration>> src\main\resources\application.properties
-echo spring.jackson.serialization.write-dates-as-timestamps=false>> src\main\resources\application.properties
-echo spring.jackson.default-property-inclusion=non_null>> src\main\resources\application.properties
-echo. >> src\main\resources\application.properties
-echo # Multipart Configuration>> src\main\resources\application.properties
-echo spring.servlet.multipart.max-file-size=10MB>> src\main\resources\application.properties
-echo spring.servlet.multipart.max-request-size=10MB>> src\main\resources\application.properties
-
-REM Create webapp directory
-mkdir src\main\webapp
-mkdir src\main\webapp\public
-mkdir src\main\webapp\src
-mkdir src\main\webapp\src\components
-mkdir src\main\webapp\src\types
-mkdir src\main\webapp\src\services
-mkdir src\main\webapp\src\hooks
-mkdir src\main\webapp\src\contexts
-mkdir src\main\webapp\src\pages
-mkdir src\main\webapp\src\utils
-mkdir src\main\webapp\src\assets
-mkdir src\main\webapp\src\assets\styles
-mkdir src\main\webapp\src\assets\images
-
-REM Create component directories
-mkdir src\main\webapp\src\components\common
-mkdir src\main\webapp\src\components\project
-mkdir src\main\webapp\src\components\testcase
-mkdir src\main\webapp\src\components\datasource
-mkdir src\main\webapp\src\components\iteration
-mkdir src\main\webapp\src\components\database
-mkdir src\main\webapp\src\components\notification
-
-REM Create data folder structure
-mkdir data
-mkdir data\projects
-mkdir data\users
-mkdir data\notifications
-mkdir uploads
-
-REM Create package.json
-echo {> src\main\webapp\package.json
-echo   "name": "playwright-automation-platform-frontend",>> src\main\webapp\package.json
-echo   "version": "1.0.0",>> src\main\webapp\package.json
-echo   "private": true,>> src\main\webapp\package.json
-echo   "dependencies": {>> src\main\webapp\package.json
-echo     "@testing-library/jest-dom": "^5.16.5",>> src\main\webapp\package.json
-echo     "@testing-library/react": "^13.4.0",>> src\main\webapp\package.json
-echo     "@testing-library/user-event": "^13.5.0",>> src\main\webapp\package.json
-echo     "@types/jest": "^27.5.2",>> src\main\webapp\package.json
-echo     "@types/node": "^16.18.11",>> src\main\webapp\package.json
-echo     "@types/react": "^18.0.26",>> src\main\webapp\package.json
-echo     "@types/react-dom": "^18.0.10",>> src\main\webapp\package.json
-echo     "axios": "^1.2.2",>> src\main\webapp\package.json
-echo     "formik": "^2.2.9",>> src\main\webapp\package.json
-echo     "react": "^18.2.0",>> src\main\webapp\package.json
-echo     "react-dom": "^18.2.0",>> src\main\webapp\package.json
-echo     "react-router-dom": "^6.8.1",>> src\main\webapp\package.json
-echo     "react-scripts": "5.0.1",>> src\main\webapp\package.json
-echo     "sockjs-client": "^1.6.1",>> src\main\webapp\package.json
-echo     "stompjs": "^2.3.3",>> src\main\webapp\package.json
-echo     "web-vitals": "^2.1.4",>> src\main\webapp\package.json
-echo     "yup": "^0.32.11">> src\main\webapp\package.json
-echo   },>> src\main\webapp\package.json
-echo   "scripts": {>> src\main\webapp\package.json
-echo     "start": "react-scripts start",>> src\main\webapp\package.json
-echo     "build": "react-scripts build",>> src\main\webapp\package.json
-echo     "test": "react-scripts test",>> src\main\webapp\package.json
-echo     "eject": "react-scripts eject">> src\main\webapp\package.json
-echo   },>> src\main\webapp\package.json
-echo   "eslintConfig": {>> src\main\webapp\package.json
-echo     "extends": [>> src\main\webapp\package.json
-echo       "react-app",>> src\main\webapp\package.json
-echo       "react-app/jest">> src\main\webapp\package.json
-echo     ]>> src\main\webapp\package.json
-echo   },>> src\main\webapp\package.json
-echo   "browserslist": {>> src\main\webapp\package.json
-echo     "production": [>> src\main\webapp\package.json
-echo       ">0.2%%",>> src\main\webapp\package.json
-echo       "not dead",>> src\main\webapp\package.json
-echo       "not op_mini all">> src\main\webapp\package.json
-echo     ],>> src\main\webapp\package.json
-echo     "development": [>> src\main\webapp\package.json
-echo       "last 1 chrome version",>> src\main\webapp\package.json
-echo       "last 1 firefox version",>> src\main\webapp\package.json
-echo       "last 1 safari version">> src\main\webapp\package.json
-echo     ]>> src\main\webapp\package.json
-echo   },>> src\main\webapp\package.json
-echo   "devDependencies": {>> src\main\webapp\package.json
-echo     "@types/sockjs-client": "^1.5.1",>> src\main\webapp\package.json
-echo     "@types/stompjs": "^2.3.5",>> src\main\webapp\package.json
-echo     "typescript": "^4.9.4">> src\main\webapp\package.json
-echo   },>> src\main\webapp\package.json
-echo   "proxy": "http://localhost:8080">> src\main\webapp\package.json
-echo }>> src\main\webapp\package.json
-
-REM Create project model class
 echo package com.automation.platform.models.project;> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo import com.fasterxml.jackson.annotation.JsonFormat;>> src\main\java\com\automation\platform\models\project\Project.java
-echo import java.time.LocalDateTime;>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo /**>> src\main\java\com\automation\platform\models\project\Project.java
-echo  * Represents a project in the system>> src\main\java\com\automation\platform\models\project\Project.java
-echo  */>> src\main\java\com\automation\platform\models\project\Project.java
-echo public class Project {>> src\main\java\com\automation\platform\models\project\Project.java
-echo     private String id;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     private String name;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     private String description;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     >> src\main\java\com\automation\platform\models\project\Project.java
-echo     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")>> src\main\java\com\automation\platform\models\project\Project.java
-echo     private LocalDateTime createdAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     >> src\main\java\com\automation\platform\models\project\Project.java
-echo     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")>> src\main\java\com\automation\platform\models\project\Project.java
-echo     private LocalDateTime updatedAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public Project() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         // Default constructor for Jackson>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public String getId() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         return id;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public void setId(String id) {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         this.id = id;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public String getName() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         return name;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public void setName(String name) {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         this.name = name;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public String getDescription() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         return description;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public void setDescription(String description) {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         this.description = description;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public LocalDateTime getCreatedAt() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         return createdAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public void setCreatedAt(LocalDateTime createdAt) {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         this.createdAt = createdAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public LocalDateTime getUpdatedAt() {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         return updatedAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo. >> src\main\java\com\automation\platform\models\project\Project.java
-echo     public void setUpdatedAt(LocalDateTime updatedAt) {>> src\main\java\com\automation\platform\models\project\Project.java
-echo         this.updatedAt = updatedAt;>> src\main\java\com\automation\platform\models\project\Project.java
-echo     }>> src\main\java\com\automation\platform\models\project\Project.java
-echo }>> src\main\java\com\automation\platform\models\project\Project.java
+echo // TODO: Implement project model >> src\main\java\com\automation\platform\models\project\Project.java
 
-REM Create test directory
-mkdir src\test\java\com\automation\platform
-mkdir src\test\java\com\automation\platform\controllers
-mkdir src\test\java\com\automation\platform\services
-mkdir src\test\java\com\automation\platform\repositories
-mkdir src\test\resources
+REM Create file for ProjectSettings model
+echo package com.automation.platform.models.project;> src\main\java\com\automation\platform\models\project\ProjectSettings.java
+echo // TODO: Implement project settings model >> src\main\java\com\automation\platform\models\project\ProjectSettings.java
 
-echo.
-echo Project structure created successfully!
-echo.
-echo Next steps:
-echo 1. Open the project in your IDE
-echo 2. Customize the pom.xml file with the content provided
-echo 3. Start implementing the code for each component
-echo.
+REM Create file for Project Service
+echo package com.automation.platform.services.project;> src\main\java\com\automation\platform\services\project\ProjectService.java
+echo // TODO: Implement project service interface >> src\main\java\com\automation\platform\services\project\ProjectService.java
 
+echo package com.automation.platform.services.project;> src\main\java\com\automation\platform\services\project\ProjectServiceImpl.java
+echo // TODO: Implement project service implementation >> src\main\java\com\automation\platform\services\project\ProjectServiceImpl.java
 
+REM Create file for Project Controller
+echo package com.automation.platform.controllers.project;> src\main\java\com\automation\platform\controllers\project\ProjectController.java
+echo // TODO: Implement project controller >> src\main\java\com\automation\platform\controllers\project\ProjectController.java
 
+REM Create file for TestCase models
+echo package com.automation.platform.models.testcase;> src\main\java\com\automation\platform\models\testcase\TestCase.java
+echo // TODO: Implement test case model >> src\main\java\com\automation\platform\models\testcase\TestCase.java
 
-New structure script
----------------------------
+echo package com.automation.platform.models.testcase;> src\main\java\com\automation\platform\models\testcase\TestStep.java
+echo // TODO: Implement test step model >> src\main\java\com\automation\platform\models\testcase\TestStep.java
 
-@echo off
-echo Creating Zero-Code Playwright Test Automation Platform Project Structure...
-echo.
+echo package com.automation.platform.models.testcase;> src\main\java\com\automation\platform\models\testcase\TestSuite.java
+echo // TODO: Implement test suite model >> src\main\java\com\automation\platform\models\testcase\TestSuite.java
 
-REM Create root directory and initial files
-mkdir src
-mkdir target
-mkdir data
-mkdir uploads
-echo. > pom.xml
-echo. > README.md
-echo target/ > .gitignore
-echo node_modules/ >> .gitignore
-echo *.iml >> .gitignore
-echo .idea/ >> .gitignore
-echo .vscode/ >> .gitignore
-echo .settings/ >> .gitignore
-echo .classpath >> .gitignore
-echo .project >> .gitignore
-echo data/ >> .gitignore
-echo uploads/ >> .gitignore
+REM Create file for TestCase Services
+echo package com.automation.platform.services.testcase;> src\main\java\com\automation\platform\services\testcase\TestCaseService.java
+echo // TODO: Implement test case service interface >> src\main\java\com\automation\platform\services\testcase\TestCaseService.java
 
-REM Create main Java structure
-mkdir src\main\java\com\automation\platform
-mkdir src\main\java\com\automation\platform\config
-mkdir src\main\java\com\automation\platform\controllers
-mkdir src\main\java\com\automation\platform\models
-mkdir src\main\java\com\automation\platform\services
-mkdir src\main\java\com\automation\platform\repositories
-mkdir src\main\java\com\automation\platform\exceptions
-mkdir src\main\java\com\automation\platform\utils
-mkdir src\main\java\com\automation\platform\security
-mkdir src\main\java\com\automation\platform\dto
+echo package com.automation.platform.services.testcase;> src\main\java\com\automation\platform\services\testcase\TestCaseServiceImpl.java
+echo // TODO: Implement test case service implementation >> src\main\java\com\automation\platform\services\testcase\TestCaseServiceImpl.java
 
-REM Create repository subdirectories for file system storage
-mkdir src\main\java\com\automation\platform\repositories\filesystem
+REM Create file for DataSource models
+echo package com.automation.platform.models.datasource;> src\main\java\com\automation\platform\models\datasource\DataSource.java
+echo // TODO: Implement data source model >> src\main\java\com\automation\platform\models\datasource\DataSource.java
 
-REM Create model subdirectories
-mkdir src\main\java\com\automation\platform\models\project
-mkdir src\main\java\com\automation\platform\models\testcase
-mkdir src\main\java\com\automation\platform\models\datasource
-mkdir src\main\java\com\automation\platform\models\iteration
-mkdir src\main\java\com\automation\platform\models\notification
-mkdir src\main\java\com\automation\platform\models\database
-mkdir src\main\java\com\automation\platform\models\execution
-mkdir src\main\java\com\automation\platform\models\user
-mkdir src\main\java\com\automation\platform\models\common
+echo package com.automation.platform.models.datasource;> src\main\java\com\automation\platform\models\datasource\DataMapping.java
+echo // TODO: Implement data mapping model >> src\main\java\com\automation\platform\models\datasource\DataMapping.java
 
-REM Create service subdirectories
-mkdir src\main\java\com\automation\platform\services\project
-mkdir src\main\java\com\automation\platform\services\testcase
-mkdir src\main\java\com\automation\platform\services\datasource
-mkdir src\main\java\com\automation\platform\services\iteration
-mkdir src\main\java\com\automation\platform\services\notification
-mkdir src\main\java\com\automation\platform\services\database
-mkdir src\main\java\com\automation\platform\services\execution
-mkdir src\main\java\com\automation\platform\services\user
-mkdir src\main\java\com\automation\platform\services\filesystem
-mkdir src\main\java\com\automation\platform\services\common
+REM Create file for DataSource Services
+echo package com.automation.platform.services.datasource;> src\main\java\com\automation\platform\services\datasource\DataSourceService.java
+echo // TODO: Implement data source service interface >> src\main\java\com\automation\platform\services\datasource\DataSourceService.java
 
-REM Create controller subdirectories
-mkdir src\main\java\com\automation\platform\controllers\project
-mkdir src\main\java\com\automation\platform\controllers\testcase
-mkdir src\main\java\com\automation\platform\controllers\datasource
-mkdir src\main\java\com\automation\platform\controllers\iteration
-mkdir src\main\java\com\automation\platform\controllers\notification
-mkdir src\main\java\com\automation\platform\controllers\database
-mkdir src\main\java\com\automation\platform\controllers\execution
-mkdir src\main\java\com\automation\platform\controllers\user
+echo package com.automation.platform.services.datasource;> src\main\java\com\automation\platform\services\datasource\DataSourceServiceImpl.java
+echo // TODO: Implement data source service implementation >> src\main\java\com\automation\platform\services\datasource\DataSourceServiceImpl.java
 
-REM Create DTO subdirectories
-mkdir src\main\java\com\automation\platform\dto\project
-mkdir src\main\java\com\automation\platform\dto\testcase
-mkdir src\main\java\com\automation\platform\dto\datasource
-mkdir src\main\java\com\automation\platform\dto\database
-mkdir src\main\java\com\automation\platform\dto\auth
+REM Create file for Iteration models
+echo package com.automation.platform.models.iteration;> src\main\java\com\automation\platform\models\iteration\DataIteration.java
+echo // TODO: Implement data iteration model >> src\main\java\com\automation\platform\models\iteration\DataIteration.java
 
-REM Create empty Java files for file system storage
-echo. > src\main\java\com\automation\platform\repositories\filesystem\FileSystemRepository.java
-echo. > src\main\java\com\automation\platform\exceptions\StorageException.java
-echo. > src\main\java\com\automation\platform\PlaywrightAutomationPlatformApplication.java
-echo. > src\main\java\com\automation\platform\config\FileStorageConfig.java
-echo. > src\main\java\com\automation\platform\utils\FileUtils.java
-echo. > src\main\java\com\automation\platform\models\project\Project.java
+echo package com.automation.platform.models.iteration;> src\main\java\com\automation\platform\models\iteration\IterationOptions.java
+echo // TODO: Implement iteration options model >> src\main\java\com\automation\platform\models\iteration\IterationOptions.java
+
+REM Create file for Iteration Services
+echo package com.automation.platform.services.iteration;> src\main\java\com\automation\platform\services\iteration\DataIterationService.java
+echo // TODO: Implement data iteration service interface >> src\main\java\com\automation\platform\services\iteration\DataIterationService.java
+
+echo package com.automation.platform.services.iteration;> src\main\java\com\automation\platform\services\iteration\DataIterationServiceImpl.java
+echo // TODO: Implement data iteration service implementation >> src\main\java\com\automation\platform\services\iteration\DataIterationServiceImpl.java
+
+REM Create file for Notification models
+echo package com.automation.platform.models.notification;> src\main\java\com\automation\platform\models\notification\Notification.java
+echo // TODO: Implement notification model >> src\main\java\com\automation\platform\models\notification\Notification.java
+
+echo package com.automation.platform.models.notification;> src\main\java\com\automation\platform\models\notification\NotificationType.java
+echo // TODO: Implement notification type enum >> src\main\java\com\automation\platform\models\notification\NotificationType.java
+
+REM Create file for Notification Services
+echo package com.automation.platform.services.notification;> src\main\java\com\automation\platform\services\notification\NotificationService.java
+echo // TODO: Implement notification service interface >> src\main\java\com\automation\platform\services\notification\NotificationService.java
+
+echo package com.automation.platform.services.notification;> src\main\java\com\automation\platform\services\notification\NotificationServiceImpl.java
+echo // TODO: Implement notification service implementation >> src\main\java\com\automation\platform\services\notification\NotificationServiceImpl.java
+
+REM Create file for Database models
+echo package com.automation.platform.models.database;> src\main\java\com\automation\platform\models\database\DatabaseConnection.java
+echo // TODO: Implement database connection model >> src\main\java\com\automation\platform\models\database\DatabaseConnection.java
+
+echo package com.automation.platform.models.database;> src\main\java\com\automation\platform\models\database\DatabaseTestCase.java
+echo // TODO: Implement database test case model >> src\main\java\com\automation\platform\models\database\DatabaseTestCase.java
+
+echo package com.automation.platform.models.database;> src\main\java\com\automation\platform\models\database\QueryDefinition.java
+echo // TODO: Implement query definition model >> src\main\java\com\automation\platform\models\database\QueryDefinition.java
+
+REM Create file for Database Services
+echo package com.automation.platform.services.database;> src\main\java\com\automation\platform\services\database\DatabaseConnectionService.java
+echo // TODO: Implement database connection service interface >> src\main\java\com\automation\platform\services\database\DatabaseConnectionService.java
+
+echo package com.automation.platform.services.database;> src\main\java\com\automation\platform\services\database\DatabaseConnectionServiceImpl.java
+echo // TODO: Implement database connection service implementation >> src\main\java\com\automation\platform\services\database\DatabaseConnectionServiceImpl.java
+
+echo package com.automation.platform.services.database;> src\main\java\com\automation\platform\services\database\DatabaseTestService.java
+echo // TODO: Implement database test service interface >> src\main\java\com\automation\platform\services\database\DatabaseTestService.java
+
+echo package com.automation.platform.services.database;> src\main\java\com\automation\platform\services\database\DatabaseTestServiceImpl.java
+echo // TODO: Implement database test service implementation >> src\main\java\com\automation\platform\services\database\DatabaseTestServiceImpl.java
 
 REM Create resources directory
 mkdir src\main\resources
@@ -655,39 +353,55 @@ echo     ^<div id="root"^>^</div^>>> src\main\webapp\public\index.html
 echo   ^</body^>>> src\main\webapp\public\index.html
 echo ^</html^>>> src\main\webapp\public\index.html
 
-REM Create empty React files
-echo. > src\main\webapp\src\index.tsx
-echo. > src\main\webapp\src\App.tsx
-echo. > src\main\webapp\src\reportWebVitals.ts
-echo. > src\main\webapp\src\assets\styles\main.css
-echo. > src\main\webapp\src\assets\styles\App.css
+REM Create React files with minimal content
+echo // TODO: Implement index.tsx > src\main\webapp\src\index.tsx
+echo // TODO: Implement App.tsx > src\main\webapp\src\App.tsx
+echo // TODO: Implement reportWebVitals.ts > src\main\webapp\src\reportWebVitals.ts
+echo /* TODO: Implement main.css */ > src\main\webapp\src\assets\styles\main.css
+echo /* TODO: Implement App.css */ > src\main\webapp\src\assets\styles\App.css
 
-REM Create empty component files
-echo. > src\main\webapp\src\components\common\Header.tsx
-echo. > src\main\webapp\src\components\common\Sidebar.tsx
-echo. > src\main\webapp\src\components\project\ProjectList.tsx
-echo. > src\main\webapp\src\components\project\ProjectForm.tsx
+REM Create component files with minimal content
+echo // TODO: Implement Header.tsx > src\main\webapp\src\components\common\Header.tsx
+echo // TODO: Implement Sidebar.tsx > src\main\webapp\src\components\common\Sidebar.tsx
+echo // TODO: Implement ProjectList.tsx > src\main\webapp\src\components\project\ProjectList.tsx
+echo // TODO: Implement ProjectForm.tsx > src\main\webapp\src\components\project\ProjectForm.tsx
+echo // TODO: Implement TestCaseList.tsx > src\main\webapp\src\components\testcase\TestCaseList.tsx
+echo // TODO: Implement TestCaseForm.tsx > src\main\webapp\src\components\testcase\TestCaseForm.tsx
+echo // TODO: Implement DataSourceList.tsx > src\main\webapp\src\components\datasource\DataSourceList.tsx
+echo // TODO: Implement DataSourceForm.tsx > src\main\webapp\src\components\datasource\DataSourceForm.tsx
+echo // TODO: Implement DatabaseConnectionList.tsx > src\main\webapp\src\components\database\DatabaseConnectionList.tsx
+echo // TODO: Implement DatabaseTestForm.tsx > src\main\webapp\src\components\database\DatabaseTestForm.tsx
+echo // TODO: Implement NotificationCenter.tsx > src\main\webapp\src\components\notification\NotificationCenter.tsx
 
-REM Create empty page files
-echo. > src\main\webapp\src\pages\Dashboard.tsx
-echo. > src\main\webapp\src\pages\Projects.tsx
-echo. > src\main\webapp\src\pages\TestCases.tsx
-echo. > src\main\webapp\src\pages\DataSources.tsx
-echo. > src\main\webapp\src\pages\DatabaseTests.tsx
-echo. > src\main\webapp\src\pages\Settings.tsx
+REM Create page files with minimal content
+echo // TODO: Implement Dashboard.tsx > src\main\webapp\src\pages\Dashboard.tsx
+echo // TODO: Implement Projects.tsx > src\main\webapp\src\pages\Projects.tsx
+echo // TODO: Implement TestCases.tsx > src\main\webapp\src\pages\TestCases.tsx
+echo // TODO: Implement DataSources.tsx > src\main\webapp\src\pages\DataSources.tsx
+echo // TODO: Implement DatabaseTests.tsx > src\main\webapp\src\pages\DatabaseTests.tsx
+echo // TODO: Implement Settings.tsx > src\main\webapp\src\pages\Settings.tsx
 
-REM Create empty type files
-echo. > src\main\webapp\src\types\project.ts
-echo. > src\main\webapp\src\types\testcase.ts
-echo. > src\main\webapp\src\types\datasource.ts
-echo. > src\main\webapp\src\types\database.ts
+REM Create type files with minimal content
+echo // TODO: Implement project.ts > src\main\webapp\src\types\project.ts
+echo // TODO: Implement testcase.ts > src\main\webapp\src\types\testcase.ts
+echo // TODO: Implement datasource.ts > src\main\webapp\src\types\datasource.ts
+echo // TODO: Implement database.ts > src\main\webapp\src\types\database.ts
 
-REM Create empty service files
-echo. > src\main\webapp\src\services\api.ts
-echo. > src\main\webapp\src\services\projectService.ts
-echo. > src\main\webapp\src\services\testCaseService.ts
-echo. > src\main\webapp\src\services\dataSourceService.ts
-echo. > src\main\webapp\src\services\databaseService.ts
+REM Create service files with minimal content
+echo // TODO: Implement api.ts > src\main\webapp\src\services\api.ts
+echo // TODO: Implement projectService.ts > src\main\webapp\src\services\projectService.ts
+echo // TODO: Implement testCaseService.ts > src\main\webapp\src\services\testCaseService.ts
+echo // TODO: Implement dataSourceService.ts > src\main\webapp\src\services\dataSourceService.ts
+echo // TODO: Implement databaseService.ts > src\main\webapp\src\services\databaseService.ts
+
+REM Create hook files
+echo // TODO: Implement useApi.ts > src\main\webapp\src\hooks\useApi.ts
+echo // TODO: Implement useAuth.ts > src\main\webapp\src\hooks\useAuth.ts
+echo // TODO: Implement useNotification.ts > src\main\webapp\src\hooks\useNotification.ts
+
+REM Create context files
+echo // TODO: Implement AuthContext.tsx > src\main\webapp\src\contexts\AuthContext.tsx
+echo // TODO: Implement NotificationContext.tsx > src\main\webapp\src\contexts\NotificationContext.tsx
 
 REM Create test directory
 mkdir src\test\java\com\automation\platform
@@ -696,7 +410,7 @@ mkdir src\test\java\com\automation\platform\services
 mkdir src\test\java\com\automation\platform\repositories
 mkdir src\test\resources
 
-echo. > src\test\resources\application-test.properties
+echo # Test application properties > src\test\resources\application-test.properties
 
 echo.
 echo Project structure created successfully!
@@ -705,7 +419,7 @@ echo Structure created with:
 echo - All necessary Java packages for backend components
 echo - Frontend React/TypeScript structure
 echo - Configuration files with content (application.properties, package.json, tsconfig.json)
-echo - Empty files for implementation
+echo - Files with minimal TODO comments
 echo.
 echo Next steps:
 echo 1. Open the project in your IDE
