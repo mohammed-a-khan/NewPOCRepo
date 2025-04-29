@@ -1,0 +1,2155 @@
+/* src/App.css */
+:root {
+  --primary-color: #1a73e8;
+  --primary-hover: #0d66da;
+  --secondary-color: #5f6368;
+  --accent-color: #4285f4;
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #dadce0;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --text-light: #ffffff;
+  --success-color: #0f9d58;
+  --warning-color: #f4b400;
+  --error-color: #d93025;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--card-background);
+}
+
+/* Button styles */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  font-weight: 500;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.primary-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.secondary-button {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.secondary-button:hover {
+  background-color: rgba(26, 115, 232, 0.04);
+}
+
+/* Header.css */
+.app-header {
+  background-color: var(--card-background);
+  box-shadow: var(--shadow);
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-logo a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.header-nav ul {
+  display: flex;
+  list-style: none;
+}
+
+.header-nav li {
+  margin-left: 24px;
+}
+
+.header-nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  position: relative;
+}
+
+.header-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.header-nav li.active a {
+  color: var(--primary-color);
+}
+
+.header-nav li.active a::after {
+  transform: scaleX(1);
+}
+
+.header-nav a:hover::after {
+  transform: scaleX(1);
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: 10px;
+}
+
+.menu-icon,
+.menu-icon::before,
+.menu-icon::after {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: var(--text-primary);
+  position: relative;
+  transition: transform 0.3s;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+.menu-icon::before {
+  top: -8px;
+}
+
+.menu-icon::after {
+  top: 8px;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+  
+  .header-nav {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background-color: var(--card-background);
+    box-shadow: var(--shadow);
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s;
+  }
+  
+  .header-nav.open {
+    height: auto;
+  }
+  
+  .header-nav ul {
+    flex-direction: column;
+    padding: 16px;
+  }
+  
+  .header-nav li {
+    margin: 0 0 16px 0;
+  }
+}
+
+/* HomePage.css */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 2rem 0;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 3rem 1rem;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.action-buttons button {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+}
+
+.features-section {
+  padding: 2rem 0;
+}
+
+.features-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.feature-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .action-buttons button {
+    width: 100%;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* DashboardPage.css */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+}
+
+.create-project-button {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.create-project-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--error-color);
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.empty-state h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.project-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-card p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.project-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+
+.last-run {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.view-project-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.view-project-link:hover {
+  text-decoration: underline;
+}
+
+/* SettingsPage.css */
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.settings-container h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.settings-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.setting-item {
+  margin-bottom: 1.5rem;
+}
+
+.setting-item label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.setting-item input[type="text"],
+.setting-item input[type="number"],
+.setting-item select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.setting-item input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 0.5rem;
+}
+
+.setting-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.settings-actions button {
+  padding: 10px 20px;
+}
+
+@media (max-width: 768px) {
+  .settings-container {
+    padding: 1.5rem;
+  }
+  
+  .settings-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+  }
+}
+
+
+// src/components/project/ProjectPage.tsx
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import ProjectFeatures from './ProjectFeatures';
+import ProjectSettings from './ProjectSettings';
+import './ProjectPage.css';
+
+interface ProjectDetails {
+  id: string;
+  name: string;
+  description: string;
+  features: Feature[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Feature {
+  id: string;
+  name: string;
+  description: string;
+  testCount: number;
+}
+
+const ProjectPage = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<ProjectDetails | null>(null);
+  const [activeTab, setActiveTab] = useState('features');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // In a real implementation, this would fetch from the API
+    // For now, we'll simulate loading the project
+    const loadProject = async () => {
+      if (!projectId) {
+        setError('Project ID is missing');
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // This is where we would normally fetch from the backend
+        // But for initial setup, we'll use empty project data with the provided ID
+        setProject({
+          id: projectId,
+          name: 'New Project',
+          description: 'Project description will appear here',
+          features: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        setIsLoading(false);
+      } catch (err) {
+        setError('Failed to load project');
+        setIsLoading(false);
+      }
+    };
+    
+    loadProject();
+  }, [projectId]);
+  
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+  
+  if (isLoading) {
+    return <div className="loading-indicator">Loading project...</div>;
+  }
+  
+  if (error || !project) {
+    return (
+      <div className="error-container">
+        <div className="error-message">{error || 'Project not found'}</div>
+        <button 
+          className="secondary-button"
+          onClick={handleBackToDashboard}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="project-page-container">
+      <div className="project-header">
+        <button 
+          className="back-button"
+          onClick={handleBackToDashboard}
+        >
+          ← Back to Dashboard
+        </button>
+        <h1>{project.name}</h1>
+        <p className="project-description">{project.description}</p>
+      </div>
+      
+      <div className="project-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'features' ? 'active' : ''}`}
+          onClick={() => setActiveTab('features')}
+        >
+          Features & Tests
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          Project Settings
+        </button>
+      </div>
+      
+      <div className="project-content">
+        {activeTab === 'features' && (
+          <ProjectFeatures 
+            projectId={project.id} 
+            features={project.features} 
+          />
+        )}
+        {activeTab === 'settings' && (
+          <ProjectSettings 
+            project={project}
+            onUpdate={(updatedProject) => setProject(updatedProject)}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProjectPage;
+
+// src/components/project/ProjectFeatures.tsx
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './ProjectFeatures.css';
+
+interface Feature {
+  id: string;
+  name: string;
+  description: string;
+  testCount: number;
+}
+
+interface ProjectFeaturesProps {
+  projectId: string;
+  features: Feature[];
+}
+
+const ProjectFeatures = ({ projectId, features }: ProjectFeaturesProps) => {
+  const navigate = useNavigate();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newFeatureName, setNewFeatureName] = useState('');
+  const [newFeatureDescription, setNewFeatureDescription] = useState('');
+  
+  const handleCreateFeature = () => {
+    // This will be implemented fully in future to create a feature
+    console.log('Creating feature:', {
+      name: newFeatureName,
+      description: newFeatureDescription,
+      projectId
+    });
+    
+    // Close the dialog and reset form
+    setIsCreateDialogOpen(false);
+    setNewFeatureName('');
+    setNewFeatureDescription('');
+  };
+  
+  const handleRecordTest = (featureId: string) => {
+    // Navigate to the recorder page with project and feature context
+    navigate(`/recorder?projectId=${projectId}&featureId=${featureId}`);
+  };
+  
+  const handleCreateTest = (featureId: string) => {
+    // Navigate to the test authoring page with project and feature context
+    navigate(`/authoring?projectId=${projectId}&featureId=${featureId}`);
+  };
+  
+  return (
+    <div className="features-container">
+      {features.length === 0 ? (
+        <div className="empty-features">
+          <h2>No Features Added Yet</h2>
+          <p>Features help organize your tests by functionality</p>
+          <button 
+            className="primary-button"
+            onClick={() => setIsCreateDialogOpen(true)}
+          >
+            Create First Feature
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="features-header">
+            <h2>Features</h2>
+            <button 
+              className="primary-button"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              Add Feature
+            </button>
+          </div>
+          
+          <div className="features-list">
+            {features.map(feature => (
+              <div key={feature.id} className="feature-item">
+                <div className="feature-info">
+                  <h3>{feature.name}</h3>
+                  <p>{feature.description}</p>
+                  <span className="test-count">{feature.testCount} Tests</span>
+                </div>
+                <div className="feature-actions">
+                  <button 
+                    className="secondary-button"
+                    onClick={() => handleRecordTest(feature.id)}
+                  >
+                    Record Test
+                  </button>
+                  <button 
+                    className="secondary-button"
+                    onClick={() => handleCreateTest(feature.id)}
+                  >
+                    Create Test
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      
+      {isCreateDialogOpen && (
+        <div className="dialog-overlay">
+          <div className="dialog">
+            <div className="dialog-header">
+              <h2>Create New Feature</h2>
+              <button 
+                className="close-button"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="dialog-content">
+              <div className="form-field">
+                <label htmlFor="featureName">Feature Name</label>
+                <input 
+                  type="text"
+                  id="featureName"
+                  value={newFeatureName}
+                  onChange={(e) => setNewFeatureName(e.target.value)}
+                  placeholder="e.g. User Authentication"
+                />
+              </div>
+              <div className="form-field">
+                <label htmlFor="featureDescription">Description</label>
+                <textarea 
+                  id="featureDescription"
+                  value={newFeatureDescription}
+                  onChange={(e) => setNewFeatureDescription(e.target.value)}
+                  placeholder="Describe the feature's functionality"
+                  rows={4}
+                />
+              </div>
+            </div>
+            <div className="dialog-actions">
+              <button 
+                className="secondary-button"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="primary-button"
+                onClick={handleCreateFeature}
+                disabled={!newFeatureName.trim()}
+              >
+                Create Feature
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectFeatures;
+
+// src/components/project/ProjectSettings.tsx
+import { useState } from 'react';
+import './ProjectSettings.css';
+
+interface ProjectDetails {
+  id: string;
+  name: string;
+  description: string;
+  features: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProjectSettingsProps {
+  project: ProjectDetails;
+  onUpdate: (updatedProject: ProjectDetails) => void;
+}
+
+const ProjectSettings = ({ project, onUpdate }: ProjectSettingsProps) => {
+  const [name, setName] = useState(project.name);
+  const [description, setDescription] = useState(project.description);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const handleSave = () => {
+    const updatedProject = {
+      ...project,
+      name,
+      description,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // In a real implementation, this would call the API
+    console.log('Saving project settings:', updatedProject);
+    
+    onUpdate(updatedProject);
+    setIsEditing(false);
+  };
+  
+  const handleCancel = () => {
+    setName(project.name);
+    setDescription(project.description);
+    setIsEditing(false);
+  };
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+  
+  return (
+    <div className="project-settings-container">
+      <div className="settings-section">
+        <h2>General Information</h2>
+        {isEditing ? (
+          <div className="edit-form">
+            <div className="form-field">
+              <label htmlFor="projectName">Project Name</label>
+              <input 
+                type="text"
+                id="projectName"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="projectDescription">Description</label>
+              <textarea 
+                id="projectDescription"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="form-actions">
+              <button 
+                className="secondary-button"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+              <button 
+                className="primary-button"
+                onClick={handleSave}
+                disabled={!name.trim()}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="info-display">
+            <div className="info-row">
+              <div className="info-label">Project Name</div>
+              <div className="info-value">{project.name}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Description</div>
+              <div className="info-value">{project.description || 'No description provided'}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Created</div>
+              <div className="info-value">{formatDate(project.createdAt)}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Last Updated</div>
+              <div className="info-value">{formatDate(project.updatedAt)}</div>
+            </div>
+            <button 
+              className="secondary-button"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Project
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="settings-section">
+        <h2>Project Location</h2>
+        <div className="info-row">
+          <div className="info-label">Storage Path</div>
+          <div className="info-value file-path">
+            <code>/automation-storage/projects/{project.id}</code>
+          </div>
+        </div>
+      </div>
+      
+      <div className="settings-section">
+        <h2>Danger Zone</h2>
+        <div className="danger-actions">
+          <div className="danger-action">
+            <div>
+              <h3>Delete Project</h3>
+              <p>This action cannot be undone. All tests and features will be permanently deleted.</p>
+            </div>
+            <button className="danger-button">Delete Project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+/* ProjectPage.css */
+.project-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.project-header {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+.project-header h1 {
+  margin: 0.5rem 0;
+}
+
+.project-description {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  padding: 0;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
+.project-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.project-content {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.error-container {
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.error-message {
+  color: var(--error-color);
+  margin-bottom: 1.5rem;
+}
+
+/* ProjectFeatures.css */
+.features-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.features-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.features-header h2 {
+  margin: 0;
+}
+
+.empty-features {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.empty-features h2 {
+  margin-bottom: 0.5rem;
+}
+
+.empty-features p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-color);
+}
+
+.feature-info {
+  flex: 1;
+}
+
+.feature-info h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.feature-info p {
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.test-count {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.feature-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Dialog styles */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  width: 500px;
+  max-width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-header h2 {
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.dialog-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  gap: 0.5rem;
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+/* ProjectSettings.css */
+.project-settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.settings-section {
+  margin-bottom: 1.5rem;
+}
+
+.settings-section h2 {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.info-label {
+  width: 150px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  flex: 1;
+}
+
+.file-path code {
+  background-color: var(--background-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.edit-form {
+  margin-top: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.danger-actions {
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.danger-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.danger-action h3 {
+  color: var(--error-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.danger-action p {
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 70%;
+}
+
+.danger-button {
+  background-color: var(--error-color);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.danger-button:hover {
+  background-color: #b71c1c;
+}
+
+@media (max-width: 768px) {
+  .info-row {
+    flex-direction: column;
+  }
+  
+  .info-label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .danger-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .danger-action p {
+    max-width: 100%;
+  }
+}
+
+
+
+// src/services/filesystem/FileSystemService.ts
+
+/**
+ * Service for interacting with the browser's File System Access API
+ * This provides real file system access for storing and retrieving test files
+ */
+export class FileSystemService {
+  private rootDirectoryHandle: FileSystemDirectoryHandle | null = null;
+  private projectsDirectoryHandle: FileSystemDirectoryHandle | null = null;
+  
+  /**
+   * Initialize the file system service by requesting access to a directory
+   */
+  public async initialize(): Promise<boolean> {
+    try {
+      // Request directory access from the user
+      const dirHandle = await window.showDirectoryPicker({
+        id: 'playwright-automation-root',
+        mode: 'readwrite',
+        startIn: 'documents'
+      });
+      
+      this.rootDirectoryHandle = dirHandle;
+      
+      // Check if the projects directory exists, create if not
+      await this.ensureProjectsDirectory();
+      
+      return true;
+    } catch (error) {
+      console.error('Error initializing file system:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Ensure the projects directory exists
+   */
+  private async ensureProjectsDirectory(): Promise<void> {
+    if (!this.rootDirectoryHandle) {
+      throw new Error('Root directory not initialized');
+    }
+    
+    try {
+      // Try to get the projects directory
+      this.projectsDirectoryHandle = await this.rootDirectoryHandle.getDirectoryHandle('projects', { create: true });
+    } catch (error) {
+      console.error('Error creating projects directory:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Check if file system is initialized
+   */
+  public isInitialized(): boolean {
+    return this.rootDirectoryHandle !== null && this.projectsDirectoryHandle !== null;
+  }
+  
+  /**
+   * Create a new project directory
+   */
+  public async createProject(projectId: string): Promise<FileSystemDirectoryHandle> {
+    if (!this.projectsDirectoryHandle) {
+      throw new Error('Projects directory not initialized');
+    }
+    
+    try {
+      // Create project directory
+      const projectDir = await this.projectsDirectoryHandle.getDirectoryHandle(projectId, { create: true });
+      
+      // Create subdirectories
+      await projectDir.getDirectoryHandle('features', { create: true });
+      await projectDir.getDirectoryHandle('api-tests', { create: true });
+      await projectDir.getDirectoryHandle('resources', { create: true });
+      await projectDir.getDirectoryHandle('results', { create: true });
+      
+      return projectDir;
+    } catch (error) {
+      console.error(`Error creating project ${projectId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get a project directory
+   */
+  public async getProject(projectId: string): Promise<FileSystemDirectoryHandle | null> {
+    if (!this.projectsDirectoryHandle) {
+      throw new Error('Projects directory not initialized');
+    }
+    
+    try {
+      return await this.projectsDirectoryHandle.getDirectoryHandle(projectId);
+    } catch (error) {
+      console.error(`Error getting project ${projectId}:`, error);
+      return null;
+    }
+  }
+  
+  /**
+   * List all projects
+   */
+  public async listProjects(): Promise<string[]> {
+    if (!this.projectsDirectoryHandle) {
+      throw new Error('Projects directory not initialized');
+    }
+    
+    const projects: string[] = [];
+    
+    for await (const entry of this.projectsDirectoryHandle.values()) {
+      if (entry.kind === 'directory') {
+        projects.push(entry.name);
+      }
+    }
+    
+    return projects;
+  }
+  
+  /**
+   * Create a feature directory within a project
+   */
+  public async createFeature(projectId: string, featureId: string): Promise<FileSystemDirectoryHandle> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      return await featuresDir.getDirectoryHandle(featureId, { create: true });
+    } catch (error) {
+      console.error(`Error creating feature ${featureId} in project ${projectId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * List features in a project
+   */
+  public async listFeatures(projectId: string): Promise<string[]> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const features: string[] = [];
+      
+      for await (const entry of featuresDir.values()) {
+        if (entry.kind === 'directory') {
+          features.push(entry.name);
+        }
+      }
+      
+      return features;
+    } catch (error) {
+      console.error(`Error listing features in project ${projectId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Write file content
+   */
+  public async writeFile(
+    directoryHandle: FileSystemDirectoryHandle,
+    fileName: string,
+    content: string | ArrayBuffer
+  ): Promise<void> {
+    try {
+      const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      
+      await writable.write(content);
+      await writable.close();
+    } catch (error) {
+      console.error(`Error writing file ${fileName}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Read file content
+   */
+  public async readFile(
+    directoryHandle: FileSystemDirectoryHandle,
+    fileName: string
+  ): Promise<string> {
+    try {
+      const fileHandle = await directoryHandle.getFileHandle(fileName);
+      const file = await fileHandle.getFile();
+      return await file.text();
+    } catch (error) {
+      console.error(`Error reading file ${fileName}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Write project metadata
+   */
+  public async writeProjectMetadata(
+    projectId: string,
+    metadata: any
+  ): Promise<void> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    await this.writeFile(
+      projectDir,
+      'metadata.json',
+      JSON.stringify(metadata, null, 2)
+    );
+  }
+  
+  /**
+   * Read project metadata
+   */
+  public async readProjectMetadata(projectId: string): Promise<any> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const metadataJson = await this.readFile(projectDir, 'metadata.json');
+      return JSON.parse(metadataJson);
+    } catch (error) {
+      console.error(`Error reading metadata for project ${projectId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Write feature metadata
+   */
+  public async writeFeatureMetadata(
+    projectId: string,
+    featureId: string,
+    metadata: any
+  ): Promise<void> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const featureDir = await featuresDir.getDirectoryHandle(featureId);
+      
+      await this.writeFile(
+        featureDir,
+        'feature-metadata.json',
+        JSON.stringify(metadata, null, 2)
+      );
+    } catch (error) {
+      console.error(`Error writing metadata for feature ${featureId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Read feature metadata
+   */
+  public async readFeatureMetadata(
+    projectId: string,
+    featureId: string
+  ): Promise<any> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const featureDir = await featuresDir.getDirectoryHandle(featureId);
+      
+      const metadataJson = await this.readFile(featureDir, 'feature-metadata.json');
+      return JSON.parse(metadataJson);
+    } catch (error) {
+      console.error(`Error reading metadata for feature ${featureId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Save a test case
+   */
+  public async saveTestCase(
+    projectId: string,
+    featureId: string,
+    testId: string,
+    content: string
+  ): Promise<void> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const featureDir = await featuresDir.getDirectoryHandle(featureId);
+      
+      await this.writeFile(featureDir, `${testId}.spec.ts`, content);
+    } catch (error) {
+      console.error(`Error saving test case ${testId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * List test cases in a feature
+   */
+  public async listTestCases(
+    projectId: string,
+    featureId: string
+  ): Promise<string[]> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const featureDir = await featuresDir.getDirectoryHandle(featureId);
+      
+      const testCases: string[] = [];
+      
+      for await (const entry of featureDir.values()) {
+        if (entry.kind === 'file' && entry.name.endsWith('.spec.ts')) {
+          testCases.push(entry.name.replace('.spec.ts', ''));
+        }
+      }
+      
+      return testCases;
+    } catch (error) {
+      console.error(`Error listing test cases in feature ${featureId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Read a test case
+   */
+  public async readTestCase(
+    projectId: string,
+    featureId: string,
+    testId: string
+  ): Promise<string> {
+    const projectDir = await this.getProject(projectId);
+    if (!projectDir) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+    
+    try {
+      const featuresDir = await projectDir.getDirectoryHandle('features');
+      const featureDir = await featuresDir.getDirectoryHandle(featureId);
+      
+      return await this.readFile(featureDir, `${testId}.spec.ts`);
+    } catch (error) {
+      console.error(`Error reading test case ${testId}:`, error);
+      throw error;
+    }
+  }
+}
+
+// Create a singleton instance
+const fileSystemService = new FileSystemService();
+export default fileSystemService;
+
+
+// src/components/project/ProjectSettings.tsx
+import { useState, useEffect } from 'react';
+import fileSystemService from '../../services/filesystem/FileSystemService';
+import './ProjectSettings.css';
+
+interface ProjectDetails {
+  id: string;
+  name: string;
+  description: string;
+  features: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProjectSettingsProps {
+  project: ProjectDetails;
+  onUpdate: (updatedProject: ProjectDetails) => void;
+}
+
+const ProjectSettings = ({ project, onUpdate }: ProjectSettingsProps) => {
+  const [name, setName] = useState(project.name);
+  const [description, setDescription] = useState(project.description);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [fileSystemInitialized, setFileSystemInitialized] = useState(false);
+  const [storagePath, setStoragePath] = useState<string | null>(null);
+  
+  // Check if file system is initialized
+  useEffect(() => {
+    const checkFileSystem = async () => {
+      const isInitialized = fileSystemService.isInitialized();
+      setFileSystemInitialized(isInitialized);
+      
+      if (isInitialized) {
+        try {
+          // This is where we would get the actual path from the file system
+          // For now, we'll use the default path
+          setStoragePath(`/automation-storage/projects/${project.id}`);
+        } catch (error) {
+          console.error('Error getting project path:', error);
+        }
+      }
+    };
+    
+    checkFileSystem();
+  }, [project.id]);
+  
+  const handleSave = async () => {
+    const updatedProject = {
+      ...project,
+      name,
+      description,
+      updatedAt: new Date().toISOString()
+    };
+    
+    try {
+      // In a real implementation, this would save to the file system
+      if (fileSystemInitialized) {
+        await fileSystemService.writeProjectMetadata(
+          project.id,
+          {
+            name,
+            description,
+            updatedAt: new Date().toISOString()
+          }
+        );
+      }
+      
+      console.log('Saving project settings:', updatedProject);
+      onUpdate(updatedProject);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving project settings:', error);
+      // Here we would show an error message to the user
+    }
+  };
+  
+  const handleCancel = () => {
+    setName(project.name);
+    setDescription(project.description);
+    setIsEditing(false);
+  };
+  
+  const handleDeleteClick = () => {
+    setIsDeleting(true);
+  };
+  
+  const handleDeleteCancel = () => {
+    setIsDeleting(false);
+    setDeleteConfirmText('');
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirmText !== project.name) {
+      return; // Require exact name match for deletion
+    }
+    
+    try {
+      // In a real implementation, this would delete from the file system
+      if (fileSystemInitialized) {
+        // This is a placeholder for actual file system deletion
+        console.log(`Deleting project ${project.id} from file system`);
+        // await fileSystemService.deleteProject(project.id);
+      }
+      
+      // Here we would navigate back to the dashboard
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      // Here we would show an error message to the user
+    }
+  };
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+  
+  const initializeFileSystem = async () => {
+    try {
+      const success = await fileSystemService.initialize();
+      setFileSystemInitialized(success);
+      
+      if (success) {
+        setStoragePath(`/automation-storage/projects/${project.id}`);
+      }
+    } catch (error) {
+      console.error('Error initializing file system:', error);
+    }
+  };
+  
+  return (
+    <div className="project-settings-container">
+      <div className="settings-section">
+        <h2>General Information</h2>
+        {isEditing ? (
+          <div className="edit-form">
+            <div className="form-field">
+              <label htmlFor="projectName">Project Name</label>
+              <input 
+                type="text"
+                id="projectName"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="projectDescription">Description</label>
+              <textarea 
+                id="projectDescription"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="form-actions">
+              <button 
+                className="secondary-button"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+              <button 
+                className="primary-button"
+                onClick={handleSave}
+                disabled={!name.trim()}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="info-display">
+            <div className="info-row">
+              <div className="info-label">Project Name</div>
+              <div className="info-value">{project.name}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Description</div>
+              <div className="info-value">{project.description || 'No description provided'}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Created</div>
+              <div className="info-value">{formatDate(project.createdAt)}</div>
+            </div>
+            <div className="info-row">
+              <div className="info-label">Last Updated</div>
+              <div className="info-value">{formatDate(project.updatedAt)}</div>
+            </div>
+            <button 
+              className="secondary-button"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Project
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="settings-section">
+        <h2>Project Location</h2>
+        {fileSystemInitialized ? (
+          <div className="info-row">
+            <div className="info-label">Storage Path</div>
+            <div className="info-value file-path">
+              <code>{storagePath}</code>
+            </div>
+          </div>
+        ) : (
+          <div className="file-system-warning">
+            <p>File system access is not initialized.</p>
+            <button 
+              className="secondary-button"
+              onClick={initializeFileSystem}
+            >
+              Initialize File System
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="settings-section">
+        <h2>Danger Zone</h2>
+        <div className="danger-actions">
+          <div className="danger-action">
+            <div>
+              <h3>Delete Project</h3>
+              <p>This action cannot be undone. All tests and features will be permanently deleted.</p>
+            </div>
+            {isDeleting ? (
+              <div className="delete-confirmation">
+                <p>Please type <strong>{project.name}</strong> to confirm deletion:</p>
+                <input 
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type project name to confirm"
+                />
+                <div className="delete-actions">
+                  <button 
+                    className="secondary-button"
+                    onClick={handleDeleteCancel}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="danger-button"
+                    onClick={handleDeleteConfirm}
+                    disabled={deleteConfirmText !== project.name}
+                  >
+                    Delete Permanently
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                className="danger-button"
+                onClick={handleDeleteClick}
+              >
+                Delete Project
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectSettings;
+
+
+
+/* src/components/project/ProjectSettings.css */
+.project-settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.settings-section {
+  margin-bottom: 1.5rem;
+}
+
+.settings-section h2 {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.info-label {
+  width: 150px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  flex: 1;
+}
+
+.file-path code {
+  background-color: var(--background-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.edit-form {
+  margin-top: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.danger-actions {
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.danger-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.danger-action h3 {
+  color: var(--error-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.danger-action p {
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 70%;
+}
+
+.danger-button {
+  background-color: var(--error-color);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.danger-button:hover {
+  background-color: #b71c1c;
+}
+
+.delete-confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.delete-confirmation p {
+  margin: 0;
+}
+
+.delete-confirmation input {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  width: 100%;
+}
+
+.delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.file-system-warning {
+  background-color: var(--warning-color);
+  color: var(--text-primary);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.file-system-warning p {
+  margin: 0 0 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+  .info-row {
+    flex-direction: column;
+  }
+  
+  .info-label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .danger-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .danger-action p {
+    max-width: 100%;
+  }
+}
