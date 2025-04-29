@@ -1,0 +1,2934 @@
+package com.playwright.automate.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Generic interface for file system based repositories.
+ * @param <T> The entity type
+ */
+public interface FileSystemRepository<T> {
+    
+    /**
+     * Save an entity to the file system.
+     * @param entity The entity to save
+     * @return The saved entity (with generated ID if new)
+     */
+    T save(T entity);
+    
+    /**
+     * Find an entity by its ID.
+     * @param id The entity ID
+     * @return An Optional containing the entity if found, empty otherwise
+     */
+    Optional<T> findById(String id);
+    
+    /**
+     * Find all entities of this type.
+     * @return A list of all entities
+     */
+    List<T> findAll();
+    
+    /**
+     * Delete an entity by its ID.
+     * @param id The entity ID
+     */
+    void deleteById(String id);
+    
+    /**
+     * Check if an entity with the given ID exists.
+     * @param id The entity ID
+     * @return true if the entity exists, false otherwise
+     */
+    boolean existsById(String id);
+}
+
+package com.playwright.automate.exception;
+
+/**
+ * Exception thrown when file system storage operations fail.
+ */
+public class StorageException extends RuntimeException {
+    
+    public StorageException(String message) {
+        super(message);
+    }
+    
+    public StorageException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+package com.playwright.automate.model;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+/**
+ * Represents a test automation project.
+ */
+public class Project {
+    private String id;
+    private String name;
+    private String description;
+    private String createdBy;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updatedAt;
+    
+    // Default constructor needed for Jackson deserialization
+    public Project() {
+    }
+    
+    public Project(String name, String description, String createdBy) {
+        this.name = name;
+        this.description = description;
+        this.createdBy = createdBy;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    // Getters and setters
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    // Before saving, update the updatedAt timestamp
+    public void updateTimestamp() {
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Project project = (Project) o;
+        return Objects.equals(id, project.id);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    
+    @Override
+    public String toString() {
+        return "Project{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", createdBy='" + createdBy + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+}
+
+package com.playwright.automate.model;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Represents project-specific settings and configurations.
+ */
+public class ProjectSettings {
+
+    private String projectId;
+    private String defaultBrowser; // chrome, firefox, webkit
+    private boolean headlessMode;
+    private int defaultTimeout; // in milliseconds
+    private boolean captureScreenshots;
+    private boolean captureVideos;
+    private String defaultEnvironment;
+    private Map<String, String> customSettings;
+    
+    // Default constructor for Jackson
+    public ProjectSettings() {
+        this.defaultBrowser = "chrome";
+        this.headlessMode = true;
+        this.defaultTimeout = 30000; // 30 seconds
+        this.captureScreenshots = true;
+        this.captureVideos = false;
+        this.customSettings = new HashMap<>();
+    }
+    
+    public ProjectSettings(String projectId) {
+        this();
+        this.projectId = projectId;
+    }
+
+    // Getters and setters
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getDefaultBrowser() {
+        return defaultBrowser;
+    }
+
+    public void setDefaultBrowser(String defaultBrowser) {
+        this.defaultBrowser = defaultBrowser;
+    }
+
+    public boolean isHeadlessMode() {
+        return headlessMode;
+    }
+
+    public void setHeadlessMode(boolean headlessMode) {
+        this.headlessMode = headlessMode;
+    }
+
+    public int getDefaultTimeout() {
+        return defaultTimeout;
+    }
+
+    public void setDefaultTimeout(int defaultTimeout) {
+        this.defaultTimeout = defaultTimeout;
+    }
+
+    public boolean isCaptureScreenshots() {
+        return captureScreenshots;
+    }
+
+    public void setCaptureScreenshots(boolean captureScreenshots) {
+        this.captureScreenshots = captureScreenshots;
+    }
+
+    public boolean isCaptureVideos() {
+        return captureVideos;
+    }
+
+    public void setCaptureVideos(boolean captureVideos) {
+        this.captureVideos = captureVideos;
+    }
+
+    public String getDefaultEnvironment() {
+        return defaultEnvironment;
+    }
+
+    public void setDefaultEnvironment(String defaultEnvironment) {
+        this.defaultEnvironment = defaultEnvironment;
+    }
+
+    public Map<String, String> getCustomSettings() {
+        return customSettings;
+    }
+
+    public void setCustomSettings(Map<String, String> customSettings) {
+        this.customSettings = customSettings;
+    }
+    
+    public void addCustomSetting(String key, String value) {
+        if (this.customSettings == null) {
+            this.customSettings = new HashMap<>();
+        }
+        this.customSettings.put(key, value);
+    }
+    
+    public String getCustomSetting(String key) {
+        return this.customSettings != null ? this.customSettings.get(key) : null;
+    }
+    
+    @Override
+    public String toString() {
+        return "ProjectSettings{" +
+                "projectId='" + projectId + '\'' +
+                ", defaultBrowser='" + defaultBrowser + '\'' +
+                ", headlessMode=" + headlessMode +
+                ", defaultTimeout=" + defaultTimeout +
+                ", captureScreenshots=" + captureScreenshots +
+                ", captureVideos=" + captureVideos +
+                ", defaultEnvironment='" + defaultEnvironment + '\'' +
+                ", customSettings=" + customSettings +
+                '}';
+    }
+}
+
+package com.playwright.automate.repository.impl;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.playwright.automate.exception.StorageException;
+import com.playwright.automate.model.Project;
+import com.playwright.automate.repository.FileSystemRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * File system based repository implementation for Projects.
+ */
+@Repository
+public class FileSystemProjectRepository implements FileSystemRepository<Project> {
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemProjectRepository.class);
+    
+    private final String basePath;
+    private final ObjectMapper objectMapper;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    
+    public FileSystemProjectRepository(
+            @Value("${app.file-storage.location:./data}") String basePath, 
+            ObjectMapper objectMapper) {
+        this.basePath = basePath + "/projects";
+        this.objectMapper = objectMapper;
+        
+        // Ensure directory exists
+        ensureDirectoryExists(this.basePath);
+    }
+    
+    @Override
+    public Project save(Project project) {
+        lock.writeLock().lock();
+        try {
+            // If new project, generate ID
+            if (project.getId() == null) {
+                project.setId(UUID.randomUUID().toString());
+            }
+            
+            // Update the timestamp
+            project.updateTimestamp();
+            
+            String filePath = getProjectFilePath(project.getId());
+            objectMapper.writeValue(new File(filePath), project);
+            
+            // Create project directory structure if it doesn't exist
+            createProjectDirectories(project.getId());
+            
+            logger.info("Saved project: {}", project.getId());
+            return project;
+        } catch (IOException e) {
+            logger.error("Failed to save project", e);
+            throw new StorageException("Failed to save project", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+    
+    @Override
+    public Optional<Project> findById(String id) {
+        lock.readLock().lock();
+        try {
+            String filePath = getProjectFilePath(id);
+            File file = new File(filePath);
+            
+            if (!file.exists()) {
+                logger.info("Project not found: {}", id);
+                return Optional.empty();
+            }
+            
+            Project project = objectMapper.readValue(file, Project.class);
+            return Optional.of(project);
+        } catch (IOException e) {
+            logger.error("Failed to read project: {}", id, e);
+            return Optional.empty();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    @Override
+    public List<Project> findAll() {
+        lock.readLock().lock();
+        try {
+            List<Project> projects = new ArrayList<>();
+            File dir = new File(basePath);
+            
+            if (!dir.exists() || !dir.isDirectory()) {
+                return projects;
+            }
+            
+            File[] files = dir.listFiles((d, name) -> name.startsWith("project-") && name.endsWith(".json"));
+            
+            if (files == null) {
+                return projects;
+            }
+            
+            for (File file : files) {
+                try {
+                    Project project = objectMapper.readValue(file, Project.class);
+                    projects.add(project);
+                } catch (IOException e) {
+                    logger.error("Failed to read project file: {}", file.getName(), e);
+                }
+            }
+            
+            return projects;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    @Override
+    public void deleteById(String id) {
+        lock.writeLock().lock();
+        try {
+            String filePath = getProjectFilePath(id);
+            File file = new File(filePath);
+            
+            if (file.exists() && !file.delete()) {
+                logger.error("Failed to delete project file: {}", filePath);
+                throw new StorageException("Failed to delete project file");
+            }
+            
+            // Delete project directory structure if it exists
+            deleteProjectDirectories(id);
+            
+            logger.info("Deleted project: {}", id);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+    
+    @Override
+    public boolean existsById(String id) {
+        lock.readLock().lock();
+        try {
+            String filePath = getProjectFilePath(id);
+            File file = new File(filePath);
+            return file.exists();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Get the file path for a project.
+     * @param projectId The project ID
+     * @return The file path
+     */
+    private String getProjectFilePath(String projectId) {
+        return basePath + "/project-" + projectId + ".json";
+    }
+    
+    /**
+     * Create project directories for storing related data.
+     * @param projectId The project ID
+     */
+    private void createProjectDirectories(String projectId) {
+        String projectPath = basePath + "/" + projectId;
+        ensureDirectoryExists(projectPath);
+        ensureDirectoryExists(projectPath + "/testcases");
+        ensureDirectoryExists(projectPath + "/testsuites");
+        ensureDirectoryExists(projectPath + "/datasources");
+        ensureDirectoryExists(projectPath + "/iterations");
+        ensureDirectoryExists(projectPath + "/database");
+        ensureDirectoryExists(projectPath + "/executions");
+    }
+    
+    /**
+     * Delete project directories.
+     * @param projectId The project ID
+     */
+    private void deleteProjectDirectories(String projectId) {
+        String projectPath = basePath + "/" + projectId;
+        try {
+            deleteDirectoryRecursively(Paths.get(projectPath));
+        } catch (IOException e) {
+            logger.error("Failed to delete project directories: {}", projectPath, e);
+            throw new StorageException("Failed to delete project directories", e);
+        }
+    }
+    
+    /**
+     * Ensure a directory exists, creating it if necessary.
+     * @param path The directory path
+     */
+    private void ensureDirectoryExists(String path) {
+        File directory = new File(path);
+        if (!directory.exists() && !directory.mkdirs()) {
+            logger.error("Failed to create directory: {}", path);
+            throw new StorageException("Failed to create directory: " + path);
+        }
+    }
+    
+    /**
+     * Delete a directory and all its contents recursively.
+     * @param path The directory path
+     * @throws IOException If deletion fails
+     */
+    private void deleteDirectoryRecursively(Path path) throws IOException {
+        if (Files.exists(path)) {
+            try (Stream<Path> walk = Files.walk(path)) {
+                walk.sorted((a, b) -> -a.compareTo(b)) // Reverse order to delete children first
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            logger.error("Failed to delete: {}", p, e);
+                        }
+                    });
+            }
+        }
+    }
+}
+
+
+package com.playwright.automate.repository.impl;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.playwright.automate.exception.StorageException;
+import com.playwright.automate.model.ProjectSettings;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * File system based repository for Project Settings.
+ */
+@Repository
+public class FileSystemProjectSettingsRepository {
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemProjectSettingsRepository.class);
+    
+    private final String basePath;
+    private final ObjectMapper objectMapper;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    
+    public FileSystemProjectSettingsRepository(
+            @Value("${app.file-storage.location:./data}") String basePath, 
+            ObjectMapper objectMapper) {
+        this.basePath = basePath + "/projects";
+        this.objectMapper = objectMapper;
+    }
+    
+    /**
+     * Save project settings.
+     * @param settings The project settings to save
+     * @return The saved settings
+     */
+    public ProjectSettings save(ProjectSettings settings) {
+        lock.writeLock().lock();
+        try {
+            if (settings.getProjectId() == null) {
+                throw new IllegalArgumentException("Project ID cannot be null");
+            }
+            
+            String projectPath = basePath + "/" + settings.getProjectId();
+            File directory = new File(projectPath);
+            if (!directory.exists() && !directory.mkdirs()) {
+                logger.error("Failed to create directory: {}", projectPath);
+                throw new StorageException("Failed to create project directory");
+            }
+            
+            String filePath = getSettingsFilePath(settings.getProjectId());
+            objectMapper.writeValue(new File(filePath), settings);
+            
+            logger.info("Saved project settings for project: {}", settings.getProjectId());
+            return settings;
+        } catch (IOException e) {
+            logger.error("Failed to save project settings", e);
+            throw new StorageException("Failed to save project settings", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+    
+    /**
+     * Find project settings by project ID.
+     * @param projectId The project ID
+     * @return Optional containing the settings if found
+     */
+    public Optional<ProjectSettings> findByProjectId(String projectId) {
+        lock.readLock().lock();
+        try {
+            String filePath = getSettingsFilePath(projectId);
+            File file = new File(filePath);
+            
+            if (!file.exists()) {
+                logger.info("Project settings not found for project: {}", projectId);
+                return Optional.empty();
+            }
+            
+            ProjectSettings settings = objectMapper.readValue(file, ProjectSettings.class);
+            return Optional.of(settings);
+        } catch (IOException e) {
+            logger.error("Failed to read project settings for project: {}", projectId, e);
+            return Optional.empty();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Delete project settings by project ID.
+     * @param projectId The project ID
+     */
+    public void deleteByProjectId(String projectId) {
+        lock.writeLock().lock();
+        try {
+            String filePath = getSettingsFilePath(projectId);
+            File file = new File(filePath);
+            
+            if (file.exists() && !file.delete()) {
+                logger.error("Failed to delete project settings file: {}", filePath);
+                throw new StorageException("Failed to delete project settings file");
+            }
+            
+            logger.info("Deleted project settings for project: {}", projectId);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+    
+    /**
+     * Check if project settings exist for a project.
+     * @param projectId The project ID
+     * @return true if settings exist, false otherwise
+     */
+    public boolean existsByProjectId(String projectId) {
+        lock.readLock().lock();
+        try {
+            String filePath = getSettingsFilePath(projectId);
+            File file = new File(filePath);
+            return file.exists();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Get the file path for project settings.
+     * @param projectId The project ID
+     * @return The file path
+     */
+    private String getSettingsFilePath(String projectId) {
+        return basePath + "/" + projectId + "/settings.json";
+    }
+}
+
+
+
+package com.playwright.automate.service;
+
+import com.playwright.automate.model.Project;
+import com.playwright.automate.model.ProjectSettings;
+
+import java.util.List;
+
+/**
+ * Service interface for project operations.
+ */
+public interface ProjectService {
+    
+    /**
+     * Create a new project.
+     * @param project The project to create
+     * @return The created project
+     */
+    Project createProject(Project project);
+    
+    /**
+     * Get a project by ID.
+     * @param projectId The project ID
+     * @return The project
+     * @throws com.playwright.automate.exception.ResourceNotFoundException if project not found
+     */
+    Project getProject(String projectId);
+    
+    /**
+     * Get all projects.
+     * @return List of all projects
+     */
+    List<Project> getAllProjects();
+    
+    /**
+     * Update an existing project.
+     * @param projectId The project ID
+     * @param project The updated project data
+     * @return The updated project
+     * @throws com.playwright.automate.exception.ResourceNotFoundException if project not found
+     */
+    Project updateProject(String projectId, Project project);
+    
+    /**
+     * Delete a project.
+     * @param projectId The project ID
+     * @throws com.playwright.automate.exception.ResourceNotFoundException if project not found
+     */
+    void deleteProject(String projectId);
+    
+    /**
+     * Get project settings.
+     * @param projectId The project ID
+     * @return The project settings
+     * @throws com.playwright.automate.exception.ResourceNotFoundException if project not found
+     */
+    ProjectSettings getProjectSettings(String projectId);
+    
+    /**
+     * Update project settings.
+     * @param projectId The project ID
+     * @param settings The updated settings
+     * @return The updated settings
+     * @throws com.playwright.automate.exception.ResourceNotFoundException if project not found
+     */
+    ProjectSettings updateProjectSettings(String projectId, ProjectSettings settings);
+}
+
+
+package com.playwright.automate.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+/**
+ * Exception thrown when a requested resource is not found.
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
+    
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+    
+    public ResourceNotFoundException(String resourceType, String resourceId) {
+        super(resourceType + " not found with id: " + resourceId);
+    }
+    
+    public ResourceNotFoundException(String resourceType, String field, String value) {
+        super(resourceType + " not found with " + field + ": " + value);
+    }
+}
+
+
+package com.playwright.automate.service.impl;
+
+import com.playwright.automate.exception.ResourceNotFoundException;
+import com.playwright.automate.model.Project;
+import com.playwright.automate.model.ProjectSettings;
+import com.playwright.automate.repository.impl.FileSystemProjectRepository;
+import com.playwright.automate.repository.impl.FileSystemProjectSettingsRepository;
+import com.playwright.automate.service.ProjectService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * Implementation of the ProjectService interface.
+ */
+@Service
+public class ProjectServiceImpl implements ProjectService {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
+    
+    private final FileSystemProjectRepository projectRepository;
+    private final FileSystemProjectSettingsRepository settingsRepository;
+    
+    public ProjectServiceImpl(
+            FileSystemProjectRepository projectRepository,
+            FileSystemProjectSettingsRepository settingsRepository) {
+        this.projectRepository = projectRepository;
+        this.settingsRepository = settingsRepository;
+    }
+    
+    @Override
+    public Project createProject(Project project) {
+        logger.info("Creating new project: {}", project.getName());
+        Project savedProject = projectRepository.save(project);
+        
+        // Create default settings for the project
+        ProjectSettings settings = new ProjectSettings(savedProject.getId());
+        settingsRepository.save(settings);
+        
+        return savedProject;
+    }
+    
+    @Override
+    public Project getProject(String projectId) {
+        logger.info("Getting project with id: {}", projectId);
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    }
+    
+    @Override
+    public List<Project> getAllProjects() {
+        logger.info("Getting all projects");
+        return projectRepository.findAll();
+    }
+    
+    @Override
+    public Project updateProject(String projectId, Project project) {
+        logger.info("Updating project with id: {}", projectId);
+        
+        // Check if project exists
+        if (!projectRepository.existsById(projectId)) {
+            throw new ResourceNotFoundException("Project", projectId);
+        }
+        
+        project.setId(projectId); // Ensure correct ID
+        return projectRepository.save(project);
+    }
+    
+    @Override
+    public void deleteProject(String projectId) {
+        logger.info("Deleting project with id: {}", projectId);
+        
+        // Check if project exists
+        if (!projectRepository.existsById(projectId)) {
+            throw new ResourceNotFoundException("Project", projectId);
+        }
+        
+        // Delete project settings if they exist
+        if (settingsRepository.existsByProjectId(projectId)) {
+            settingsRepository.deleteByProjectId(projectId);
+        }
+        
+        // Delete the project
+        projectRepository.deleteById(projectId);
+    }
+    
+    @Override
+    public ProjectSettings getProjectSettings(String projectId) {
+        logger.info("Getting settings for project with id: {}", projectId);
+        
+        // Check if project exists
+        if (!projectRepository.existsById(projectId)) {
+            throw new ResourceNotFoundException("Project", projectId);
+        }
+        
+        // Get settings or create default if not found
+        return settingsRepository.findByProjectId(projectId)
+                .orElseGet(() -> {
+                    ProjectSettings settings = new ProjectSettings(projectId);
+                    return settingsRepository.save(settings);
+                });
+    }
+    
+    @Override
+    public ProjectSettings updateProjectSettings(String projectId, ProjectSettings settings) {
+        logger.info("Updating settings for project with id: {}", projectId);
+        
+        // Check if project exists
+        if (!projectRepository.existsById(projectId)) {
+            throw new ResourceNotFoundException("Project", projectId);
+        }
+        
+        // Ensure correct project ID
+        settings.setProjectId(projectId);
+        return settingsRepository.save(settings);
+    }
+}
+
+
+package com.playwright.automate.controller;
+
+import com.playwright.automate.model.Project;
+import com.playwright.automate.model.ProjectSettings;
+import com.playwright.automate.service.ProjectService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * REST controller for project operations.
+ */
+@RestController
+@RequestMapping("/api/projects")
+public class ProjectController {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
+    
+    private final ProjectService projectService;
+    
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
+    }
+    
+    /**
+     * Create a new project.
+     * @param project The project data
+     * @return The created project
+     */
+    @PostMapping
+    public ResponseEntity<Project> createProject(@RequestBody Project project) {
+        logger.info("REST request to create project: {}", project.getName());
+        Project result = projectService.createProject(project);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
+    }
+    
+    /**
+     * Get all projects.
+     * @return List of all projects
+     */
+    @GetMapping
+    public ResponseEntity<List<Project>> getAllProjects() {
+        logger.info("REST request to get all projects");
+        List<Project> projects = projectService.getAllProjects();
+        return ResponseEntity.ok(projects);
+    }
+    
+    /**
+     * Get a project by ID.
+     * @param projectId The project ID
+     * @return The project
+     */
+    @GetMapping("/{projectId}")
+    public ResponseEntity<Project> getProject(@PathVariable String projectId) {
+        logger.info("REST request to get project: {}", projectId);
+        Project project = projectService.getProject(projectId);
+        return ResponseEntity.ok(project);
+    }
+    
+    /**
+     * Update an existing project.
+     * @param projectId The project ID
+     * @param project The updated project data
+     * @return The updated project
+     */
+    @PutMapping("/{projectId}")
+    public ResponseEntity<Project> updateProject(
+            @PathVariable String projectId,
+            @RequestBody Project project) {
+        logger.info("REST request to update project: {}", projectId);
+        Project result = projectService.updateProject(projectId, project);
+        return ResponseEntity.ok(result);
+    }
+    
+    /**
+     * Delete a project.
+     * @param projectId The project ID
+     * @return No content response
+     */
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(@PathVariable String projectId) {
+        logger.info("REST request to delete project: {}", projectId);
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * Get project settings.
+     * @param projectId The project ID
+     * @return The project settings
+     */
+    @GetMapping("/{projectId}/settings")
+    public ResponseEntity<ProjectSettings> getProjectSettings(@PathVariable String projectId) {
+        logger.info("REST request to get settings for project: {}", projectId);
+        ProjectSettings settings = projectService.getProjectSettings(projectId);
+        return ResponseEntity.ok(settings);
+    }
+    
+    /**
+     * Update project settings.
+     * @param projectId The project ID
+     * @param settings The updated settings
+     * @return The updated settings
+     */
+    @PutMapping("/{projectId}/settings")
+    public ResponseEntity<ProjectSettings> updateProjectSettings(
+            @PathVariable String projectId,
+            @RequestBody ProjectSettings settings) {
+        logger.info("REST request to update settings for project: {}", projectId);
+        ProjectSettings result = projectService.updateProjectSettings(projectId, settings);
+        return ResponseEntity.ok(result);
+    }
+}
+
+
+package com.playwright.automate.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Global exception handler for REST controllers.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    /**
+     * Handle ResourceNotFoundException.
+     * @param ex The exception
+     * @param request The web request
+     * @return Response entity with error details
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFoundException(
+            ResourceNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false));
+        
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    /**
+     * Handle StorageException.
+     * @param ex The exception
+     * @param request The web request
+     * @return Response entity with error details
+     */
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<Object> handleStorageException(
+            StorageException ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "Storage Error");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false));
+        
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    /**
+     * Handle IllegalArgumentException.
+     * @param ex The exception
+     * @param request The web request
+     * @return Response entity with error details
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(
+            IllegalArgumentException ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false));
+        
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+    
+    /**
+     * Handle all other exceptions.
+     * @param ex The exception
+     * @param request The web request
+     * @return Response entity with error details
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGlobalException(
+            Exception ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "Internal Server Error");
+        body.put("message", "An unexpected error occurred");
+        body.put("path", request.getDescription(false));
+        
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
+import axios from 'axios';
+import { Project, ProjectSettings } from '../types/project';
+
+const API_URL = '/api';
+
+/**
+ * Service for project operations.
+ */
+export const projectService = {
+    /**
+     * Get all projects.
+     * @returns Promise resolving to an array of projects
+     */
+    getAllProjects: async (): Promise<Project[]> => {
+        const response = await axios.get(`${API_URL}/projects`);
+        return response.data;
+    },
+    
+    /**
+     * Get a project by ID.
+     * @param projectId The project ID
+     * @returns Promise resolving to the project
+     */
+    getProject: async (projectId: string): Promise<Project> => {
+        const response = await axios.get(`${API_URL}/projects/${projectId}`);
+        return response.data;
+    },
+    
+    /**
+     * Create a new project.
+     * @param project The project data
+     * @returns Promise resolving to the created project
+     */
+    createProject: async (project: Project): Promise<Project> => {
+        const response = await axios.post(`${API_URL}/projects`, project);
+        return response.data;
+    },
+    
+    /**
+     * Update an existing project.
+     * @param projectId The project ID
+     * @param project The updated project data
+     * @returns Promise resolving to the updated project
+     */
+    updateProject: async (projectId: string, project: Project): Promise<Project> => {
+        const response = await axios.put(`${API_URL}/projects/${projectId}`, project);
+        return response.data;
+    },
+    
+    /**
+     * Delete a project.
+     * @param projectId The project ID
+     * @returns Promise resolving when the operation completes
+     */
+    deleteProject: async (projectId: string): Promise<void> => {
+        await axios.delete(`${API_URL}/projects/${projectId}`);
+    },
+    
+    /**
+     * Get project settings.
+     * @param projectId The project ID
+     * @returns Promise resolving to the project settings
+     */
+    getProjectSettings: async (projectId: string): Promise<ProjectSettings> => {
+        const response = await axios.get(`${API_URL}/projects/${projectId}/settings`);
+        return response.data;
+    },
+    
+    /**
+     * Update project settings.
+     * @param projectId The project ID
+     * @param settings The updated settings
+     * @returns Promise resolving to the updated settings
+     */
+    updateProjectSettings: async (projectId: string, settings: ProjectSettings): Promise<ProjectSettings> => {
+        const response = await axios.put(`${API_URL}/projects/${projectId}/settings`, settings);
+        return response.data;
+    }
+};
+
+
+
+/**
+ * Project entity type.
+ */
+export interface Project {
+    id?: string;
+    name: string;
+    description: string;
+    createdBy: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+/**
+ * Project settings type.
+ */
+export interface ProjectSettings {
+    projectId: string;
+    defaultBrowser: 'chrome' | 'firefox' | 'webkit';
+    headlessMode: boolean;
+    defaultTimeout: number;
+    captureScreenshots: boolean;
+    captureVideos: boolean;
+    defaultEnvironment?: string;
+    customSettings?: Record<string, string>;
+}
+
+/**
+ * Project list item type (for display in lists).
+ */
+export interface ProjectListItem {
+    id: string;
+    name: string;
+    description: string;
+    createdAt: string;
+    testCaseCount?: number;
+}
+
+/**
+ * Project creation parameters.
+ */
+export interface ProjectCreateParams {
+    name: string;
+    description: string;
+}
+
+/**
+ * Project update parameters.
+ */
+export interface ProjectUpdateParams {
+    name?: string;
+    description?: string;
+}
+
+
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { Project } from '../../types/project';
+import { formatDate } from '../../utils/dateUtils';
+import './ProjectList.css';
+
+/**
+ * Component for displaying a list of projects.
+ */
+const ProjectList: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await projectService.getAllProjects();
+        setProjects(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('Failed to load projects. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await projectService.deleteProject(projectId);
+      setProjects(projects.filter(project => project.id !== projectId));
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      setError('Failed to delete project. Please try again later.');
+    }
+  };
+
+  if (loading) {
+    return <div className="loading">Loading projects...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  return (
+    <div className="project-list-container">
+      <div className="project-list-header">
+        <h1>Projects</h1>
+        <Link to="/projects/new" className="btn-create">
+          Create New Project
+        </Link>
+      </div>
+
+      {projects.length === 0 ? (
+        <div className="project-list-empty">
+          <p>No projects found. Create your first project to get started.</p>
+          <Link to="/projects/new" className="btn-create-first">
+            Create Your First Project
+          </Link>
+        </div>
+      ) : (
+        <div className="project-card-grid">
+          {projects.map((project) => (
+            <div key={project.id} className="project-card">
+              <div className="project-card-content">
+                <h2>{project.name}</h2>
+                <p className="project-description">{project.description}</p>
+                <p className="project-meta">
+                  Created: {formatDate(project.createdAt || '')}
+                </p>
+              </div>
+              <div className="project-card-actions">
+                <Link to={`/projects/${project.id}`} className="btn-view">
+                  View
+                </Link>
+                <Link to={`/projects/${project.id}/edit`} className="btn-edit">
+                  Edit
+                </Link>
+                <button
+                  onClick={() => project.id && handleDeleteProject(project.id)}
+                  className="btn-delete"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectList;
+
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { Project } from '../../types/project';
+import './ProjectForm.css';
+
+interface ProjectFormProps {
+  isEdit?: boolean;
+}
+
+/**
+ * Component for creating or editing a project.
+ */
+const ProjectForm: React.FC<ProjectFormProps> = ({ isEdit = false }) => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState<Partial<Project>>({
+    name: '',
+    description: '',
+    createdBy: 'user', // In a real app, this would come from auth context
+  });
+  
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (isEdit && projectId) {
+        try {
+          setLoading(true);
+          const project = await projectService.getProject(projectId);
+          setFormData({
+            name: project.name,
+            description: project.description,
+            createdBy: project.createdBy,
+          });
+          setError(null);
+        } catch (err) {
+          console.error('Error fetching project:', err);
+          setError('Failed to load project details. Please try again later.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProject();
+  }, [isEdit, projectId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.description) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (isEdit && projectId) {
+        await projectService.updateProject(projectId, formData as Project);
+      } else {
+        await projectService.createProject(formData as Project);
+      }
+      
+      setSaveSuccess(true);
+      
+      // Redirect after a short delay to show success message
+      setTimeout(() => {
+        navigate('/projects');
+      }, 1500);
+    } catch (err) {
+      console.error('Error saving project:', err);
+      setError('Failed to save project. Please try again later.');
+      setSaveSuccess(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && isEdit) {
+    return <div className="loading">Loading project details...</div>;
+  }
+
+  return (
+    <div className="project-form-container">
+      <h1>{isEdit ? 'Edit Project' : 'Create New Project'}</h1>
+      
+      {error && <div className="error-message">{error}</div>}
+      {saveSuccess && <div className="success-message">Project saved successfully!</div>}
+      
+      <form className="project-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="name">Project Name *</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name || ''}
+            onChange={handleChange}
+            required
+            maxLength={100}
+            placeholder="Enter project name"
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="description">Description *</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description || ''}
+            onChange={handleChange}
+            required
+            rows={4}
+            maxLength={500}
+            placeholder="Enter project description"
+          />
+        </div>
+        
+        <div className="form-actions">
+          <button 
+            type="button" 
+            className="btn-cancel" 
+            onClick={() => navigate('/projects')}
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className="btn-save" 
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Save Project'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default ProjectForm;
+
+
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { Project, ProjectSettings } from '../../types/project';
+import { formatDate } from '../../utils/dateUtils';
+import './ProjectDetail.css';
+
+/**
+ * Component for displaying project details.
+ */
+const ProjectDetail: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  
+  const [project, setProject] = useState<Project | null>(null);
+  const [settings, setSettings] = useState<ProjectSettings | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) return;
+      
+      try {
+        setLoading(true);
+        const [projectData, settingsData] = await Promise.all([
+          projectService.getProject(projectId),
+          projectService.getProjectSettings(projectId)
+        ]);
+        
+        setProject(projectData);
+        setSettings(settingsData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching project data:', err);
+        setError('Failed to load project data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId]);
+
+  const handleDeleteProject = async () => {
+    if (!projectId) return;
+    
+    if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await projectService.deleteProject(projectId);
+      navigate('/projects');
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      setError('Failed to delete project. Please try again later.');
+    }
+  };
+
+  if (loading) {
+    return <div className="loading">Loading project details...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  if (!project) {
+    return <div className="not-found">Project not found</div>;
+  }
+
+  return (
+    <div className="project-detail-container">
+      <div className="project-header">
+        <h1>{project.name}</h1>
+        <div className="project-actions">
+          <Link to={`/projects/${projectId}/edit`} className="btn-edit">
+            Edit Project
+          </Link>
+          <Link to={`/projects/${projectId}/settings`} className="btn-settings">
+            Project Settings
+          </Link>
+          <button className="btn-delete" onClick={handleDeleteProject}>
+            Delete Project
+          </button>
+        </div>
+      </div>
+      
+      <div className="project-info-card">
+        <h2>Project Information</h2>
+        <div className="project-info-content">
+          <div className="info-group">
+            <label>Description:</label>
+            <p>{project.description}</p>
+          </div>
+          
+          <div className="info-group">
+            <label>Created By:</label>
+            <p>{project.createdBy}</p>
+          </div>
+          
+          <div className="info-group">
+            <label>Created On:</label>
+            <p>{formatDate(project.createdAt || '')}</p>
+          </div>
+          
+          <div className="info-group">
+            <label>Last Updated:</label>
+            <p>{formatDate(project.updatedAt || '')}</p>
+          </div>
+        </div>
+      </div>
+      
+      {settings && (
+        <div className="project-settings-card">
+          <h2>Project Settings</h2>
+          <div className="project-settings-content">
+            <div className="settings-group">
+              <label>Default Browser:</label>
+              <p>{settings.defaultBrowser}</p>
+            </div>
+            
+            <div className="settings-group">
+              <label>Headless Mode:</label>
+              <p>{settings.headlessMode ? 'Enabled' : 'Disabled'}</p>
+            </div>
+            
+            <div className="settings-group">
+              <label>Default Timeout:</label>
+              <p>{settings.defaultTimeout}ms</p>
+            </div>
+            
+            <div className="settings-group">
+              <label>Capture Screenshots:</label>
+              <p>{settings.captureScreenshots ? 'Enabled' : 'Disabled'}</p>
+            </div>
+            
+            <div className="settings-group">
+              <label>Capture Videos:</label>
+              <p>{settings.captureVideos ? 'Enabled' : 'Disabled'}</p>
+            </div>
+            
+            {settings.defaultEnvironment && (
+              <div className="settings-group">
+                <label>Default Environment:</label>
+                <p>{settings.defaultEnvironment}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <div className="project-modules">
+        <div className="module-card">
+          <h3>Test Cases</h3>
+          <p>Manage test cases for this project</p>
+          <Link to={`/projects/${projectId}/testcases`} className="btn-module">
+            Go to Test Cases
+          </Link>
+        </div>
+        
+        <div className="module-card">
+          <h3>Test Suites</h3>
+          <p>Organize test cases into suites</p>
+          <Link to={`/projects/${projectId}/testsuites`} className="btn-module">
+            Go to Test Suites
+          </Link>
+        </div>
+        
+        <div className="module-card">
+          <h3>Data Sources</h3>
+          <p>Manage test data for data-driven testing</p>
+          <Link to={`/projects/${projectId}/datasources`} className="btn-module">
+            Go to Data Sources
+          </Link>
+        </div>
+        
+        <div className="module-card">
+          <h3>Executions</h3>
+          <p>View test execution history and reports</p>
+          <Link to={`/projects/${projectId}/executions`} className="btn-module">
+            Go to Executions
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectDetail;
+
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { ProjectSettings as ProjectSettingsType } from '../../types/project';
+import './ProjectSettings.css';
+
+/**
+ * Component for editing project settings.
+ */
+/**
+ * Component for editing project settings.
+ */
+const ProjectSettings: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  
+  const [settings, setSettings] = useState<ProjectSettingsType>({
+    projectId: projectId || '',
+    defaultBrowser: 'chrome',
+    headlessMode: true,
+    defaultTimeout: 30000,
+    captureScreenshots: true,
+    captureVideos: false,
+    customSettings: {}
+  });
+  
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [customSettingKey, setCustomSettingKey] = useState<string>('');
+  const [customSettingValue, setCustomSettingValue] = useState<string>('');
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!projectId) return;
+      
+      try {
+        setLoading(true);
+        const data = await projectService.getProjectSettings(projectId);
+        setSettings(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching project settings:', err);
+        setError('Failed to load project settings. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, [projectId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    // Handle checkboxes
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setSettings(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+      return;
+    }
+    
+    // Handle number inputs
+    if (type === 'number') {
+      setSettings(prev => ({
+        ...prev,
+        [name]: parseInt(value, 10)
+      }));
+      return;
+    }
+    
+    // Handle regular inputs
+    setSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleAddCustomSetting = () => {
+    if (!customSettingKey.trim() || !customSettingValue.trim()) {
+      return;
+    }
+    
+    setSettings(prev => ({
+      ...prev,
+      customSettings: {
+        ...prev.customSettings,
+        [customSettingKey]: customSettingValue
+      }
+    }));
+    
+    // Clear inputs
+    setCustomSettingKey('');
+    setCustomSettingValue('');
+  };
+  
+  const handleRemoveCustomSetting = (key: string) => {
+    setSettings(prev => {
+      const newCustomSettings = { ...prev.customSettings };
+      delete newCustomSettings[key];
+      
+      return {
+        ...prev,
+        customSettings: newCustomSettings
+      };
+    });
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!projectId) return;
+    
+    try {
+      setSaving(true);
+      setError(null);
+      
+      await projectService.updateProjectSettings(projectId, settings);
+      
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error saving project settings:', err);
+      setError('Failed to save project settings. Please try again later.');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  if (loading) {
+    return <div className="loading">Loading project settings...</div>;
+  }
+
+  return (
+    <div className="project-settings-container">
+      <div className="settings-header">
+        <h1>Project Settings</h1>
+        <Link to={`/projects/${projectId}`} className="btn-back">
+          Back to Project
+        </Link>
+      </div>
+      
+      {error && <div className="error-message">{error}</div>}
+      {saveSuccess && <div className="success-message">Settings saved successfully!</div>}
+      
+      <form className="settings-form" onSubmit={handleSubmit}>
+        <div className="settings-section">
+          <h2>Browser Settings</h2>
+          
+          <div className="form-group">
+            <label htmlFor="defaultBrowser">Default Browser</label>
+            <select
+              id="defaultBrowser"
+              name="defaultBrowser"
+              value={settings.defaultBrowser}
+              onChange={handleChange}
+            >
+              <option value="chrome">Chrome</option>
+              <option value="firefox">Firefox</option>
+              <option value="webkit">WebKit (Safari)</option>
+            </select>
+          </div>
+          
+          <div className="form-group checkbox">
+            <input
+              type="checkbox"
+              id="headlessMode"
+              name="headlessMode"
+              checked={settings.headlessMode}
+              onChange={handleChange}
+            />
+            <label htmlFor="headlessMode">Run tests in headless mode</label>
+          </div>
+        </div>
+        
+        <div className="settings-section">
+          <h2>Test Execution Settings</h2>
+          
+          <div className="form-group">
+            <label htmlFor="defaultTimeout">Default Timeout (ms)</label>
+            <input
+              type="number"
+              id="defaultTimeout"
+              name="defaultTimeout"
+              value={settings.defaultTimeout}
+              onChange={handleChange}
+              min="1000"
+              max="120000"
+              step="1000"
+            />
+          </div>
+          
+          <div className="form-group checkbox">
+            <input
+              type="checkbox"
+              id="captureScreenshots"
+              name="captureScreenshots"
+              checked={settings.captureScreenshots}
+              onChange={handleChange}
+            />
+            <label htmlFor="captureScreenshots">Capture screenshots on test steps</label>
+          </div>
+          
+          <div className="form-group checkbox">
+            <input
+              type="checkbox"
+              id="captureVideos"
+              name="captureVideos"
+              checked={settings.captureVideos}
+              onChange={handleChange}
+            />
+            <label htmlFor="captureVideos">Record videos of test executions</label>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="defaultEnvironment">Default Environment</label>
+            <input
+              type="text"
+              id="defaultEnvironment"
+              name="defaultEnvironment"
+              value={settings.defaultEnvironment || ''}
+              onChange={handleChange}
+              placeholder="e.g., development, staging, production"
+            />
+          </div>
+        </div>
+        
+        <div className="settings-section">
+          <h2>Custom Settings</h2>
+          
+          <div className="custom-settings-list">
+            {settings.customSettings && Object.entries(settings.customSettings).length > 0 ? (
+              Object.entries(settings.customSettings).map(([key, value]) => (
+                <div key={key} className="custom-setting-item">
+                  <div className="custom-setting-content">
+                    <strong>{key}:</strong> {value}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-remove-setting"
+                    onClick={() => handleRemoveCustomSetting(key)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="no-custom-settings">No custom settings defined.</p>
+            )}
+          </div>
+          
+          <div className="add-custom-setting">
+            <h3>Add Custom Setting</h3>
+            <div className="custom-setting-inputs">
+              <div className="form-group">
+                <label htmlFor="customSettingKey">Key</label>
+                <input
+                  type="text"
+                  id="customSettingKey"
+                  value={customSettingKey}
+                  onChange={(e) => setCustomSettingKey(e.target.value)}
+                  placeholder="Setting name"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="customSettingValue">Value</label>
+                <input
+                  type="text"
+                  id="customSettingValue"
+                  value={customSettingValue}
+                  onChange={(e) => setCustomSettingValue(e.target.value)}
+                  placeholder="Setting value"
+                />
+              </div>
+              
+              <button
+                type="button"
+                className="btn-add-setting"
+                onClick={handleAddCustomSetting}
+                disabled={!customSettingKey.trim() || !customSettingValue.trim()}
+              >
+                Add Setting
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="form-actions">
+          <Link to={`/projects/${projectId}`} className="btn-cancel">
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            className="btn-save"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
+
+/**
+ * Format a date string into a human-readable format.
+ * @param dateString The date string to format
+ * @returns Formatted date string
+ */
+export const formatDate = (dateString: string): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    // Format the date
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
+};
+
+/**
+ * Format a date string to display only the date (without time).
+ * @param dateString The date string to format
+ * @returns Formatted date string (date only)
+ */
+export const formatDateOnly = (dateString: string): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    // Format the date (date only)
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
+};
+
+/**
+ * Get relative time (e.g., "2 hours ago", "yesterday").
+ * @param dateString The date string
+ * @returns Relative time string
+ */
+export const getRelativeTime = (dateString: string): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'just now';
+    }
+    
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    }
+    
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+    
+    if (diffInSeconds < 172800) {
+      return 'yesterday';
+    }
+    
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+    
+    if (diffInSeconds < 2592000) {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    }
+    
+    const months = Math.floor(diffInSeconds / 2592000);
+    if (months < 12) {
+      return `${months} month${months > 1 ? 's' : ''} ago`;
+    }
+    
+    const years = Math.floor(months / 12);
+    return `${years} year${years > 1 ? 's' : ''} ago`;
+  } catch (error) {
+    console.error('Error calculating relative time:', error);
+    return 'Unknown time';
+  }
+};
+
+
+/* Project List Styles */
+.project-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.project-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+}
+
+.project-list-header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+.btn-create {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.btn-create:hover {
+  background-color: #3367d6;
+}
+
+.project-list-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px dashed #ddd;
+  margin: 40px 0;
+}
+
+.project-list-empty p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.btn-create-first {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.btn-create-first:hover {
+  background-color: #3367d6;
+}
+
+.project-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.project-card {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  background-color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.project-card-content {
+  padding: 20px;
+}
+
+.project-card h2 {
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.project-description {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+  height: 65px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.project-meta {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+.project-card-actions {
+  display: flex;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.project-card-actions a,
+.project-card-actions button {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  color: #555;
+}
+
+.project-card-actions a:not(:last-child),
+.project-card-actions button:not(:last-child) {
+  border-right: 1px solid #eee;
+}
+
+.btn-view:hover {
+  background-color: #f0f0f0;
+  color: #4285f4;
+}
+
+.btn-edit:hover {
+  background-color: #f0f0f0;
+  color: #fbbc05;
+}
+
+.btn-delete:hover {
+  background-color: #f0f0f0;
+  color: #ea4335;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  color: #ea4335;
+  background-color: #fee;
+  border-radius: 8px;
+  border: 1px solid #fdd;
+}
+
+
+/* Project Form Styles */
+.project-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.project-form-container h1 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+}
+
+.error-message,
+.success-message {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #d32f2f;
+  border: 1px solid #fdd;
+}
+
+.success-message {
+  background-color: #e6f4ea;
+  color: #137333;
+  border: 1px solid #d4edda;
+}
+
+.project-form {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #4285f4;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #aaa;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background-color: #f1f3f4;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.btn-cancel:hover {
+  background-color: #e8eaed;
+}
+
+.btn-save {
+  background-color: #4285f4;
+  color: white;
+  border: 1px solid #4285f4;
+}
+
+.btn-save:hover {
+  background-color: #3367d6;
+  border-color: #3367d6;
+}
+
+.btn-save:disabled {
+  background-color: #a1c3ff;
+  border-color: #a1c3ff;
+  cursor: not-allowed;
+}
+
+/* Loading state */
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+
+/* Project Detail Styles */
+.project-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+}
+
+.project-header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+.project-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-edit,
+.btn-settings,
+.btn-delete {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-edit {
+  background-color: #fbbc05;
+  color: white;
+  border: 1px solid #fbbc05;
+}
+
+.btn-edit:hover {
+  background-color: #f3a700;
+  border-color: #f3a700;
+}
+
+.btn-settings {
+  background-color: #4285f4;
+  color: white;
+  border: 1px solid #4285f4;
+}
+
+.btn-settings:hover {
+  background-color: #3367d6;
+  border-color: #3367d6;
+}
+
+.btn-delete {
+  background-color: #ea4335;
+  color: white;
+  border: 1px solid #ea4335;
+}
+
+.btn-delete:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+.project-info-card,
+.project-settings-card {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.project-info-card h2,
+.project-settings-card h2 {
+  font-size: 18px;
+  margin: 0;
+  padding: 16px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.project-info-content,
+.project-settings-content {
+  padding: 20px;
+}
+
+.info-group,
+.settings-group {
+  margin-bottom: 16px;
+}
+
+.info-group:last-child,
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.info-group label,
+.settings-group label {
+  display: block;
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.info-group p,
+.settings-group p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.project-modules {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.module-card {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.module-card h3 {
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.module-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.btn-module {
+  display: block;
+  text-align: center;
+  background-color: #f1f3f4;
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-module:hover {
+  background-color: #e8eaed;
+  color: #1a73e8;
+}
+
+.loading,
+.error,
+.not-found {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  color: #ea4335;
+  background-color: #fee;
+  border-radius: 8px;
+  border: 1px solid #fdd;
+}
+
+.not-found {
+  color: #ea4335;
+  font-weight: 500;
+}
+
+
+/* Project Settings Styles */
+.project-settings-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+}
+
+.settings-header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+.btn-back {
+  background-color: #f1f3f4;
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #e8eaed;
+}
+
+.error-message,
+.success-message {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #d32f2f;
+  border: 1px solid #fdd;
+}
+
+.success-message {
+  background-color: #e6f4ea;
+  color: #137333;
+  border: 1px solid #d4edda;
+}
+
+.settings-form {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.settings-section {
+  margin-bottom: 32px;
+}
+
+.settings-section h2 {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-group.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.form-group.checkbox label {
+  margin-bottom: 0;
+  margin-left: 8px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  transition: border-color 0.2s;
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4285f4;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.custom-settings-list {
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #f9f9f9;
+}
+
+.custom-setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.custom-setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.custom-setting-content {
+  font-size: 14px;
+}
+
+.btn-remove-setting {
+  background-color: #f1f3f4;
+  color: #ea4335;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-remove-setting:hover {
+  background-color: #fee;
+  border-color: #fdd;
+}
+
+.no-custom-settings {
+  padding: 16px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.add-custom-setting {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.add-custom-setting h3 {
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.custom-setting-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.custom-setting-inputs .form-group {
+  margin-bottom: 0;
+}
+
+.btn-add-setting {
+  background-color: #4285f4;
+  color: white;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 40px;
+}
+
+.btn-add-setting:hover {
+  background-color: #3367d6;
+  border-color: #3367d6;
+}
+
+.btn-add-setting:disabled {
+  background-color: #a1c3ff;
+  border-color: #a1c3ff;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-cancel {
+  background-color: #f1f3f4;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.btn-cancel:hover {
+  background-color: #e8eaed;
+}
+
+.btn-save {
+  background-color: #4285f4;
+  color: white;
+  border: 1px solid #4285f4;
+}
+
+.btn-save:hover {
+  background-color: #3367d6;
+  border-color: #3367d6;
+}
+
+.btn-save:disabled {
+  background-color: #a1c3ff;
+  border-color: #a1c3ff;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
